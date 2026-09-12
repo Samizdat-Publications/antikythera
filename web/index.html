@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Antikythera Cosmos</title>
+    <link rel="stylesheet" href="./src/ui/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-title">ANTIKYTHERA</span>
+          <span class="brand-sub">a working model of the cosmos, 205 BC</span>
+        </div>
+        <div class="date-readout">
+          <span id="date-main">—</span>
+          <span id="date-sub">—</span>
+        </div>
+      </header>
+      <main class="layout">
+        <section class="stage">
+          <canvas id="stage"></canvas>
+          <div class="stage-hud">
+            <div class="views">
+              <button data-view="front">Front</button>
+              <button data-view="back">Back</button>
+              <button data-view="iso">Iso</button>
+              <button data-view="crank">Crank</button>
+            </div>
+            <div id="hover" class="hover"></div>
+          </div>
+        </section>
+        <aside class="panels">
+          <section class="panel">
+            <h2>Crank</h2>
+            <div class="crank-row">
+              <button id="play" class="play">▶</button>
+              <select id="speed">
+                <option value="0.002739726">1 day / s</option>
+                <option value="0.0821918">1 month / s</option>
+                <option value="1" selected>1 year / s</option>
+                <option value="10">10 years / s</option>
+              </select>
+              <button id="epoch-btn" class="ghost">epoch</button>
+            </div>
+            <input id="years" type="range" min="-300" max="2400" step="0.0001" value="0" />
+            <div class="row small"><span>years since epoch</span><span id="years-val">0.0000</span></div>
+            <div class="row small"><span>epoch</span>
+              <select id="epoch">
+                <option value="carman-evans">12 May 205 BC · Carman &amp; Evans</option>
+                <option value="voulgaris">22 Dec 178 BC · Voulgaris</option>
+              </select>
+            </div>
+          </section>
+          <section class="panel">
+            <h2>Front dial</h2>
+            <dl id="front-dl" class="grid"></dl>
+          </section>
+          <section class="panel">
+            <h2>Moon</h2>
+            <div class="moon-row">
+              <canvas id="moon" width="140" height="140"></canvas>
+              <dl id="moon-dl" class="grid"></dl>
+            </div>
+          </section>
+          <section class="panel">
+            <h2>Back dials</h2>
+            <dl id="back-dl" class="grid"></dl>
+          </section>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

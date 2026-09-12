@@ -94,10 +94,11 @@ def add_driver(ob, prop, index, expr, variables):
             v.targets[0].id = target
             v.targets[0].data_path = extra
         else:
-            v.type = "TRANSFORMS"
+            # read the driven rotation property directly: TRANSFORMS/LOCAL_SPACE reads of
+            # chain-driven objects came back as 0 in Blender 5.1, SINGLE_PROP is reliable
+            v.type = "SINGLE_PROP"
             v.targets[0].id = target
-            v.targets[0].transform_type = extra
-            v.targets[0].transform_space = "LOCAL_SPACE"
+            v.targets[0].data_path = "rotation_euler[%d]" % (0 if extra == "ROT_X" else 2)
     return d
 
 
@@ -166,6 +167,13 @@ def build():
 
     for gid in pin_slots:
         O[gid] = slot_angle0(gid)
+    # gears downstream of a slot gear inherit its non-linear motion through a short
+    # driver chain instead of the linear master driver: (X, how, Y) = X follows Y
+    CHAIN = [("e6", "mesh", "k2"), ("e1", "arbor", "e6"), ("b3", "mesh", "e1"),
+             ("sa86b", "mesh", "sa86a"), ("ju65b", "mesh", "ju65a"), ("ma80b", "mesh", "ma80a")]
+    chain_ids = {x for x, _, _ in CHAIN}
+    for x, how, y in CHAIN:
+        O[x] = -gears[y]["teeth"] / gears[x]["teeth"] * O[y] if how == "mesh" else O[y]
     for gid in gears:
         O.setdefault(gid, 0.0)
 
@@ -250,12 +258,39 @@ def build():
         objs[gid] = ob
 
     # --- drivers --------------------------------------------------------------------
+    for order, (x, how, y) in enumerate(CHAIN):
+        objs[x]["am_order"] = 20 + order
     for gid, ob in objs.items():
         g = gears[gid]
         car = carrier_of(gid)
         rate = R[gid]
         rel = float(rate - (R[car] if car else 0))
-        if gid in pin_slots:
+        if gid in chain_ids:
+            x, how, y = next(c for c in CHAIN if c[0] == gid)
+            src = objs[y]
+            cx, cy = carrier_of(x), carrier_of(y)
+            variables = [("s", "rot", src, "ROT_Z")]
+            if how == "mesh":
+                ratio = -gears[y]["teeth"] / gears[x]["teeth"]
+                expr = f"({ratio:.12f})*s"
+                # carriers differ: add the source carrier's world angle, remove our own
+                if cy and cy != cx:
+                    variables.append(("cs", "rot", objs[cy], "ROT_Z")); expr += " + cs"
+                if cx and cx != cy:
+                    variables.append(("cx", "rot", objs[cx], "ROT_Z")); expr += " - cx"
+            else:
+                ratio = 1.0
+                expr = "s"
+            add_driver(ob, "rotation_euler", 2, expr, variables)
+            ob["am_coupling"] = json.dumps({"type": "chain", "from": y, "ratio": ratio,
+                                            "carrierFrom": cy, "carrierTo": cx, "how": how})
+        elif gid == "q1":
+            # phase-ball crown gear on the moon pointer: turns with (moon - mean sun)
+            add_driver(ob, "rotation_euler", 0, "b - s", [("b", "rot", objs["b3"], "ROT_Z"),
+                                                          ("s", "rot", objs["b0"], "ROT_Z")])
+            ob["am_coupling"] = json.dumps({"type": "differential", "a": "b3", "b": "b0", "axis": "x"})
+            ob["am_order"] = 30
+        elif gid in pin_slots:
             c = pin_slots[gid]
             pin = objs[c["a"]]
             px, py = local_xy(c["a"])
@@ -264,6 +299,7 @@ def build():
             add_driver(ob, "rotation_euler", 2, expr, [("t", "rot", pin, "ROT_Z")])
             ob["am_coupling"] = json.dumps({"type": "pin_slot", "pin": c["a"], "d": c["offset_mm"], "r": c["pin_r_mm"],
                                             "dx": px - sx, "dy": py - sy})
+            ob["am_order"] = 10
         elif g.get("kind") == "contrate":
             # crown gears turn about their own (local X) axis
             add_driver(ob, "rotation_euler", 0, f"({-TAU * rel:.12f})*y", [years_var])
@@ -285,6 +321,7 @@ def build():
         fol["am_id"] = fid
         fol["am_frame"] = "b1"
         fol["am_coupling"] = json.dumps({"type": "pin_follower", "epicycle": c["a"], "cx": cx, "cy": cy, "d": d})
+        fol["am_order"] = 10
         # the pin itself, for the eye
         pin = box(fid + "_pin", d - 0.4, d + 0.4, 0.4, 1.2, parent=epi, coll=c_ptr, z=0.0, material=bronze)
         # the slotted rod
@@ -368,7 +405,7 @@ def build():
     sun.rotation_euler = (math.radians(35), math.radians(20), 0)
 
     # --- verification ---------------------------------------------------------------
-    report = verify_rig(spec, gears, objs, R, master, pin_slots)
+    report = verify_rig(spec, gears, objs, R, master, pin_slots, chain_ids)
     report["gear_count"] = len(objs)
     report["tris"] = sum(sum(len(p.vertices) - 2 for p in ob.data.polygons) for ob in objs.values())
     dump = {gid: {"teeth": gears[gid]["teeth"], "rate": float(R[gid]), "rate_frac": objs[gid]["am_rate_frac"],
@@ -399,7 +436,7 @@ def frame_viewport(view="TOP", shading="MATERIAL"):
                     area.spaces[0].clip_end = 10000
 
 
-def verify_rig(spec, gears, objs, R, master, pin_slots):
+def verify_rig(spec, gears, objs, R, master, pin_slots, chain_ids=()):
     """Drive the master and check every linear gear against its exact rate."""
     mism = []
     samples = (0.0, 1.0, 7.3, 19.0, 76.0, 223.0 / 12.3684)
@@ -415,7 +452,7 @@ def verify_rig(spec, gears, objs, R, master, pin_slots):
     for y in samples:
         dg = set_years(y)
         for gid, ob in objs.items():
-            if gid in pin_slots or gears[gid].get("fixed"):
+            if gid in pin_slots or gid in chain_ids or gid == "q1" or gears[gid].get("fixed"):
                 continue
             car = gears[gid].get("carrier")
             rel = float(R[gid] - (R[car] if car else 0))
@@ -438,6 +475,16 @@ def verify_rig(spec, gears, objs, R, master, pin_slots):
             dev.append(d)
         amp[sid] = {"max_deg": math.degrees(max(dev)), "min_deg": math.degrees(min(dev)),
                     "expected_deg": math.degrees(math.asin(c["offset_mm"] / c["pin_r_mm"]))}
+    # the moon pointer must carry the anomaly: deviation from mean motion bounded by asin(d/r)
+    moon_dev = []
+    for k in range(200):
+        y = 27.55 / 365.24219 * k / 200.0
+        dg = set_years(y)
+        got = objs["b3"].evaluated_get(dg).rotation_euler.z
+        want = -TAU * float(R["b3"]) * y
+        moon_dev.append(math.degrees((got - want + math.pi) % TAU - math.pi))
+    amp["moon_pointer"] = {"max_deg": max(moon_dev), "min_deg": min(moon_dev),
+                           "expected_deg": math.degrees(math.asin(1.1 / 9.67))}
     set_years(0.0)
     return {"linear_gears_checked": len(objs) - len(pin_slots), "worst_error_rad": worst,
             "mismatches": mism[:10], "pin_slot_amplitudes": amp}
