@@ -136,11 +136,17 @@ def bronze_material(name="Bronze"):
 
 def make_gear(name, teeth, module, thick, profile="triangular", phase=0.0, bore_r=1.0,
               spokes=0, tip_r=None, root_r=None, kind="spur", collection=None, material=None,
-              props=None, **kw):
+              props=None, axis="Z", **kw):
+    """axis: 'Z' (default, spur gears lying in XY), '+X' / '-X' for crown gears whose
+    teeth must point along the local X axis (radial arbors such as a1 and q1)."""
     if kind == "contrate":
         bm = crown_bmesh(teeth, module, thick, phase=phase, bore_r=bore_r)
     else:
         bm = gear_bmesh(teeth, module, thick, profile, phase, bore_r, spokes, tip_r=tip_r, root_r=root_r, **kw)
+    if axis in ("+X", "-X"):
+        import mathutils
+        rot = mathutils.Matrix.Rotation(math.radians(90 if axis == "+X" else -90), 4, "Y")
+        bmesh.ops.transform(bm, matrix=rot, verts=bm.verts)
     me = bpy.data.meshes.new(name)
     bm.to_mesh(me)
     bm.free()

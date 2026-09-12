@@ -11,7 +11,7 @@
     {"id": "b1",  "teeth": 223, "arbor": "b",  "z": 0.0,   "thick": 2.7, "module": 0.578, "pitch_r": 64.4, "status": "surviving", "note": "main drive wheel, 4 spokes; 223/224 disputed"},
     {"id": "b2",  "teeth": 64,  "arbor": "b",  "z": -6.0,  "thick": 2.3, "module": 0.479, "pitch_r": 15.3, "status": "surviving"},
     {"id": "b3",  "teeth": 32,  "arbor": "b",  "tube": "moon", "z": -15.0, "thick": 1.3, "module": 0.546, "pitch_r": 8.7, "status": "surviving", "note": "on the central moon arbor; moon pointer gear"},
-    {"id": "b0",  "teeth": 20,  "arbor": "b",  "tube": "mean_sun", "kind": "contrate", "z": 13.0, "thick": 1.2, "status": "hypothesised", "note": "mean-sun tube gear driving the phase ball (Freeth 2021)"},
+    {"id": "b0",  "teeth": 20,  "arbor": "b",  "tube": "mean_sun", "z": 13.0, "module": 0.5, "thick": 1.2, "status": "hypothesised", "note": "20-tooth spur on the mean-sun tube; meshes the crown gear q1 on the lunar disc (Freeth 2021)"},
 
     {"id": "c1",  "teeth": 38,  "arbor": "c",  "z": -6.0,  "thick": 1.5, "module": 0.517, "pitch_r": 9.8,  "status": "surviving"},
     {"id": "c2",  "teeth": 48,  "arbor": "c",  "z": -10.0, "thick": 1.3, "module": 0.447, "pitch_r": 10.7, "status": "surviving"},
