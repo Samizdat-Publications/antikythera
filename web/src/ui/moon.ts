@@ -24,12 +24,13 @@ export function litPolygon(cx: number, cy: number, R: number, elongationDeg: num
   return pts;
 }
 
-export function drawMoon(canvas: HTMLCanvasElement, elongationDeg: number): void {
+export function drawMoon(canvas: HTMLCanvasElement, elongationDeg: number, ink = false): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   const w = canvas.width, h = canvas.height;
   const cx = w / 2, cy = h / 2, R = Math.min(w, h) / 2 - 6;
   ctx.clearRect(0, 0, w, h);
+  if (ink) { drawMoonInk(ctx, cx, cy, R, elongationDeg); return; }
   // the phase ball in the model: a silvered half and a lamp-black half, lit from the upper left
   ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
   const night = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.05, cx, cy, R);
@@ -54,4 +55,29 @@ export function drawMoon(canvas: HTMLCanvasElement, elongationDeg: number): void
   ctx.restore();
   ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
   ctx.strokeStyle = "rgba(201,151,63,0.35)"; ctx.lineWidth = 1; ctx.stroke();      // the bronze rim of the drum
+}
+
+/** The manuscript version: a pen diagram. Parchment for the lit part, hatching for the dark. */
+function drawMoonInk(ctx: CanvasRenderingContext2D, cx: number, cy: number, R: number, elongationDeg: number): void {
+  const ink = "rgba(58, 44, 30, 0.9)";
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.fillStyle = "#f1e8d5"; ctx.fill();
+  ctx.clip();
+  // hatch the whole disc, then lay parchment back over the lit region
+  ctx.strokeStyle = "rgba(58, 44, 30, 0.55)"; ctx.lineWidth = 0.9;
+  for (let d = -2 * R; d < 2 * R; d += 4.2) {
+    ctx.beginPath(); ctx.moveTo(cx + d - R, cy - R); ctx.lineTo(cx + d + R, cy + R); ctx.stroke();
+  }
+  const poly = litPolygon(cx, cy, R, elongationDeg);
+  ctx.beginPath();
+  poly.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+  ctx.closePath();
+  ctx.fillStyle = "#f6efdf"; ctx.fill();
+  ctx.strokeStyle = ink; ctx.lineWidth = 1; ctx.stroke();                      // the terminator, in pen
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.strokeStyle = ink; ctx.lineWidth = 1.2; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, R + 3, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(58, 44, 30, 0.35)"; ctx.lineWidth = 0.8; ctx.stroke();  // a second, lighter ring, as a compass would leave
 }

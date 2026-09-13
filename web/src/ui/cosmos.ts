@@ -24,17 +24,18 @@ interface BodySpec {
   R: number;            // deferent radius as a fraction of the zodiac ring
   span: number;         // years of trail
   samples: number;      // trail samples across the span
-  colour: string;       // the stone on the front dial
+  colour: string;       // the stone on the front dial (vitrine)
+  inkColour: string;    // the same body in the manuscript's inks
 }
 
 const BODIES: BodySpec[] = [
-  { id: "moon", label: "Moon", glyph: "☾", display: "moon", device: "k2", R: 0.17, span: 0.085, samples: 60, colour: "#e9e5d9" },
-  { id: "mercury", label: "Mercury", glyph: "☿", display: "mercury", device: "mercury_ptr", R: 0.27, span: 0.5, samples: 150, colour: "#5cc9bd" },
-  { id: "venus", label: "Venus", glyph: "♀", display: "venus", device: "venus_ptr", R: 0.36, span: 1.7, samples: 190, colour: "#5d7ee6" },
-  { id: "sun", label: "Sun", glyph: "☉", display: "true_sun", device: "true_sun_ptr", R: 0.45, span: 1.0, samples: 90, colour: "#ffcf6e" },
-  { id: "mars", label: "Mars", glyph: "♂", display: "mars", device: "ma80a", R: 0.58, span: 2.3, samples: 230, colour: "#e0553a" },
-  { id: "jupiter", label: "Jupiter", glyph: "♃", display: "jupiter", device: "ju65a", R: 0.74, span: 1.6, samples: 150, colour: "#efeaf8" },
-  { id: "saturn", label: "Saturn", glyph: "♄", display: "saturn", device: "sa86a", R: 0.9, span: 1.8, samples: 150, colour: "#8d8894" },
+  { id: "moon", label: "Moon", glyph: "☾", display: "moon", device: "k2", R: 0.17, span: 0.085, samples: 60, colour: "#e9e5d9", inkColour: "#6b655c" },
+  { id: "mercury", label: "Mercury", glyph: "☿", display: "mercury", device: "mercury_ptr", R: 0.27, span: 0.5, samples: 150, colour: "#5cc9bd", inkColour: "#3e8f80" },
+  { id: "venus", label: "Venus", glyph: "♀", display: "venus", device: "venus_ptr", R: 0.36, span: 1.7, samples: 190, colour: "#5d7ee6", inkColour: "#3d5aa8" },
+  { id: "sun", label: "Sun", glyph: "☉", display: "true_sun", device: "true_sun_ptr", R: 0.45, span: 1.0, samples: 90, colour: "#ffcf6e", inkColour: "#b8892a" },
+  { id: "mars", label: "Mars", glyph: "♂", display: "mars", device: "ma80a", R: 0.58, span: 2.3, samples: 230, colour: "#e0553a", inkColour: "#a8462c" },
+  { id: "jupiter", label: "Jupiter", glyph: "♃", display: "jupiter", device: "ju65a", R: 0.74, span: 1.6, samples: 150, colour: "#efeaf8", inkColour: "#7a5a3a" },
+  { id: "saturn", label: "Saturn", glyph: "♄", display: "saturn", device: "sa86a", R: 0.9, span: 1.8, samples: 150, colour: "#8d8894", inkColour: "#3a3532" },
 ];
 
 const SIGNS = ["♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓"];
@@ -80,9 +81,16 @@ export class Cosmos {
   private lastTruth = -1;
   private jd = 0;
   private hovered: string | null = null;
+  theme: "vitrine" | "manuscript" = "vitrine";
 
-  constructor(private canvases: HTMLCanvasElement[], private stone: (id: string) => string = (id) => BODIES.find((b) => b.id === id)?.colour ?? "#fff") {
+  constructor(private canvases: HTMLCanvasElement[]) {
     for (const c of canvases) c.addEventListener("pointerleave", () => { this.hovered = null; });
+  }
+
+  setTheme(t: "vitrine" | "manuscript"): void { this.theme = t; }
+  private stone(id: string): string {
+    const b = BODIES.find((x) => x.id === id);
+    return b ? (this.theme === "manuscript" ? b.inkColour : b.colour) : "#fff";
   }
 
   attach(graph: GearGraph): void {
@@ -152,7 +160,8 @@ export class Cosmos {
     const big = w > 500;
     const cx = w / 2, cy = h / 2, Rz = Math.min(w, h) / 2 - (big ? 34 : 18);
     const P = (lon: number, rho: number): [number, number] => [cx + rho * Rz * Math.cos(lon * DEG), cy + rho * Rz * Math.sin(lon * DEG)];
-    const bronze = "201,151,63", vellum = "232,222,204", verdigris = "96,176,158";
+    const ms = this.theme === "manuscript";
+    const bronze = ms ? "84,60,36" : "201,151,63", vellum = ms ? "58,44,30" : "232,222,204", verdigris = ms ? "52,118,100" : "96,176,158";
 
     // the zodiac ring
     ctx.lineWidth = 1;
@@ -259,7 +268,7 @@ export class Cosmos {
 
   /** Which body the pointer is over (for emphasis); pass null to clear. */
   hover(id: string | null): void { this.hovered = id; }
-  get list(): { id: string; label: string; colour: string }[] { return BODIES.map((b) => ({ id: b.id, label: b.label, colour: b.colour })); }
+  get list(): { id: string; label: string; colour: string }[] { return BODIES.map((b) => ({ id: b.id, label: b.label, colour: this.stone(b.id) })); }
 }
 
 

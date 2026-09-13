@@ -1,6 +1,6 @@
 # Where things stand, and what's next
 
-_Updated 2026-09-13, small hours (the overnight session). Read this first in a new session._
+_Updated 2026-09-13, afternoon (manuscript version added). Read this first in a new session._
 
 ## Done and live
 
@@ -51,9 +51,10 @@ _Updated 2026-09-13, small hours (the overnight session). Read this first in a n
 
 ## Backlog, in priority order
 
-0. **Manuscript theme** (Stewart's next ask): parchment/ink light theme as a toggle, A/B with the
-   vitrine. Keep the gallery lighting; swap the CSS tokens and the wall/floor to daylight vellum;
-   the Sky view in ink on paper would suit it well.
+0. ~~Manuscript theme~~ DONE 2026-09-13 afternoon: `?theme=manuscript`, top-bar switch; both
+   versions kept (NOTES.md). Still to taste: the front plate's tarnish reads heavier on parchment;
+   a ruled frame and a caption under the stage would make it more of a plate in a codex; the
+   walkthrough card could carry a rubricated initial.
 1. **More motion where the machine moves**: an exploded "assembly" on first load (gears sliding
    onto arbors along Z; `gears.json` has the layers), pointer trails on the front dial at ten
    years per second, a dimmed-gallery beat with the chime when a Saros glyph and NASA agree,

@@ -10,6 +10,11 @@ date in a web dashboard that compares what the machine shows with the real sky.
 
 Live: https://antikythera.stewartgregerson.workers.dev
 
+Two versions of the same exhibit, switchable in the top bar and by URL, both kept:
+the **vitrine** (a museum gallery at night, the default) and the **manuscript**
+(parchment and iron-gall ink, `?theme=manuscript`). They share every gear, number and
+panel; only the room, the page and the inks differ.
+
 | ![Front dial](docs/renders/front.jpg) | ![Back dials](docs/renders/back.jpg) |
 |---|---|
 | The front dial: zodiac and Egyptian calendar rings, the Sun, Moon and five planets | The back: Metonic and Saros spirals with the Games and Exeligmos sub-dials |

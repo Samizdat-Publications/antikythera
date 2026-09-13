@@ -52,16 +52,49 @@ function galleryEnvironment(): THREE.Scene {
   return s;
 }
 
-/** A soft warm pool of light on the gallery wall behind the exhibit. */
-function wallTexture(): THREE.Texture {
+/**
+ * The manuscript version's light: a scholar's room by day. Pale walls, a tall window of
+ * north light high on the left, a skylight, a warm floor bounce, and a small bright source
+ * for the glints. Bronze on parchment wants a bright, soft environment.
+ */
+function studioEnvironment(): THREE.Scene {
+  const s = new THREE.Scene();
+  const room = new THREE.Mesh(new THREE.BoxGeometry(20, 12, 20), new THREE.MeshBasicMaterial({ color: 0xd8ccb8, side: THREE.BackSide }));
+  (room.material as THREE.MeshBasicMaterial).color.multiplyScalar(0.55);
+  s.add(room);
+  const panel = (geom: THREE.BufferGeometry, color: number, intensity: number, pos: [number, number, number]) => {
+    const m = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
+    (m.material as THREE.MeshBasicMaterial).color.multiplyScalar(intensity);
+    m.position.set(...pos);
+    m.lookAt(0, 0, 0);
+    s.add(m);
+  };
+  panel(new THREE.PlaneGeometry(6, 8), 0xdfe9ff, 3.2, [-7, 4, 5]);            // the window, north light
+  panel(new THREE.PlaneGeometry(7, 7), 0xfff6e8, 1.4, [0, 6, 0]);              // skylight
+  panel(new THREE.PlaneGeometry(9, 9), 0xd9c7a8, 1.1, [0, -6, 0]);             // parchment floor bounce
+  panel(new THREE.PlaneGeometry(6, 6), 0xf0e6d4, 1.2, [7, 2, -4]);             // the far wall, lit
+  panel(new THREE.CircleGeometry(0.4, 32), 0xffffff, 14.0, [-6.4, 4.6, 5.2]);  // glints
+  return s;
+}
+
+export type Theme = "vitrine" | "manuscript";
+
+/** The wall behind the exhibit: a warm pool of light on a dark gallery wall, or a sheet of parchment. */
+function wallTexture(theme: Theme): THREE.Texture {
   const c = document.createElement("canvas");
   c.width = c.height = 512;
   const g = c.getContext("2d")!;
   const rg = g.createRadialGradient(256, 210, 20, 256, 256, 330);
-  // drawn bright: ACES with the gallery exposure crushes the low end
-  rg.addColorStop(0, "#6b5443");
-  rg.addColorStop(0.45, "#3a2c22");
-  rg.addColorStop(1, "#17120e");
+  if (theme === "manuscript") {
+    rg.addColorStop(0, "#f3e9d3");
+    rg.addColorStop(0.55, "#e6d8bc");
+    rg.addColorStop(1, "#cbb996");
+  } else {
+    // drawn bright: ACES with the gallery exposure crushes the low end
+    rg.addColorStop(0, "#6b5443");
+    rg.addColorStop(0.45, "#3a2c22");
+    rg.addColorStop(1, "#17120e");
+  }
   g.fillStyle = rg;
   g.fillRect(0, 0, 512, 512);
   const t = new THREE.CanvasTexture(c);
@@ -181,6 +214,13 @@ export class Viewer {
 
   /** Gallery furniture (plinth, floor): hidden while the Fragment A scan is shown alone. */
   private set: THREE.Object3D[] = [];
+  private setMats!: { floor: THREE.MeshStandardMaterial; plinth: THREE.MeshStandardMaterial; plinthTop: THREE.MeshStandardMaterial };
+  private lights!: { key: THREE.SpotLight; fill: THREE.DirectionalLight; rim: THREE.DirectionalLight; frontRake: THREE.DirectionalLight; backKey: THREE.DirectionalLight };
+  private pmrem: THREE.PMREMGenerator;
+  private envs: Partial<Record<Theme, THREE.Texture>> = {};
+  theme: Theme = "vitrine";
+  private bloomBase = 0.55;
+  private wood: { mat: THREE.MeshStandardMaterial; base: THREE.Color } | null = null;
   /** The "Inside" reveal: plates, dials and case lifting away over ~1.1 s. */
   private reveal: { on: boolean; start: number; items: RevealItem[] } | null = null;
   private insideOn = false;
@@ -212,9 +252,10 @@ export class Viewer {
     this.renderer.toneMappingExposure = 0.85;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
-    this.scene.background = wallTexture();
-    const pmrem = new THREE.PMREMGenerator(this.renderer);
-    this.scene.environment = pmrem.fromScene(galleryEnvironment(), 0.02).texture;
+    this.scene.background = wallTexture("vitrine");
+    this.pmrem = new THREE.PMREMGenerator(this.renderer);
+    this.envs.vitrine = this.pmrem.fromScene(galleryEnvironment(), 0.02).texture;
+    this.scene.environment = this.envs.vitrine;
     this.scene.environmentIntensity = 0.65;
 
     this.camera = new THREE.PerspectiveCamera(38, 1, 1, 5000);
@@ -255,6 +296,7 @@ export class Viewer {
     const bcam = backKey.shadow.camera as THREE.OrthographicCamera;
     bcam.left = -280; bcam.right = 280; bcam.top = 280; bcam.bottom = -280; bcam.near = 50; bcam.far = 1200;
     this.scene.add(key, key.target, fill, rim, frontRake, backKey, backKey.target);
+    this.lights = { key, fill, rim, frontRake, backKey };
 
     // the gallery set: a stone plinth under the case and a floor for the light pool and the contact shadow
     const plinth = new THREE.Mesh(new THREE.BoxGeometry(320, 70, 220), new THREE.MeshStandardMaterial({ color: 0x2a2624, roughness: 0.62, metalness: 0.05, envMapIntensity: 0.5 }));
@@ -269,6 +311,7 @@ export class Viewer {
     floor.receiveShadow = true;
     this.scene.add(plinth, plinthTop, floor);
     this.set.push(plinth, plinthTop, floor);
+    this.setMats = { floor: floor.material as THREE.MeshStandardMaterial, plinth: plinth.material as THREE.MeshStandardMaterial, plinthTop: plinthTop.material as THREE.MeshStandardMaterial };
 
     // post: bloom of the glowing parts only (everything else painted black) ...
     this.bloomComposer = new EffectComposer(this.renderer);
@@ -346,7 +389,7 @@ export class Viewer {
       Carnelian: (s) => physical(s, { metalness: 0, roughness: 0.22, clearcoat: 1.0, clearcoatRoughness: 0.05, ior: 1.65 }),
       Crystal: (s) => physical(s, { color: new THREE.Color(0xf4f2ff), metalness: 0.05, roughness: 0.08, clearcoat: 1.0, clearcoatRoughness: 0.03, ior: 1.55, specularIntensity: 1.2 }),
       Obsidian: (s) => physical(s, { color: new THREE.Color(0x0b0b10), metalness: 0.15, roughness: 0.12, clearcoat: 1.0, clearcoatRoughness: 0.04 }),
-      Wood: (s) => { s.metalness = 0; s.roughness = 0.82; s.envMapIntensity = 0.55; s.color.multiplyScalar(0.85); return s; },
+      Wood: (s) => { s.metalness = 0; s.roughness = 0.82; s.envMapIntensity = 0.55; this.wood = { mat: s, base: s.color.clone() }; s.color.multiplyScalar(this.theme === "manuscript" ? 2.4 : 0.85); return s; },
     };
     const dial = (s: THREE.MeshStandardMaterial): THREE.Material => {
       s.metalness = 0.72; s.roughness = 0.66; s.envMapIntensity = 0.6; s.color.multiplyScalar(0.9);
@@ -391,6 +434,41 @@ export class Viewer {
         this.glowMats.set(m, glow);
       }
     });
+  }
+
+  /**
+   * The two versions of the exhibit share the machine and differ in the room around it:
+   * a gallery at night with one spot, or a scholar's room by day with parchment behind.
+   */
+  setTheme(name: Theme): void {
+    const m = name === "manuscript";
+    this.theme = name;
+    if (m && !this.envs.manuscript) this.envs.manuscript = this.pmrem.fromScene(studioEnvironment(), 0.02).texture;
+    this.scene.environment = m ? this.envs.manuscript! : this.envs.vitrine!;
+    this.scene.environmentIntensity = m ? 0.9 : 0.65;
+    (this.scene.background as THREE.Texture | null)?.dispose?.();
+    this.scene.background = wallTexture(name);
+    this.renderer.toneMappingExposure = m ? 1.0 : 0.85;
+    const L = this.lights;
+    L.key.intensity = m ? 1.4 : 2.2;
+    L.key.color.set(m ? 0xfff3e2 : 0xffe4bf);
+    L.fill.intensity = m ? 0.4 : 0.55;
+    L.rim.intensity = m ? 0.5 : 1.2;
+    L.frontRake.intensity = m ? 0.5 : 0.9;
+    L.backKey.intensity = m ? 1.2 : 1.9;
+    this.setMats.floor.color.set(m ? 0xcdbfa2 : 0x241d18);
+    this.setMats.floor.roughness = m ? 0.95 : 0.9;
+    this.setMats.plinth.color.set(m ? 0x8c8275 : 0x2a2624);
+    this.setMats.plinthTop.color.set(m ? 0xa59b8b : 0x3a3330);
+    const u = this.finalPass.material.uniforms;
+    u.vignette.value = m ? 0.2 : 0.5;
+    u.grain.value = m ? 0.02 : 0.035;
+    this.bloomBase = m ? 0.32 : 0.55;
+    if (this.wood) {                                               // the case reads as black lacquer against parchment otherwise
+      this.wood.mat.color.copy(this.wood.base).multiplyScalar(m ? 2.4 : 0.85);   // pale oak on the desk, not lacquer
+      this.wood.mat.envMapIntensity = m ? 0.8 : 0.55;
+      this.wood.mat.roughness = m ? 0.72 : 0.82;
+    }
   }
 
   resize(): void {
@@ -712,7 +790,7 @@ export class Viewer {
     this.bokeh.enabled = dof;
     if (dof) (this.bokeh.uniforms as Record<string, THREE.IUniform>).focus.value = this.camera.position.distanceTo(this.controls.target) * 0.98;
     const bloom = this.quality.bloom && this.bloomMeshes.size > 0 && this.fragmentOpacity < 0.98;
-    this.finalPass.material.uniforms.bloomStrength.value = bloom ? 0.55 : 0.0;
+    this.finalPass.material.uniforms.bloomStrength.value = bloom ? this.bloomBase : 0.0;
     if (bloom) this.renderBloom();
     this.composer.render();
   }

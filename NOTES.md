@@ -110,3 +110,11 @@ See README "Attributions" for licences.
   rms 0.3°, Saturn 1.2°, Jupiter 1.3°, Venus 1.8°, Mercury 4.9° (worst 12°), Mars 7.4° (worst 21°): the
   irreducible error of one epicycle against Mars's eccentric orbit, shown in "Against the real sky".
   The Moon's phase was already right by construction (pin at apogee at the epoch).
+- 2026-09-13 (afternoon) Stewart: the vitrine is "stunning", keep it no matter what; the manuscript is a
+  *separate version*, both preserved. Built as a theme in the same app so they never drift: `data-theme`
+  on <html> (chosen before paint from `?theme=` or localStorage), a `[data-theme="manuscript"]` token block
+  in style.css (parchment, iron-gall ink, red-ochre rubrics, gold leaf, verdigris ink; IM Fell English SC +
+  Cardo; an SVG feTurbulence fibre on the page), `Viewer.setTheme` (a second PMREM "studio" environment with
+  a north-light window, vellum wall texture, lighter floor/plinth/case wood, lower spot, exposure 1.0,
+  vignette 0.2, bloom 0.32) and ink palettes in the Sky view, the moon disc (hatched) and the chart.
+  The vitrine path is untouched: `setTheme("vitrine")` restores exactly the constructor values.

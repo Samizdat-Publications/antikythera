@@ -77,18 +77,24 @@ export function auditSaros(epochJdn: number, sarosMonth0: number, canon: { solar
   return a;
 }
 
-const DARK = { grid: "rgba(230, 210, 170, 0.08)", tick: "#a89c86", font: "Alegreya, Georgia, serif" };
+/** Chart colours follow the version: bronze and verdigris on lamp-black, or inks on parchment. */
+function palette() {
+  return document.documentElement.dataset.theme === "manuscript"
+    ? { grid: "rgba(60, 45, 30, 0.10)", tick: "#5a4a3a", font: "Cardo, Georgia, serif", moon: "#a8462c", moonMean: "rgba(168,70,44,0.35)", sun: "#3f7d6b" }
+    : { grid: "rgba(230, 210, 170, 0.08)", tick: "#a89c86", font: "Alegreya, Georgia, serif", moon: "#e8c27a", moonMean: "rgba(232,194,122,0.35)", sun: "#7fb8a8" };
+}
 
 export function drawErrorChart(canvas: HTMLCanvasElement, series: ErrorSeries, existing?: Chart): Chart {
   existing?.destroy();
+  const DARK = palette();
   const cfg: ChartConfiguration = {
     type: "line",
     data: {
       labels: series.years.map((y) => y.toFixed(1)),
       datasets: [
-        { label: "Moon, with the pin-and-slot", data: series.moonErr, borderColor: "#e8c27a", borderWidth: 1.2, pointRadius: 0, tension: 0 },
-        { label: "Moon, mean motion only", data: series.moonMeanErr, borderColor: "rgba(232,194,122,0.35)", borderWidth: 1, pointRadius: 0, tension: 0 },
-        { label: "Sun", data: series.sunErr, borderColor: "#7fb8a8", borderWidth: 1.2, pointRadius: 0, tension: 0 },
+        { label: "Moon, with the pin-and-slot", data: series.moonErr, borderColor: DARK.moon, borderWidth: 1.2, pointRadius: 0, tension: 0 },
+        { label: "Moon, mean motion only", data: series.moonMeanErr, borderColor: DARK.moonMean, borderWidth: 1, pointRadius: 0, tension: 0 },
+        { label: "Sun", data: series.sunErr, borderColor: DARK.sun, borderWidth: 1.2, pointRadius: 0, tension: 0 },
       ],
     },
     options: {

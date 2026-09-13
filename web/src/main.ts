@@ -1,4 +1,4 @@
-import { Viewer } from "./scene/viewer";
+import { Viewer, type Theme } from "./scene/viewer";
 import { EPOCHS, mechanismState, type MechanismState, type Calibration } from "./mech/mechanism";
 import { civilToJdn, formatJd, TROPICAL_YEAR } from "./astro/jd";
 import { drawMoon } from "./ui/moon";
@@ -77,14 +77,37 @@ loadCanon().then((c) => { canon = c; update(); refreshAnalytics(); });
 
 // ---- the sky it tracks: the small diagram in the column and the same thing over the stage
 const cosmos = new Cosmos([$<HTMLCanvasElement>("#cosmos"), $<HTMLCanvasElement>("#cosmos-stage")]);
-$("#cosmos-legend").replaceChildren(...cosmos.list.map((b) => {
-  const btn = document.createElement("button");
-  const dot = document.createElement("i"); dot.style.background = b.colour;
-  btn.append(dot, b.label);
-  btn.addEventListener("pointerenter", () => cosmos.hover(b.id));
-  btn.addEventListener("pointerleave", () => cosmos.hover(null));
-  return btn;
-}));
+function buildLegend(): void {
+  $("#cosmos-legend").replaceChildren(...cosmos.list.map((b) => {
+    const btn = document.createElement("button");
+    const dot = document.createElement("i"); dot.style.background = b.colour;
+    btn.append(dot, b.label);
+    btn.addEventListener("pointerenter", () => cosmos.hover(b.id));
+    btn.addEventListener("pointerleave", () => cosmos.hover(null));
+    return btn;
+  }));
+}
+buildLegend();
+
+// ---- two versions of the exhibit: the vitrine (default) and the manuscript, both always kept
+function currentTheme(): Theme { return document.documentElement.dataset.theme === "manuscript" ? "manuscript" : "vitrine"; }
+function applyTheme(t: Theme, persist = true): void {
+  if (t === "manuscript") document.documentElement.dataset.theme = "manuscript";
+  else delete document.documentElement.dataset.theme;
+  document.querySelectorAll<HTMLButtonElement>(".theme-switch [data-theme]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.theme === t)));
+  viewer.setTheme(t);
+  cosmos.setTheme(t);
+  buildLegend();
+  if (persist) {
+    try { localStorage.setItem("am_theme", t); } catch { /* ignore */ }
+    const url = new URL(location.href);
+    if (t === "manuscript") url.searchParams.set("theme", "manuscript"); else url.searchParams.delete("theme");
+    history.replaceState(null, "", url);
+  }
+  if (viewer.graph) { refreshAnalytics(); update(true); }
+}
+document.querySelectorAll<HTMLButtonElement>(".theme-switch [data-theme]").forEach((b) => b.addEventListener("click", () => applyTheme(b.dataset.theme as Theme)));
+applyTheme(currentTheme(), false);
 const stageEl = $(".stage");
 function setSky(on: boolean): void {
   stageEl.classList.toggle("sky", on);
@@ -314,7 +337,7 @@ function update(force = false): void {
   } catch (e) {
     setDl($("#sky-dl"), [["ephemeris", String(e)]]);
   }
-  drawMoon($<HTMLCanvasElement>("#moon"), s.elongation);
+  drawMoon($<HTMLCanvasElement>("#moon"), s.elongation, currentTheme() === "manuscript");
   eclipsePanel(s);
   if (s.sarosCell !== lastSarosCell) {
     if (lastSarosCell >= 0 && GLYPHS.has(s.sarosCell)) tour.chime();

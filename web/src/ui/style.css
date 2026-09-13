@@ -174,3 +174,63 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
   .onboard-body { font-size: 14.5px; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+/* ==========================================================================================
+   Hellenistic manuscript: the second version. Parchment and iron-gall ink, rubrics in red
+   ochre, gold leaf for the Sun, verdigris ink for the sky. The vitrine above is untouched;
+   this block only re-tints the tokens and the few surfaces that carry their own colour. */
+[data-theme="manuscript"] {
+  --bg: oklch(0.905 0.032 82);          /* parchment ground */
+  --bg-2: oklch(0.88 0.034 80);
+  --paper: oklch(0.935 0.028 84);       /* the page */
+  --line: oklch(0.64 0.05 60);          /* a faded ink rule */
+  --line-soft: oklch(0.82 0.035 76);
+  --ink: oklch(0.25 0.035 52);          /* iron-gall ink */
+  --ink-dim: oklch(0.42 0.04 52);
+  --ink-faint: oklch(0.57 0.035 58);
+  --bronze: oklch(0.50 0.15 32);        /* red ochre: the rubrics */
+  --bronze-2: oklch(0.40 0.11 32);
+  --accent: oklch(0.44 0.17 30);
+  --verdigris: oklch(0.47 0.08 170);
+  --sun: oklch(0.60 0.13 82);           /* gold leaf */
+  --font-display: "IM Fell English SC", "Cardo", "Palatino Linotype", "Book Antiqua", serif;
+  --font-body: "Cardo", "Palatino Linotype", Georgia, serif;
+  --parchment-fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.36  0 0 0 0 0.26  0 0 0 0 0.12  0 0 0 0.10 0'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+[data-theme="manuscript"] body { font-size: 16px; }
+[data-theme="manuscript"] .topbar { background: var(--paper); background-image: var(--parchment-fibre); border-bottom-color: var(--line); }
+[data-theme="manuscript"] .brand-title { letter-spacing: 0.22em; font-size: 22px; }
+[data-theme="manuscript"] #date-main { font-size: 25px; }
+[data-theme="manuscript"] .panels { background: var(--paper); background-image: var(--parchment-fibre); }
+[data-theme="manuscript"] .stage { background: var(--bg); background-image: var(--parchment-fibre); }
+[data-theme="manuscript"] .panel h2, [data-theme="manuscript"] .panel summary { text-transform: none; letter-spacing: 0.1em; font-size: 16px; }
+[data-theme="manuscript"] .panel summary .hint { font-size: 13.5px; }
+[data-theme="manuscript"] .panel:not(:first-child) { border-top: 1px solid var(--line-soft); }
+[data-theme="manuscript"] .grid dd, [data-theme="manuscript"] .ecl-row .v { font-variant-numeric: lining-nums tabular-nums; }
+[data-theme="manuscript"] .primary { background: var(--bronze); color: oklch(0.96 0.02 84); letter-spacing: 0.06em; font-size: 15px; }
+[data-theme="manuscript"] .primary:hover { background: var(--accent); }
+[data-theme="manuscript"] .primary[aria-pressed="true"] { background: var(--bronze-2); color: oklch(0.96 0.02 84); }
+[data-theme="manuscript"] select option { background: var(--paper); }
+[data-theme="manuscript"] .seg { background: oklch(0.95 0.025 84 / 0.85); }
+[data-theme="manuscript"] .seg button:hover, [data-theme="manuscript"] .seg button[aria-pressed="true"] { background: oklch(0.86 0.04 78); }
+[data-theme="manuscript"] .chk, [data-theme="manuscript"] .exhibit[open] summary, [data-theme="manuscript"] .exhibit-body { background: oklch(0.95 0.025 84 / 0.9); }
+[data-theme="manuscript"] .train:hover, [data-theme="manuscript"] .train.focus, [data-theme="manuscript"] .train[aria-pressed="true"] { background: oklch(0.88 0.04 78); }
+[data-theme="manuscript"] .panel.focus { background: oklch(0.88 0.04 78); box-shadow: 0 0 0 22px oklch(0.88 0.04 78); }
+[data-theme="manuscript"] .onboard { background: oklch(0.945 0.027 84 / 0.97); background-image: var(--parchment-fibre); border-color: var(--line); box-shadow: 0 1px 0 oklch(0.7 0.04 70 / 0.35); }
+[data-theme="manuscript"] .onboard-title { font-size: 22px; }
+[data-theme="manuscript"] #moon { background: var(--paper); border: 1px solid var(--line); }
+[data-theme="manuscript"] .cosmos-panel { background: var(--paper); background-image: var(--parchment-fibre); border-color: var(--line); }
+[data-theme="manuscript"] .cosmos-stage { background: var(--bg); background-image: var(--parchment-fibre); }
+[data-theme="manuscript"] .loading { color: var(--bronze); }
+[data-theme="manuscript"] .hover .name { color: var(--bronze); }
+[data-theme="manuscript"] .verdict-miss { color: oklch(0.55 0.14 60); }
+[data-theme="manuscript"] .foot .src { color: var(--verdigris); }
+[data-theme="manuscript"] :focus-visible { outline-color: var(--bronze); }
+[data-theme="manuscript"] .theme-switch button[aria-pressed="true"] { color: var(--bronze); }
+
+/* the version switch in the top bar: two exhibits of the same machine */
+.theme-switch { display: inline-flex; gap: 0; border: 1px solid var(--line); border-radius: 3px; overflow: hidden; }
+.theme-switch button { background: transparent; border: 0; border-right: 1px solid var(--line); padding: 5px 10px; font-size: 13px; color: var(--ink-dim); }
+.theme-switch button:last-child { border-right: 0; }
+.theme-switch button[aria-pressed="true"] { color: var(--accent); background: oklch(0.24 0.02 66); }
+[data-theme="manuscript"] .theme-switch button[aria-pressed="true"] { background: oklch(0.86 0.04 78); }
