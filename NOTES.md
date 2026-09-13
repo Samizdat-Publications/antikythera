@@ -118,3 +118,33 @@ See README "Attributions" for licences.
   a north-light window, vellum wall texture, lighter floor/plinth/case wood, lower spot, exposure 1.0,
   vignette 0.2, bloom 0.32) and ink palettes in the Sky view, the moon disc (hatched) and the chart.
   The vitrine path is untouched: `setTheme("vitrine")` restores exactly the constructor values.
+- 2026-09-13 (late afternoon) Stewart: the manuscript "turned out to be the better one, almost perfect"; push it.
+  The stage is now a plate in the codex: the two canvases sit in a `.plate` wrapper (both versions;
+  the vitrine draws nothing on it), the manuscript sets it in from the page inside a double rule
+  (outline + box-shadow rings) and captions it underneath from `main.ts caption()`: a plate number in
+  HUD order (Front I, Back II, Three-quarter III, Crank IV, Sky V; pin-and-slot VI, top VII, Fragment A
+  VIII), how the machine is seen, its state ("opened", "the Mars train alone") and the date its pointers
+  are set to, refreshed at the column's 4 Hz. The walkthrough card numbers its leaves in lower-case
+  roman and opens each with a red-ochre versal (`::first-letter`); sections in the column are parted by
+  a hedera (U+2766, the ivy leaf of Greek and Roman inscriptions) instead of a rule; every box is square.
+  The front plate's "tarnish" on parchment turned out to be the *albedo* map (mean 0.78/0.55/0.28, a
+  ±25 % mottle), not the roughness map: a `mapMix` uniform in the PlateBronze shader now blends each
+  texel toward the map's mean (0.35 in the manuscript, 1.0 in the vitrine), with colour ×0.98 instead of
+  ×0.72 and roughness 1.05 instead of 1.35. The no-AO material clones keep the shader hook now (the AO
+  block is behind USE_COLOR anyway) so the plate meshes without a bake get the same blend. The vellum
+  wall is a 1024 px canvas with per-pixel noise and 700 short fibres, so it no longer reads as a CG
+  gradient. Motion: (1) the **overture** on load, `Viewer.assemble()`: the plates, dials and case start
+  lifted (the Inside state, unanimated), every gear node is pushed out along Z by 2.8× its world depth
+  (a wheel on a carrier gets the difference from its carrier's push), and slides home with an ease-out
+  quint over 1.7 s after a delay of up to 0.95 s proportional to depth, so the stack builds outward from
+  the main wheel; the camera starts side-on (3.3, 1.15, 0.45 × the iso preset) where the spread along
+  the arbors shows and dollies in over 3.8 s; `onAssembled` hands back to main.ts, which closes the
+  plates (the reveal reversed, 1.1 s) and then shows the invitation or starts the crank at a month a
+  second 1.6 s later. Skipped under prefers-reduced-motion. (2) **Drag the crank**: hovering any part of
+  a1 (knob, arm, axle, even through the case board) shows "drag the handle to wind it" and a grab cursor;
+  pointerdown takes the pointer's angle about the crank's projected centre and each move turns the
+  machine by Δangle/2π/(223/48) years, sign from which side of the crank the camera is; OrbitControls are
+  off for the drag and winding by hand stops the motor. Verified in the browser: two turns of the handle
+  = 0.4305 years exactly. Testing gotcha: with the Browser pane hidden, requestAnimationFrame is
+  throttled and `Vector3.project(camera)` reads stale matrices; a test must call `viewer.render()`
+  itself between moves, or its screen angles and the viewer's disagree.

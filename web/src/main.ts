@@ -433,6 +433,10 @@ $("#case").addEventListener("change", applyVisibility);
 document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) =>
   b.addEventListener("click", () => { setSky(false); viewer.view(b.dataset.view as string); }),
 );
+viewer.onCrank = (dy) => {                                            // winding by hand stops the motor
+  if (playing) setPlaying(false);
+  setYears(years + dy, true);
+};
 viewer.onView = (name) => {
   const base = name.split("-")[0];
   document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.view === base)));
@@ -466,6 +470,7 @@ viewer.onHover = (id) => {
     hover.append(el("meta", `${n.teeth} teeth · ${turns}`));
   }
   if (n?.status) hover.append(el("tag", n.status));
+  if (id === "a1") hover.append(el("tag", "drag the handle to wind it"));
   hover.append(el("id", id));
 };
 
@@ -473,7 +478,7 @@ function loop(now: number): void {
   if (playing) {
     setYears(years + ((now - last) / 1000) * speed);
   }
-  tour.crankRunning(playing);
+  tour.crankRunning(playing || viewer.cranking);
   last = now;
   viewer.render();
   cosmos.draw();

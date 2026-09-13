@@ -215,6 +215,7 @@ const PRESETS: Record<string, Preset> = {
   "top": [[0, 560, 1], [0, 0, 0]],
 };
 const BLOOM_NAMES = /^(sun_ball|stone_|moon_ball)/;
+const CRANK_TURNS_PER_YEAR = 223 / 48;                 // the crown wheel against the main wheel
 
 export class Viewer {
   readonly renderer: THREE.WebGLRenderer;
@@ -255,6 +256,10 @@ export class Viewer {
   /** The overture: every wheel spread along its arbor, sliding together layer by layer. */
   private assembly: { start: number; items: { o: THREE.Object3D; z0: number; off: number; delay: number }[]; ms: number } | null = null;
   onAssembled: (() => void) | null = null;
+  /** Dragging the crank handle round turns the machine: called with the years moved (signed). */
+  onCrank: ((deltaYears: number) => void) | null = null;
+  private crankDrag: { last: number; sign: number } | null = null;
+  get cranking(): boolean { return !!this.crankDrag; }
   /** The "Inside" reveal: plates, dials and case lifting away over ~1.1 s. */
   private reveal: { on: boolean; start: number; items: RevealItem[] } | null = null;
   private insideOn = false;
@@ -388,6 +393,34 @@ export class Viewer {
       this.pointerDirty = true;
     });
     opts.canvas.addEventListener("pointerleave", () => { this.pointer.set(9, 9); this.pointerDirty = true; });
+    // the crank: take hold of the handle and wind it round; the pointer's angle about the crank's centre is the crank's angle
+    opts.canvas.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0 || this.hovered !== "a1" || !this.graph) return;
+      const sign = this.camera.position.x >= 66 ? 1 : -1;            // seen from the other side it winds the other way
+      this.crankDrag = { last: this.crankAngle(e), sign };
+      this.controls.enabled = false;
+      try { opts.canvas.setPointerCapture(e.pointerId); } catch { /* a synthetic pointer has no capture */ }
+      opts.canvas.style.cursor = "grabbing";
+      e.preventDefault();
+    });
+    opts.canvas.addEventListener("pointermove", (e) => {
+      const d = this.crankDrag;
+      if (!d) return;
+      const a = this.crankAngle(e);
+      let delta = a - d.last;
+      if (delta > Math.PI) delta -= 2 * Math.PI; else if (delta < -Math.PI) delta += 2 * Math.PI;
+      d.last = a;
+      this.lastInput = performance.now();
+      this.onCrank?.((d.sign * delta) / (2 * Math.PI) / CRANK_TURNS_PER_YEAR);
+    });
+    const release = () => {
+      if (!this.crankDrag) return;
+      this.crankDrag = null;
+      this.controls.enabled = true;
+      opts.canvas.style.cursor = this.hovered === "a1" ? "grab" : "";
+    };
+    opts.canvas.addEventListener("pointerup", release);
+    opts.canvas.addEventListener("pointercancel", release);
     this.resize();
     addEventListener("resize", () => this.resize());
     new ResizeObserver(() => this.resize()).observe(opts.canvas.parentElement ?? opts.canvas);
@@ -660,6 +693,16 @@ export class Viewer {
     this.setView(name);
   }
 
+  /** Screen angle of the pointer about the crank's projected centre (clockwise positive, as on screen). */
+  private crankAngle(e: PointerEvent): number {
+    const c = this.graph?.get("a1")?.object;
+    const r = this.opts.canvas.getBoundingClientRect();
+    if (!c) return 0;
+    const p = c.getWorldPosition(new THREE.Vector3()).project(this.camera);
+    const cx = r.left + ((p.x + 1) / 2) * r.width, cy = r.top + ((1 - p.y) / 2) * r.height;
+    return Math.atan2(e.clientY - cy, e.clientX - cx);
+  }
+
   private setView(name: string): void {
     if (name === this.currentView) return;
     this.currentView = name;
@@ -712,6 +755,7 @@ export class Viewer {
       this.hovered = id;
       this.setHighlight(obj);
       this.onHover?.(id);
+      if (!this.crankDrag) this.opts.canvas.style.cursor = id === "a1" ? "grab" : "";
     }
   }
 

@@ -1,6 +1,6 @@
 # Where things stand, and what's next
 
-_Updated 2026-09-13, afternoon (manuscript version added). Read this first in a new session._
+_Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, drag-the-crank). Read this first in a new session._
 
 ## Done and live
 
@@ -49,16 +49,29 @@ _Updated 2026-09-13, afternoon (manuscript version added). Read this first in a 
    (true Sun 0.3°, Saturn 1.2°, Jupiter 1.3°, Venus 1.8°, Mercury 4.9°, Mars 7.4° rms) are shown
    in "Against the real sky".
 
+## Done 13 Sep, late afternoon (Stewart: the manuscript is "almost perfect"; push it)
+
+6. **The manuscript as a codex plate** (NOTES.md): the stage set in from the page inside a double
+   rule with a numbered caption beneath ("Plate III · The mechanism seen three-quarter on, set to
+   12 May 205 BC"; Sky = Plate V, opened / train alone / Fragment A all captioned); roman leaves and
+   a red-ochre versal on the walkthrough; hederae between the column's sections; square boxes; the
+   plate's tarnish blended toward bronze on parchment (a `mapMix` shader uniform); fibre in the wall.
+7. **The overture**: on every load the machine arrives in pieces, every wheel spread along its
+   arbor, and slides home layer by layer while the camera walks in from the side; the plates close
+   over it, then the invitation or the crank. Both versions. Skipped under reduced motion.
+8. **Drag the crank**: hover the handle ("drag the handle to wind it", grab cursor) and wind it
+   round; the machine follows the handle, forwards or back, and the motor stops.
+
 ## Backlog, in priority order
 
-0. ~~Manuscript theme~~ DONE 2026-09-13 afternoon: `?theme=manuscript`, top-bar switch; both
-   versions kept (NOTES.md). Still to taste: the front plate's tarnish reads heavier on parchment;
-   a ruled frame and a caption under the stage would make it more of a plate in a codex; the
-   walkthrough card could carry a rubricated initial.
-1. **More motion where the machine moves**: an exploded "assembly" on first load (gears sliding
-   onto arbors along Z; `gears.json` has the layers), pointer trails on the front dial at ten
-   years per second, a dimmed-gallery beat with the chime when a Saros glyph and NASA agree,
-   per-step lighting changes in the walkthrough, drag-the-crank scrubbing, URL state.
+0. ~~Manuscript theme~~ DONE. ~~Plate tarnish, ruled frame + caption, rubricated initial~~ DONE.
+   Still to taste in the manuscript: the plinth is a grey stone block (a scholar's table would
+   suit the room better); the Sky view's trails could be drawn as pen strokes with a little
+   pressure variation; the top bar's buttons are still web buttons.
+1. **More motion where the machine moves**: ~~assembly on load~~ DONE, ~~drag-the-crank~~ DONE.
+   Left: pointer trails on the front dial at ten years per second, a dimmed-gallery beat with the
+   chime when a Saros glyph and NASA agree, per-step lighting changes in the walkthrough, URL state
+   (`?view=`, `?years=`), the overture once more from the Exhibit menu ("take it apart").
 2. **Lighting phase d**: a real HDRI (Poly Haven, CC0) if he wants it; ask before downloading.
    Also re-render the hero images after any material change (`blender/hero_render.py`, ~3 min).
 3. **Tablet/mobile**: aspect-aware camera framing per preset; the Sky view on narrow screens.

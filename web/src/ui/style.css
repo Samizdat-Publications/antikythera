@@ -210,7 +210,13 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 [data-theme="manuscript"] .stage { background: var(--bg); background-image: var(--parchment-fibre); }
 [data-theme="manuscript"] .panel h2, [data-theme="manuscript"] .panel summary { text-transform: none; letter-spacing: 0.1em; font-size: 16px; }
 [data-theme="manuscript"] .panel summary .hint { font-size: 13.5px; }
-[data-theme="manuscript"] .panel:not(:first-child) { border-top: 1px solid var(--line-soft); }
+/* sections are parted by a hedera, the ivy leaf of Greek and Roman inscriptions, not a rule */
+[data-theme="manuscript"] .panel { border-top: 0; padding-top: 6px; }
+[data-theme="manuscript"] .panel:not(:first-child)::before { content: "\2766"; display: block; text-align: center; color: var(--line); font-size: 14px; line-height: 1; margin: 6px 0 16px; }
+[data-theme="manuscript"] .panel:first-child { padding-top: var(--space-lg); }
+/* ruled boxes, not rounded ones */
+[data-theme="manuscript"] .seg, [data-theme="manuscript"] .chk, [data-theme="manuscript"] .mini, [data-theme="manuscript"] select, [data-theme="manuscript"] .primary,
+[data-theme="manuscript"] input[type=number], [data-theme="manuscript"] .theme-switch, [data-theme="manuscript"] .exhibit summary, [data-theme="manuscript"] .exhibit-body { border-radius: 0; }
 [data-theme="manuscript"] .grid dd, [data-theme="manuscript"] .ecl-row .v { font-variant-numeric: lining-nums tabular-nums; }
 [data-theme="manuscript"] .primary { background: var(--bronze); color: oklch(0.96 0.02 84); letter-spacing: 0.06em; font-size: 15px; }
 [data-theme="manuscript"] .primary:hover { background: var(--accent); }
