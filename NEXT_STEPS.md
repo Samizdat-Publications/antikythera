@@ -27,11 +27,16 @@ _Updated 2026-09-13 (late evening). Read this first in a new session._
   alignment to the main wheel b1 (rotation/offset constants in `web/src/scene/viewer.ts`)
   may still need tuning by eye.
 
-## In flight
+## Done since the handoff was first written (night of 2026-09-13)
 
-- A `/critique` design review was running (two assessments: LLM design-director review
-  and the `impeccable` detector). If their reports are not in NOTES.md, re-run
-  `/critique web/index.html web/src/ui/style.css` from the antikythera folder.
+- Critique run and acted on (summary in NOTES.md). Museum-vitrine restyle shipped: Marcellus +
+  Alegreya, catalogue column, collapsed advanced sections, primary crank button, stable
+  readouts while playing, walkthrough docked under the stage, human names on hover.
+- Lighting phase (a) shipped: warm gallery PMREM environment, shadow-casting key lights front
+  and back, GTAO ambient occlusion, physical bronze. Phases (b)–(e) below remain.
+- Fragment A crossfade slider is live (scan pose baked in `Viewer.FRAGMENT_POSE`; in-plane
+  rotation/offset could still be refined by eye against the main wheel).
+- Re-run `/critique` to get a new heuristic score after the restyle.
 
 ## Backlog, in priority order
 
@@ -51,13 +56,11 @@ _Updated 2026-09-13 (late evening). Read this first in a new session._
       downloading.
    e. Blender hero renders: Cycles with an HDRI and area lights for the README / social images.
 
-1. **Design pass to "museum vitrine"** (`/polish`, `/typeset`, `/layout`, `/colorize`):
-   replace the generic dark-card look. Fonts: drop Cormorant Garamond and IBM Plex Mono
-   (reflex fonts); candidates checked on Google Fonts: Marcellus or Cinzel for lapidary
-   titles, Alegreya / Alegreya Sans for labels and prose (Alegreya has Greek); tabular
-   lining figures for readouts. Panels as wall labels / catalogue cards; collapse
-   analytics, gear trains, back dials by default; the stage gets gallery lighting.
-2. **Fragment A crossfade** once the scan is downloaded (see above).
+1. **Second design pass** (`/polish`): re-run the critique; likely leftovers are the
+   segmented view buttons not tracking preset views, the moon disc styling, tablet layout,
+   and the hover label when nothing is hovered.
+2. **Fragment A alignment**: fine-tune `Viewer.FRAGMENT_POSE` so the scan's main wheel sits
+   exactly on b1 (compare the 4 spokes); consider fading the reconstruction out gradually.
 3. **Onboarding polish**: tighter close-up camera for the pin-and-slot step (target the
    k1/k2 pair at (15,-10,-25) mm from ~120 mm away), a "why epoch" diagram, keyboard hints.
 4. **Manuscript theme** (light parchment/ink) as a toggle; A-B with the vitrine.

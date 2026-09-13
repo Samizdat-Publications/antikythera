@@ -32,6 +32,8 @@ function galleryEnvironment(): THREE.Scene {
   panel(6, 4, 0x9fb4c8, 1.4, [7, 2, 3], [0, 0, 0]);        // fill, cool, right
   panel(9, 0.6, 0xffc98a, 5.0, [0, 6, -7], [0, 0, 0]);     // rim strip, behind and above
   panel(3, 3, 0xfff1dc, 2.0, [0, -5.5, 4], [0, 0, 0]);     // floor bounce
+  panel(5, 6, 0xffe2b8, 5.5, [6, 5, -5], [0, 0, 0]);       // second key for the back dials
+  panel(6, 4, 0x9fb4c8, 1.2, [-7, 2, -3], [0, 0, 0]);      // cool fill behind
   return s;
 }
 import { GearGraph } from "../mech/gearGraph";
@@ -144,8 +146,8 @@ export class Viewer {
           if ("envMapIntensity" in std) {
             std.envMapIntensity = 0.9;
             if (std.map) {                                   // engraved dial faces and wood
-              std.metalness = name === "Wood" ? 0.0 : 0.7;
-              std.roughness = name === "Wood" ? 0.75 : 0.5;
+              std.metalness = name === "Wood" ? 0.0 : 0.5;
+              std.roughness = name === "Wood" ? 0.75 : 0.55;
               if (std.bumpMap) std.bumpScale = 1.4;
             }
           }
