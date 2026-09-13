@@ -61,8 +61,11 @@ const viewer = new Viewer({
   },
 });
 // the overture has finished (the wheels are home): close the plates, then invite or start the crank
+let overtureDone = false;
 viewer.onAssembled = () => {
   applyVisibility();
+  if (overtureDone) return;                                           // "taken apart" unticked later: the plates close, nothing else
+  overtureDone = true;
   if (firstVisit()) {
     // no autoplay: the invitation is one label over the exhibit, and narration starts from that click
     $("#begin").hidden = false;
@@ -151,7 +154,8 @@ function caption(): void {
   const v = PLATES[viewer.currentView];
   const ids = viewer.isolatedTrain;
   const train = ids.length ? TRAINS.find((t) => t.gears.length === ids.length && t.gears.every((x, i) => x === ids[i])) : undefined;
-  const state = train ? `, the ${train.name} train alone` : $<HTMLInputElement>("#xray").checked && viewer.currentView !== "pinslot" ? ", opened" : "";
+  const apart = $<HTMLInputElement>("#apart").checked;
+  const state = apart ? ", taken apart" : train ? `, the ${train.name} train alone` : $<HTMLInputElement>("#xray").checked && viewer.currentView !== "pinslot" ? ", opened" : "";
   el.innerHTML = `${v ? no(v[0]) : ""}The mechanism ${v ? v[1] : "as you have turned it"}${state}, set to ${date}`;
 }
 $("#sky-btn").addEventListener("click", () => setSky(!stageEl.classList.contains("sky")));
@@ -196,7 +200,7 @@ const onboarding = new Onboarding({
     if (r) setYears((r.jd - epoch.jdn) / TROPICAL_YEAR);
   },
   setEpoch: (id) => { $<HTMLSelectElement>("#epoch").value = id; $<HTMLSelectElement>("#epoch").dispatchEvent(new Event("change")); },
-  reset: () => { viewer.isolate([]); $<HTMLInputElement>("#xray").checked = false; applyVisibility(); setPlaying(false, 1); viewer.view("iso"); },
+  reset: () => { viewer.isolate([]); $<HTMLInputElement>("#xray").checked = false; $<HTMLInputElement>("#apart").checked = false; applyVisibility(); setPlaying(false, 1); viewer.view("iso"); },
 });
 addEventListener("keydown", (e) => {                                   // space turns the crank, unless a field has focus
   const t = e.target as HTMLElement | null;
@@ -389,9 +393,11 @@ function update(force = false): void {
 function applyVisibility(): void {
   const g = viewer.graph;
   if (!g) return;
-  const inside = $<HTMLInputElement>("#xray").checked || viewer.fragmentShown;
+  const apart = $<HTMLInputElement>("#apart").checked;
+  const inside = $<HTMLInputElement>("#xray").checked || viewer.fragmentShown || apart;
   const caseBox = $<HTMLInputElement>("#case");
   viewer.setCase(caseBox.checked);
+  viewer.setApart(apart);
   viewer.setInside(inside);
   caseBox.disabled = inside;                                          // the case is already off the plinth
   viewer.setAOStrength(inside ? 0.45 : 0.9);
@@ -430,6 +436,7 @@ $<HTMLInputElement>("#fragment").addEventListener("input", (e) => {
   viewer.loadFragment("./models/fragment_a.glb").then(() => { viewer.setFragmentOpacity(a); applyVisibility(); });
 });
 $("#case").addEventListener("change", applyVisibility);
+$("#apart").addEventListener("change", applyVisibility);
 document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) =>
   b.addEventListener("click", () => { setSky(false); viewer.view(b.dataset.view as string); }),
 );

@@ -253,8 +253,11 @@ export class Viewer {
   private bloomBase = 0.55;
   private wood: { mat: THREE.MeshStandardMaterial; base: THREE.Color } | null = null;
   private plate: { mat: THREE.MeshPhysicalMaterial; base: THREE.Color } | null = null;
-  /** The overture: every wheel spread along its arbor, sliding together layer by layer. */
-  private assembly: { start: number; items: { o: THREE.Object3D; z0: number; off: number; delay: number }[]; ms: number } | null = null;
+  /** Every wheel pushed out along its arbor: built once from the graph; `f` is how far out each one is (0 home, 1 apart). */
+  private apartItems: { o: THREE.Object3D; z0: number; off: number; wz: number; f: number }[] | null = null;
+  private apartTween: { start: number; ms: number; to: number; from: number[]; delays: number[] } | null = null;
+  private apartTarget = 0;
+  /** Fired when a slide home finishes (the overture, or the "taken apart" box unticked). */
   onAssembled: (() => void) | null = null;
   /** Dragging the crank handle round turns the machine: called with the years moved (signed). */
   onCrank: ((deltaYears: number) => void) | null = null;
@@ -559,44 +562,67 @@ export class Viewer {
    * main wheel outwards; `onAssembled` then lets the plates, dials and case close over it.
    */
   assemble(): void {
-    const g = this.graph;
-    if (!g || !this.root) return;
+    if (!this.graph || !this.root) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) { setTimeout(() => this.onAssembled?.(), 0); return; }
-    this.setInside(true, false);
+    this.setApart(true, false);
     const [p] = PRESETS.iso;                                        // walk in from the side, where the spread along the arbors shows
     this.camera.position.set(p[0] * 3.3, p[1] * 1.15, p[2] * 0.45);
+    this.setApart(false, true);
+  }
+  get assembling(): boolean { return !!this.apartTween; }
+  get apart(): boolean { return this.apartTarget === 1; }
+
+  /**
+   * "Taken apart": every wheel out along its arbor, still turning, so all 69 can be seen at once
+   * (implies Inside); off, they slide home again. Staggered by depth: outermost first going out,
+   * innermost first coming home, as a hand would do it.
+   */
+  setApart(on: boolean, animate = true): void {
+    if (!this.graph || !this.root) return;
+    const to = on ? 1 : 0;
+    if (to === this.apartTarget && !this.apartTween) return;
+    this.apartTarget = to;
+    if (on) this.setInside(true);
+    const items = this.apartItems ?? (this.apartItems = this.buildApart());
+    if (!animate || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      for (const it of items) { it.f = to; it.o.position.z = it.z0 + it.off * it.f; }
+      this.apartTween = null;
+      if (!on) setTimeout(() => this.onAssembled?.(), 0);
+      return;
+    }
+    const zmax = Math.max(1, ...items.map((it) => it.wz));
+    this.apartTween = { start: performance.now(), ms: 1700, to, from: items.map((it) => it.f), delays: items.map((it) => 950 * (on ? 1 - it.wz / zmax : it.wz / zmax)) };
+  }
+
+  private buildApart(): NonNullable<typeof this.apartItems> {
     const K = 2.8, world = new THREE.Vector3();
-    const isNode = new Set<THREE.Object3D>([...g.nodes.values()].map((n) => n.object));
+    const isNode = new Set<THREE.Object3D>([...this.graph!.nodes.values()].map((n) => n.object));
     const want = new Map<THREE.Object3D, number>();
-    const items: { o: THREE.Object3D; z0: number; off: number; delay: number; wz: number }[] = [];
-    let zmax = 1;
-    this.root.traverse((o) => {                                     // preorder: a wheel's carrier is placed before it
+    const items: NonNullable<typeof this.apartItems> = [];
+    this.root!.traverse((o) => {                                    // preorder: a wheel's carrier is placed before it
       if (!isNode.has(o)) return;
       o.getWorldPosition(world);
       const w = K * world.z;
       let inherited = 0;
       for (let p = o.parent; p; p = p.parent) { const v = want.get(p); if (v !== undefined) { inherited = v; break; } }
       want.set(o, w);
-      zmax = Math.max(zmax, Math.abs(world.z));
-      items.push({ o, z0: o.position.z, off: w - inherited, delay: 0, wz: Math.abs(world.z) });
+      items.push({ o, z0: o.position.z, off: w - inherited, wz: Math.abs(world.z), f: 0 });
     });
-    for (const it of items) { it.delay = 950 * (it.wz / zmax); it.o.position.z = it.z0 + it.off; }
-    this.assembly = { start: performance.now(), items, ms: 1700 };
+    return items;
   }
-  get assembling(): boolean { return !!this.assembly; }
 
-  private stepAssembly(now: number): void {
-    const a = this.assembly;
-    if (!a) return;
-    const t = now - a.start;
+  private stepApart(now: number): void {
+    const tw = this.apartTween, items = this.apartItems;
+    if (!tw || !items) return;
     let done = true;
-    for (const it of a.items) {
-      const u = Math.max(0, Math.min(1, (t - it.delay) / a.ms));
+    items.forEach((it, i) => {
+      const u = Math.max(0, Math.min(1, (now - tw.start - tw.delays[i]) / tw.ms));
       if (u < 1) done = false;
       const e = 1 - Math.pow(1 - u, 5);                            // ease-out quint: the wheel seats itself
-      it.o.position.z = it.z0 + it.off * (1 - e);
-    }
-    if (done) { this.assembly = null; this.onAssembled?.(); }
+      it.f = tw.from[i] + (tw.to - tw.from[i]) * e;
+      it.o.position.z = it.z0 + it.off * it.f;
+    });
+    if (done) { this.apartTween = null; if (tw.to === 0) this.onAssembled?.(); }
   }
 
   resize(): void {
@@ -919,10 +945,10 @@ export class Viewer {
     if (this.lastFrame) this.autoQuality(now - this.lastFrame);
     this.lastFrame = now;
     this.stepTween(now);
-    this.stepAssembly(now);
+    this.stepApart(now);
     this.stepReveal(now);
     // a visitor left alone drifts slowly round the case
-    if (!this.tween && !this.reveal && !this.assembly && !this.controls.autoRotate && now - this.lastInput > 12000 && ["iso", "front", "back", "free"].includes(this.currentView)) this.controls.autoRotate = true;
+    if (!this.tween && !this.reveal && !this.apartTween && !this.controls.autoRotate && now - this.lastInput > 12000 && ["iso", "front", "back", "free"].includes(this.currentView)) this.controls.autoRotate = true;
     this.controls.update();
     this.pick(now);
     this.gtao.enabled = this.quality.gtao;

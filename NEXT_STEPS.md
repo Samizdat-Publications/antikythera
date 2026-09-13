@@ -61,6 +61,8 @@ _Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, d
    over it, then the invitation or the crank. Both versions. Skipped under reduced motion.
 8. **Drag the crank**: hover the handle ("drag the handle to wind it", grab cursor) and wind it
    round; the machine follows the handle, forwards or back, and the motor stops.
+9. **Taken apart** (Exhibit ▾): every wheel out along its arbor and still turning, so all 69 can
+   be watched at once; untick and they slide home. The overture is the same state played once.
 
 ## Backlog, in priority order
 
@@ -71,7 +73,7 @@ _Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, d
 1. **More motion where the machine moves**: ~~assembly on load~~ DONE, ~~drag-the-crank~~ DONE.
    Left: pointer trails on the front dial at ten years per second, a dimmed-gallery beat with the
    chime when a Saros glyph and NASA agree, per-step lighting changes in the walkthrough, URL state
-   (`?view=`, `?years=`), the overture once more from the Exhibit menu ("take it apart").
+   (`?view=`, `?years=`). ~~Take it apart from the Exhibit menu~~ DONE (a state, not a replay).
 2. **Lighting phase d**: a real HDRI (Poly Haven, CC0) if he wants it; ask before downloading.
    Also re-render the hero images after any material change (`blender/hero_render.py`, ~3 min).
 3. **Tablet/mobile**: aspect-aware camera framing per preset; the Sky view on narrow screens.

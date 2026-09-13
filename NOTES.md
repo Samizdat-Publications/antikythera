@@ -147,4 +147,14 @@ See README "Attributions" for licences.
   off for the drag and winding by hand stops the motor. Verified in the browser: two turns of the handle
   = 0.4305 years exactly. Testing gotcha: with the Browser pane hidden, requestAnimationFrame is
   throttled and `Vector3.project(camera)` reads stale matrices; a test must call `viewer.render()`
-  itself between moves, or its screen angles and the viewer's disagree.
+  itself between moves, or its screen angles and the viewer's disagree; time-based tweens (the
+  overture, the reveal) simply stall until something wakes the tab, so drive `render()` on an interval
+  to verify a sequence (measured that way: model 2.0 s, wheels home 3.6 s, plates closed 5.0 s, crank
+  running 5.1 s).
+  (3) **Taken apart** (Exhibit ▾): the same spread as a state. `Viewer.setApart(on)` tweens every
+  wheel's push fraction between 0 and 1 (outermost first going out, innermost first coming home,
+  ease-out quint, 1.7 s + up to 0.95 s of stagger), implies Inside, and the machine keeps turning
+  while apart because only `position.z` is offset and the gear graph only writes rotations (and
+  `position.x` for the spiral pins). The overture is now just `setApart(true, false)` then
+  `setApart(false)`; `onAssembled` fires after any slide home, and main.ts only runs the
+  invitation-or-crank logic the first time (`overtureDone`). The caption says ", taken apart".
