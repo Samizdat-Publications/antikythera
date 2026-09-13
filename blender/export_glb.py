@@ -31,7 +31,7 @@ for ob in bpy.data.objects:
             pass
 
 glb = os.path.join(DIST, "antikythera.glb")
-bpy.ops.export_scene.gltf(
+opts = dict(
     filepath=glb,
     export_format="GLB",
     use_selection=True,
@@ -48,6 +48,11 @@ bpy.ops.export_scene.gltf(
     export_materials="EXPORT",
     export_image_format="AUTO",
 )
+try:
+    # the baked ambient occlusion (blender/surface.py) rides along as COLOR_0
+    bpy.ops.export_scene.gltf(**opts, export_vertex_color="ACTIVE", export_active_vertex_color_when_no_material=True)
+except TypeError:
+    bpy.ops.export_scene.gltf(**opts)
 
 # gear graph for the UI (rates as exact fractions, couplings, pointers)
 spec = json.load(open(os.path.join(REPO, "data", "gears.json"), encoding="utf-8"))

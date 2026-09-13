@@ -1,42 +1,132 @@
 /**
  * three.js scene for the mechanism GLB. Coordinates are Blender's (mm, +Z = front,
  * +Y = up); the GLB is exported with Z-up preserved, so +Z faces the default camera.
+ *
+ * Rendering: a gallery at night. A hand-built PMREM environment gives the bronze its
+ * reflections, a shadow-casting spot is the exhibit light, GTAO separates gears from
+ * plates, the baked per-vertex ambient occlusion (blender/surface.py, COLOR_0) darkens
+ * indirect light deep in the stack, a selective bloom lifts the golden Sun and the
+ * stones, a gentle depth of field softens the hero view, and a vignette plus a static
+ * film grain finish the frame before ACES tone mapping.
  */
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass.js";
+import { GearGraph } from "../mech/gearGraph";
 
 /**
  * A gallery at night, built as geometry so PMREM can turn it into reflections:
- * a large warm key panel high on the left, a dim cool fill on the right, a thin
- * warm rim strip behind the exhibit, and dark walls so bronze keeps its depth.
+ * a large warm key panel high on the left with a small, very bright lamp inside it
+ * (crisp glints on the polished parts), a dim cool fill on the right, a thin warm
+ * rim strip behind the exhibit, a floor bounce, and dark walls so bronze keeps its depth.
  */
 function galleryEnvironment(): THREE.Scene {
   const s = new THREE.Scene();
-  const room = new THREE.Mesh(new THREE.BoxGeometry(20, 12, 20), new THREE.MeshStandardMaterial({ color: 0x1a1512, side: THREE.BackSide, roughness: 1 }));
+  const room = new THREE.Mesh(new THREE.BoxGeometry(20, 12, 20), new THREE.MeshStandardMaterial({ color: 0x17120e, side: THREE.BackSide, roughness: 1 }));
   s.add(room);
-  const panel = (w: number, h: number, color: number, intensity: number, pos: [number, number, number], look: [number, number, number]) => {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
+  const panel = (geom: THREE.BufferGeometry, color: number, intensity: number, pos: [number, number, number], look: [number, number, number]) => {
+    const m = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
     (m.material as THREE.MeshBasicMaterial).color.multiplyScalar(intensity);
     m.position.set(...pos);
     m.lookAt(...look);
     s.add(m);
   };
-  panel(5, 6, 0xffe2b8, 7.0, [-6, 5, 5], [0, 0, 0]);       // key, warm, high left
-  panel(6, 4, 0x9fb4c8, 1.4, [7, 2, 3], [0, 0, 0]);        // fill, cool, right
-  panel(9, 0.6, 0xffc98a, 5.0, [0, 6, -7], [0, 0, 0]);     // rim strip, behind and above
-  panel(3, 3, 0xfff1dc, 2.0, [0, -5.5, 4], [0, 0, 0]);     // floor bounce
-  panel(5, 6, 0xffe2b8, 5.5, [6, 5, -5], [0, 0, 0]);       // second key for the back dials
-  panel(6, 4, 0x9fb4c8, 1.2, [-7, 2, -3], [0, 0, 0]);      // cool fill behind
+  const plane = (w: number, h: number) => new THREE.PlaneGeometry(w, h);
+  panel(plane(5, 6), 0xffe2b8, 6.0, [-6, 5, 5], [0, 0, 0]);          // key, warm, high left
+  panel(new THREE.CircleGeometry(0.45, 32), 0xfff4e2, 32.0, [-5.6, 5.4, 5.4], [0, 0, 0]); // the lamp itself
+  panel(plane(6, 4), 0x9fb4c8, 1.3, [7, 2, 3], [0, 0, 0]);           // fill, cool, right
+  panel(plane(9, 0.6), 0xffc98a, 5.0, [0, 6, -7], [0, 0, 0]);        // rim strip, behind and above
+  panel(plane(3, 3), 0xfff1dc, 1.8, [0, -5.5, 4], [0, 0, 0]);        // floor bounce
+  panel(plane(5, 6), 0xffe2b8, 5.0, [6, 5, -5], [0, 0, 0]);          // second key for the back dials
+  panel(new THREE.CircleGeometry(0.4, 32), 0xfff4e2, 45.0, [5.6, 5.3, -5.4], [0, 0, 0]);
+  panel(plane(6, 4), 0x9fb4c8, 1.1, [-7, 2, -3], [0, 0, 0]);         // cool fill behind
+  panel(plane(14, 1.2), 0x6b5a48, 0.9, [0, -5.9, 0], [0, 0, 0]);     // faint floor
   return s;
 }
-import { GearGraph } from "../mech/gearGraph";
+
+/** A soft warm pool of light on the gallery wall behind the exhibit. */
+function wallTexture(): THREE.Texture {
+  const c = document.createElement("canvas");
+  c.width = c.height = 512;
+  const g = c.getContext("2d")!;
+  const rg = g.createRadialGradient(256, 210, 20, 256, 256, 330);
+  rg.addColorStop(0, "#3b2e23");
+  rg.addColorStop(0.45, "#241b15");
+  rg.addColorStop(1, "#110e0b");
+  g.fillStyle = rg;
+  g.fillRect(0, 0, 512, 512);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/**
+ * Feed the baked ambient occlusion (vertex colour, channel R) into the indirect light
+ * instead of tinting the albedo: env reflections vanish in the crevices, which is what
+ * makes stacked metal read as deep.
+ */
+const AO = { strength: { value: 0.9 } };            // shared by every bronze shader; lowered in X-ray
+function withVertexAO(mat: THREE.Material): void {
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.aoStrength = AO.strength;
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", "#include <common>\nuniform float aoStrength;")
+      .replace("#include <color_fragment>", "")
+      .replace("#include <aomap_fragment>", /* glsl */ `
+        #if defined( USE_COLOR ) || defined( USE_COLOR_ALPHA )
+          {
+            // the bake is honest and harsh (plates sit flush on dials); lift the midtones
+            float ambientOcclusion = mix( 1.0, pow( vColor.r, 0.6 ), aoStrength );
+            reflectedLight.indirectDiffuse *= ambientOcclusion;
+            #if defined( USE_CLEARCOAT )
+              clearcoatSpecularIndirect *= ambientOcclusion;
+            #endif
+            #if defined( USE_ENVMAP ) && defined( STANDARD )
+              float dotNV = saturate( dot( geometryNormal, geometryViewDir ) );
+              reflectedLight.indirectSpecular *= computeSpecularOcclusion( dotNV, ambientOcclusion, material.roughness );
+            #endif
+          }
+        #endif
+        #include <aomap_fragment>`);
+  };
+  mat.customProgramCacheKey = () => "vao";
+}
+
+const FinalShader = {
+  uniforms: {
+    baseTexture: { value: null as THREE.Texture | null },
+    bloomTexture: { value: null as THREE.Texture | null },
+    bloomStrength: { value: 0.55 },
+    vignette: { value: 0.5 },
+    grain: { value: 0.035 },
+    resolution: { value: new THREE.Vector2(1, 1) },
+  },
+  vertexShader: /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: /* glsl */ `
+    uniform sampler2D baseTexture; uniform sampler2D bloomTexture;
+    uniform float bloomStrength; uniform float vignette; uniform float grain; uniform vec2 resolution;
+    varying vec2 vUv;
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+    void main() {
+      vec4 base = texture2D(baseTexture, vUv);
+      vec3 c = base.rgb + texture2D(bloomTexture, vUv).rgb * bloomStrength;
+      vec2 q = vUv - 0.5;
+      float d = dot(q, q) * (1.0 + 0.35 * abs(q.x));
+      c *= 1.0 - vignette * smoothstep(0.10, 0.70, d);
+      float g = hash(floor(vUv * resolution)) - 0.5;              // static grain, seeded per pixel
+      float lum = clamp(dot(c, vec3(0.2126, 0.7152, 0.0722)), 0.0, 1.0);
+      c += g * grain * (0.25 + 0.75 * (1.0 - lum));               // lives in the shadows
+      gl_FragColor = vec4(max(c, 0.0), base.a);
+    }`,
+};
 
 export interface ViewerOptions {
   canvas: HTMLCanvasElement;
@@ -44,19 +134,37 @@ export interface ViewerOptions {
   onReady?: (graph: GearGraph) => void;
 }
 
+type Preset = [[number, number, number], [number, number, number]];
+const PRESETS: Record<string, Preset> = {
+  "front": [[0, -30, 560], [0, -10, 0]],
+  "front-close": [[30, -40, 300], [0, 0, 30]],
+  "back": [[0, -30, -560], [0, -10, 0]],
+  "back-upper": [[20, 40, -260], [0, 58, -40]],
+  "back-lower": [[20, -110, -260], [0, -81, -40]],
+  "pinslot": [[75, -70, -150], [28, -32, -25]],
+  "iso": [[300, -220, 420], [0, 0, 0]],
+  "crank": [[520, 0, 80], [60, 0, 0]],
+  "top": [[0, 560, 1], [0, 0, 0]],
+};
+const BLOOM_NAMES = /^(sun_ball|stone_|moon_ball)/;
+
 export class Viewer {
   readonly renderer: THREE.WebGLRenderer;
   private composer!: EffectComposer;
+  private bloomComposer!: EffectComposer;
   private gtao!: GTAOPass;
+  private bokeh!: BokehPass;
+  private finalPass!: ShaderPass;
   readonly scene = new THREE.Scene();
   readonly camera: THREE.PerspectiveCamera;
   readonly controls: OrbitControls;
   graph: GearGraph | null = null;
   root: THREE.Group | null = null;
-  private highlight: THREE.Object3D | null = null;
   private highlightMats: Map<THREE.Mesh, THREE.Material | THREE.Material[]> = new Map();
   private raycaster = new THREE.Raycaster();
   private pointer = new THREE.Vector2();
+  private pointerDirty = false;
+  private lastPick = 0;
   hovered: string | null = null;
   onHover: ((id: string | null) => void) | null = null;
   /** The CT scan of Fragment A (Ashkan Pakzad, CC BY 4.0), loaded on demand. */
@@ -66,38 +174,59 @@ export class Viewer {
   /** Alignment of the scan to the reconstruction (mm, radians), tuned by eye. */
   static FRAGMENT_POSE = { position: [0, 0, 0] as [number, number, number], rotation: [0, Math.PI / 2, 0] as [number, number, number], scale: 1.0 };
 
+  // selective bloom bookkeeping
+  private bloomMeshes = new Set<THREE.Mesh>();
+  private glowMats = new Map<THREE.Mesh, THREE.Material>();
+  private darkMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  private swapped: [THREE.Mesh, THREE.Material | THREE.Material[]][] = [];
+  private savedBackground: THREE.Texture | THREE.Color | null = null;
+
+  /** Quality switches; `auto` drops the expensive passes on a slow GPU. */
+  quality = { bloom: true, dof: true, gtao: true };
+  private frameTimes: number[] = [];
+  private autoQualityDone = false;
+
+  // camera tween
+  private tween: { p0: THREE.Vector3; p1: THREE.Vector3; t0: THREE.Vector3; t1: THREE.Vector3; start: number; ms: number } | null = null;
+  currentView = "iso";
+  onView: ((name: string) => void) | null = null;
+
   constructor(private opts: ViewerOptions) {
-    this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: true, alpha: false });
+    this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.88;
+    this.renderer.toneMappingExposure = 0.85;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
-    this.scene.background = new THREE.Color(0x120f0d);
+    this.scene.background = wallTexture();
     const pmrem = new THREE.PMREMGenerator(this.renderer);
     this.scene.environment = pmrem.fromScene(galleryEnvironment(), 0.02).texture;
-    this.scene.environmentIntensity = 0.9;
-    void RoomEnvironment;
+    this.scene.environmentIntensity = 0.65;
 
     this.camera = new THREE.PerspectiveCamera(38, 1, 1, 5000);
-    this.camera.position.set(140, -120, 520);
+    const [p, t] = PRESETS.iso;
+    this.camera.position.set(p[0] * 2.3, p[1] * 1.6, p[2] * 2.3);
     this.controls = new OrbitControls(this.camera, opts.canvas);
     this.controls.enableDamping = true;
-    this.controls.target.set(0, 0, 0);
+    this.controls.target.set(...t);
+    this.controls.addEventListener("start", () => { this.tween = null; this.setView("free"); });
+    this.controls.addEventListener("change", () => { this.pointerDirty = true; });
 
-    const key = new THREE.DirectionalLight(0xffe6c4, 2.1);
-    key.position.set(-220, 260, 420);
+    // the exhibit light: one warm spot from high left with soft shadows
+    const key = new THREE.SpotLight(0xffe4bf, 2.6, 0, 0.46, 0.65, 0);
+    key.position.set(-300, 360, 520);
+    key.target.position.set(0, -10, 10);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
-    key.shadow.bias = -0.0004;
-    key.shadow.normalBias = 0.6;
-    const cam = key.shadow.camera as THREE.OrthographicCamera;
-    cam.left = -260; cam.right = 260; cam.top = 260; cam.bottom = -260; cam.near = 50; cam.far = 1200;
-    const fill = new THREE.DirectionalLight(0xa9b8cc, 0.35);
-    fill.position.set(320, -60, 240);
-    const rim = new THREE.DirectionalLight(0xffc98a, 1.1);
+    key.shadow.bias = -0.0003;
+    key.shadow.normalBias = 0.5;
+    key.shadow.camera.near = 100; key.shadow.camera.far = 1500;
+    key.shadow.radius = 4;
+    const fill = new THREE.DirectionalLight(0xb4c0d0, 0.55);      // cool fill so the case keeps its volume
+    fill.position.set(380, -40, 260);
+    const rim = new THREE.DirectionalLight(0xffc98a, 1.2);
     rim.position.set(60, 240, -420);
-    const backKey = new THREE.DirectionalLight(0xffe6c4, 1.8);      // lights the back dials
+    const backKey = new THREE.DirectionalLight(0xffe6c4, 1.7);      // lights the back dials
     backKey.position.set(-220, 160, -460);
     backKey.castShadow = true;
     backKey.shadow.mapSize.set(2048, 2048);
@@ -105,69 +234,129 @@ export class Viewer {
     backKey.shadow.normalBias = 0.6;
     const bcam = backKey.shadow.camera as THREE.OrthographicCamera;
     bcam.left = -260; bcam.right = 260; bcam.top = 260; bcam.bottom = -260; bcam.near = 50; bcam.far = 1200;
-    this.scene.add(key, fill, rim, backKey);
+    this.scene.add(key, key.target, fill, rim, backKey);
 
-    // post: render -> ground-truth ambient occlusion (depth between gears and plates) -> output
+    // post: bloom of the glowing parts only (everything else painted black) ...
+    this.bloomComposer = new EffectComposer(this.renderer);
+    this.bloomComposer.renderToScreen = false;
+    this.bloomComposer.addPass(new RenderPass(this.scene, this.camera));
+    this.bloomComposer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), 1.1, 0.7, 0.0));
+    // ... then render -> ground-truth ambient occlusion -> depth of field -> bloom mix, vignette, grain -> output
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
     this.gtao = new GTAOPass(this.scene, this.camera, 1, 1);
     this.gtao.output = GTAOPass.OUTPUT.Default;
-    this.gtao.blendIntensity = 0.85;
-    Object.assign(this.gtao.gtaoMaterial.defines, {});
-    this.gtao.updateGtaoMaterial({ radius: 6, distanceExponent: 1, thickness: 2, scale: 1.2, samples: 12, distanceFallOff: 1, screenSpaceRadius: false });
+    this.gtao.blendIntensity = 0.9;
+    this.gtao.updateGtaoMaterial({ radius: 14, distanceExponent: 1, thickness: 3, scale: 1.3, samples: 12, distanceFallOff: 1, screenSpaceRadius: false });
     this.gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 4, radiusExponent: 1, rings: 2, samples: 16 });
     this.composer.addPass(this.gtao);
+    this.bokeh = new BokehPass(this.scene, this.camera, { focus: 550, aperture: 0.000022, maxblur: 0.0055 });
+    this.bokeh.enabled = false;
+    this.composer.addPass(this.bokeh);
+    this.finalPass = new ShaderPass(new THREE.ShaderMaterial({ uniforms: THREE.UniformsUtils.clone(FinalShader.uniforms), vertexShader: FinalShader.vertexShader, fragmentShader: FinalShader.fragmentShader }), "baseTexture");
+    this.finalPass.material.uniforms.bloomTexture.value = this.bloomComposer.renderTarget2.texture;
+    this.composer.addPass(this.finalPass);
     this.composer.addPass(new OutputPass());
 
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
     loader.load(opts.url, (gltf) => {
       this.root = gltf.scene;
-      // material pass: the GLB carries flat PBR values; give every family a tuned look
-      const bronze = new THREE.MeshPhysicalMaterial({ color: 0xb07d3e, metalness: 1.0, roughness: 0.38, envMapIntensity: 1.0, clearcoat: 0.15, clearcoatRoughness: 0.5 });
-      const plate = new THREE.MeshPhysicalMaterial({ color: 0x7e5628, metalness: 0.95, roughness: 0.5, envMapIntensity: 0.9 });
-      const dark = new THREE.MeshStandardMaterial({ color: 0x3b2a14, metalness: 0.8, roughness: 0.6 });
-      const byName: Record<string, THREE.Material> = {
-        Bronze: bronze, PlateBronze: plate, DarkBronze: dark,
-        Gold: new THREE.MeshStandardMaterial({ color: 0xffc866, metalness: 1.0, roughness: 0.25 }),
-        MoonSilver: new THREE.MeshStandardMaterial({ color: 0xe8e8ee, metalness: 1.0, roughness: 0.3 }),
-        MoonBlack: new THREE.MeshStandardMaterial({ color: 0x050505, metalness: 0.2, roughness: 0.6 }),
-      };
-      this.root.traverse((o) => {
-        if (!(o as THREE.Mesh).isMesh) return;
-        const m = o as THREE.Mesh;
-        m.castShadow = true;
-        m.receiveShadow = true;
-        const mats = Array.isArray(m.material) ? m.material : [m.material];
-        const out = mats.map((mat) => {
-          const name = mat.name.replace(/\.\d+$/, "");
-          if (byName[name]) return byName[name];
-          const std = mat as THREE.MeshStandardMaterial;
-          if ("envMapIntensity" in std) {
-            std.envMapIntensity = 0.9;
-            if (std.map) {                                   // engraved dial faces and wood
-              std.metalness = name === "Wood" ? 0.0 : 0.5;
-              std.roughness = name === "Wood" ? 0.75 : 0.55;
-              if (std.bumpMap) std.bumpScale = 1.4;
-            }
-          }
-          return mat;
-        });
-        m.material = Array.isArray(m.material) ? out : out[0];
-      });
+      this.dressMaterials(this.root);
       this.scene.add(this.root);
       this.graph = new GearGraph(this.root);
       this.graph.setYears(0);
       opts.onReady?.(this.graph);
+      this.view("iso", 2600);                                       // walk up to the vitrine
     });
 
     opts.canvas.addEventListener("pointermove", (e) => {
       const r = opts.canvas.getBoundingClientRect();
       this.pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      this.pointerDirty = true;
     });
+    opts.canvas.addEventListener("pointerleave", () => { this.pointer.set(9, 9); this.pointerDirty = true; });
     this.resize();
     addEventListener("resize", () => this.resize());
     new ResizeObserver(() => this.resize()).observe(opts.canvas.parentElement ?? opts.canvas);
+  }
+
+  /**
+   * The GLB carries the textured PBR materials from Blender (albedo, spun/brushed normals,
+   * roughness, engraving normals on the dials). Promote the metals to MeshPhysicalMaterial
+   * for clearcoat and wire in the baked AO; tune each family by name.
+   */
+  private dressMaterials(root: THREE.Object3D): void {
+    const cache = new Map<string, THREE.Material>();
+    const physical = (src: THREE.MeshStandardMaterial, extra: Partial<THREE.MeshPhysicalMaterial> & { colorMul?: number }): THREE.MeshPhysicalMaterial => {
+      const m = new THREE.MeshPhysicalMaterial();
+      THREE.MeshStandardMaterial.prototype.copy.call(m, src);   // physical.copy() expects physical-only fields
+      m.name = src.name;
+      const { colorMul, ...rest } = extra;
+      m.setValues(rest);
+      if (colorMul !== undefined) m.color.multiplyScalar(colorMul);
+      m.vertexColors = true;
+      withVertexAO(m);
+      return m;
+    };
+    const tune: Record<string, (src: THREE.MeshStandardMaterial) => THREE.Material> = {
+      // roughness > 1 scales the roughness map up: the plates are duller than the turned gears
+      Bronze: (s) => physical(s, { metalness: 1.0, roughness: 1.15, envMapIntensity: 0.85, normalScale: new THREE.Vector2(0.9, 0.9), clearcoat: 0.0 }),
+      PlateBronze: (s) => physical(s, { metalness: 1.0, roughness: 1.7, envMapIntensity: 0.35, normalScale: new THREE.Vector2(1.0, 1.0), colorMul: 0.9 }),
+      DarkBronze: (s) => physical(s, { metalness: 0.9, roughness: 1.4, envMapIntensity: 0.5, normalScale: new THREE.Vector2(0.8, 0.8) }),
+      Gold: (s) => physical(s, { color: new THREE.Color(0xffcf6e), metalness: 1.0, roughness: 0.2, clearcoat: 1.0, clearcoatRoughness: 0.1, envMapIntensity: 1.3 }),
+      MoonSilver: (s) => physical(s, { color: new THREE.Color(0xeeeef4), metalness: 1.0, roughness: 0.26, clearcoat: 0.4, clearcoatRoughness: 0.15 }),
+      MoonBlack: (s) => physical(s, { color: new THREE.Color(0x07070a), metalness: 0.2, roughness: 0.45, clearcoat: 0.6, clearcoatRoughness: 0.2 }),
+      Turquoise: (s) => physical(s, { metalness: 0, roughness: 0.28, clearcoat: 1.0, clearcoatRoughness: 0.06, ior: 1.6 }),
+      Lapis: (s) => physical(s, { metalness: 0, roughness: 0.25, clearcoat: 1.0, clearcoatRoughness: 0.06, ior: 1.6 }),
+      Carnelian: (s) => physical(s, { metalness: 0, roughness: 0.22, clearcoat: 1.0, clearcoatRoughness: 0.05, ior: 1.65 }),
+      Crystal: (s) => physical(s, { color: new THREE.Color(0xf4f2ff), metalness: 0.05, roughness: 0.08, clearcoat: 1.0, clearcoatRoughness: 0.03, ior: 1.55, specularIntensity: 1.2 }),
+      Obsidian: (s) => physical(s, { color: new THREE.Color(0x0b0b10), metalness: 0.15, roughness: 0.12, clearcoat: 1.0, clearcoatRoughness: 0.04 }),
+      Wood: (s) => { s.metalness = 0; s.roughness = 0.82; s.envMapIntensity = 0.55; s.color.multiplyScalar(0.85); return s; },
+    };
+    const dial = (s: THREE.MeshStandardMaterial): THREE.Material => {
+      s.metalness = 0.5; s.roughness = 0.75; s.envMapIntensity = 0.6;
+      if (s.normalMap) s.normalScale.set(1.35, 1.35);
+      return s;
+    };
+    root.traverse((o) => {
+      if (!(o as THREE.Mesh).isMesh) return;
+      const m = o as THREE.Mesh;
+      m.castShadow = true;
+      m.receiveShadow = true;
+      const hasAO = !!m.geometry.attributes.color;
+      const mats = Array.isArray(m.material) ? m.material : [m.material];
+      const out = mats.map((mat) => {
+        const name = mat.name.replace(/\.\d+$/, "");
+        const polished = name === "Bronze" && /^(ring_|spoke_)/.test(m.name);
+        const key = polished ? "Bronze:polished" : name;
+        let made = cache.get(key);
+        if (!made) {
+          const std = mat as THREE.MeshStandardMaterial;
+          if (polished) made = physical(std, { metalness: 1.0, roughness: 0.75, clearcoat: 0.9, clearcoatRoughness: 0.18, envMapIntensity: 1.2, normalScale: new THREE.Vector2(0.5, 0.5) });
+          else if (tune[name]) made = tune[name](std);
+          else if (std.map) made = dial(std);
+          else made = std;
+          cache.set(key, made);
+        }
+        if (!hasAO && (made as THREE.MeshStandardMaterial).vertexColors) {
+          // a mesh without baked AO must not read a missing attribute
+          const clone = (made as THREE.MeshPhysicalMaterial).clone(); clone.vertexColors = false; clone.onBeforeCompile = () => undefined; clone.customProgramCacheKey = () => "novao";
+          return clone;
+        }
+        return made;
+      });
+      m.material = Array.isArray(m.material) ? out : out[0];
+      if (BLOOM_NAMES.test(m.name)) {
+        this.bloomMeshes.add(m);
+        const src = (Array.isArray(m.material) ? m.material[0] : m.material) as THREE.MeshStandardMaterial;
+        const glow = new THREE.MeshBasicMaterial({ color: src.color.clone() });
+        if (m.name === "sun_ball") glow.color.set(0xffb340).multiplyScalar(1.6);
+        else if (m.name === "moon_ball") glow.color.set(0xd8dcff).multiplyScalar(0.5);
+        else glow.color.multiplyScalar(1.1).lerp(new THREE.Color(0xffffff), 0.25);
+        this.glowMats.set(m, glow);
+      }
+    });
   }
 
   resize(): void {
@@ -179,11 +368,18 @@ export class Viewer {
     this.camera.updateProjectionMatrix();
     const pr = this.renderer.getPixelRatio();
     this.composer?.setSize(w, h);
+    this.bloomComposer?.setSize(w, h);
     this.gtao?.setSize(w * pr, h * pr);
+    this.finalPass?.material.uniforms.resolution.value.set(w * pr, h * pr);
   }
 
   setYears(years: number): void {
     this.graph?.setYears(years);
+  }
+
+  /** How much of the baked occlusion to apply (X-ray hides the plates that cast most of it). */
+  setAOStrength(x: number): void {
+    AO.strength.value = Math.max(0, Math.min(1, x));
   }
 
   /** Load the Fragment A scan once; resolves when it is in the scene. */
@@ -210,6 +406,8 @@ export class Viewer {
             mat.envMapIntensity = 0.5;
             m.material = mat;
             m.renderOrder = 10;
+            m.castShadow = true;
+            m.receiveShadow = true;
             m.userData.am_fragment = true;
             this.fragmentMats.push(mat);
           }
@@ -231,40 +429,69 @@ export class Viewer {
   }
   get fragmentShown(): boolean { return this.fragmentOpacity > 0; }
 
-  /** Camera presets, Blender coordinates (position, target). */
-  view(name: string): void {
-    const p: Record<string, [[number, number, number], [number, number, number]]> = {
-      "front": [[0, -30, 560], [0, -10, 0]],
-      "front-close": [[30, -40, 300], [0, 0, 30]],
-      "back": [[0, -30, -560], [0, -10, 0]],
-      "back-upper": [[20, 40, -260], [0, 58, -40]],
-      "back-lower": [[20, -110, -260], [0, -81, -40]],
-      "pinslot": [[75, -70, -150], [28, -32, -25]],
-      "iso": [[300, -220, 420], [0, 0, 0]],
-      "crank": [[520, 0, 80], [60, 0, 0]],
-      "top": [[0, 560, 1], [0, 0, 0]],
-    };
-    const [pos, tgt] = p[name] ?? p.front;
-    this.camera.position.set(...pos);
-    this.controls.target.set(...tgt);
-    this.controls.update();
+  /** Fly the camera to a preset (Blender coordinates). `ms` = 0 snaps. */
+  view(name: string, ms = 1400): void {
+    const [pos, tgt] = PRESETS[name] ?? PRESETS.front;
+    const p1 = new THREE.Vector3(...pos);
+    const t1 = new THREE.Vector3(...tgt);
+    if (ms <= 0) {
+      this.camera.position.copy(p1);
+      this.controls.target.copy(t1);
+      this.controls.update();
+      this.tween = null;
+    } else {
+      this.tween = { p0: this.camera.position.clone(), p1, t0: this.controls.target.clone(), t1, start: performance.now(), ms };
+    }
+    this.setView(name);
+  }
+
+  private setView(name: string): void {
+    if (name === this.currentView) return;
     this.currentView = name;
     this.onView?.(name);
   }
-  currentView = "iso";
-  onView: ((name: string) => void) | null = null;
 
-  private pick(): void {
-    if (!this.root) return;
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    const hits = this.raycaster.intersectObject(this.root, true);
+  /** Great-circle camera path around the target with a slight pull-back in the middle. */
+  private stepTween(now: number): void {
+    const tw = this.tween;
+    if (!tw) return;
+    const u = Math.min(1, (now - tw.start) / tw.ms);
+    const e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;     // ease in-out cubic
+    const target = tw.t0.clone().lerp(tw.t1, e);
+    const d0 = tw.p0.clone().sub(tw.t0), d1 = tw.p1.clone().sub(tw.t1);
+    const r0 = d0.length(), r1 = d1.length();
+    const a = d0.clone().normalize(), b = d1.clone().normalize();
+    let dir: THREE.Vector3;
+    const dot = THREE.MathUtils.clamp(a.dot(b), -1, 1);
+    if (dot > 0.9995) dir = a.clone().lerp(b, e).normalize();
+    else {
+      let axis = a.clone().cross(b);
+      if (axis.lengthSq() < 1e-6) axis = a.clone().cross(new THREE.Vector3(0, 1, 0));
+      if (axis.lengthSq() < 1e-6) axis = new THREE.Vector3(1, 0, 0);
+      axis.normalize();
+      dir = a.clone().applyQuaternion(new THREE.Quaternion().setFromAxisAngle(axis, Math.acos(dot) * e));
+    }
+    const r = THREE.MathUtils.lerp(r0, r1, e) * (1 + 0.18 * Math.sin(Math.PI * e) * Math.min(1, Math.acos(dot) / 1.2));
+    this.camera.position.copy(target).addScaledVector(dir, r);
+    this.controls.target.copy(target);
+    if (u >= 1) this.tween = null;
+  }
+
+  private pick(now: number): void {
+    if (!this.root || !this.pointerDirty || now - this.lastPick < 40) return;
+    this.pointerDirty = false;
+    this.lastPick = now;
     let id: string | null = null;
     let obj: THREE.Object3D | null = null;
-    for (const h of hits) {
-      if (h.object.userData.am_fragment) continue;
-      let o: THREE.Object3D | null = h.object;
-      while (o && typeof o.userData.am_id !== "string") o = o.parent;
-      if (o) { id = o.userData.am_id as string; obj = o; break; }
+    if (Math.abs(this.pointer.x) <= 1 && Math.abs(this.pointer.y) <= 1) {
+      this.raycaster.setFromCamera(this.pointer, this.camera);
+      const hits = this.raycaster.intersectObject(this.root, true);
+      for (const h of hits) {
+        if (h.object.userData.am_fragment || !h.object.visible) continue;
+        let o: THREE.Object3D | null = h.object;
+        while (o && typeof o.userData.am_id !== "string") o = o.parent;
+        if (o) { id = o.userData.am_id as string; obj = o; break; }
+      }
     }
     if (id !== this.hovered) {
       this.hovered = id;
@@ -276,7 +503,6 @@ export class Viewer {
   private setHighlight(obj: THREE.Object3D | null): void {
     for (const [m, mat] of this.highlightMats) m.material = mat;
     this.highlightMats.clear();
-    this.highlight = obj;
     if (!obj) return;
     const hl = new THREE.MeshStandardMaterial({ color: 0xffc766, emissive: 0x7a4b00, metalness: 0.9, roughness: 0.3 });
     obj.traverse((o) => {
@@ -311,9 +537,55 @@ export class Viewer {
   private isolated = false;
   private isolatedIds: string[] = [];
 
+  /** Paint everything but the glowing parts black, render the bloom, restore. */
+  private renderBloom(): void {
+    this.swapped.length = 0;
+    this.scene.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh || !m.visible) return;
+      this.swapped.push([m, m.material]);
+      m.material = this.glowMats.get(m) ?? this.darkMat;
+    });
+    this.savedBackground = this.scene.background;
+    this.scene.background = null;
+    const shadows = this.renderer.shadowMap.enabled;
+    this.renderer.shadowMap.enabled = false;
+    this.bloomComposer.render();
+    this.renderer.shadowMap.enabled = shadows;
+    this.scene.background = this.savedBackground;
+    for (const [m, mat] of this.swapped) m.material = mat;
+  }
+
+  private autoQuality(dt: number): void {
+    if (this.autoQualityDone) return;
+    this.frameTimes.push(dt);
+    if (this.frameTimes.length < 90) return;
+    this.autoQualityDone = true;
+    const sorted = [...this.frameTimes].sort((a, b) => a - b);
+    const median = sorted[sorted.length >> 1];
+    if (median > 26) {                                   // well under 40 fps: drop the cinematic passes
+      this.quality.bloom = false;
+      this.quality.dof = false;
+      if (median > 45) this.quality.gtao = false;
+      console.info(`[antikythera] slow GPU (median ${median.toFixed(0)} ms); bloom/depth of field off`);
+    }
+  }
+
+  private lastFrame = 0;
   render(): void {
+    const now = performance.now();
+    if (this.lastFrame) this.autoQuality(now - this.lastFrame);
+    this.lastFrame = now;
+    this.stepTween(now);
     this.controls.update();
-    this.pick();
+    this.pick(now);
+    this.gtao.enabled = this.quality.gtao;
+    const dof = this.quality.dof && this.currentView === "iso" && !this.tween;
+    this.bokeh.enabled = dof;
+    if (dof) (this.bokeh.uniforms as Record<string, THREE.IUniform>).focus.value = this.camera.position.distanceTo(this.controls.target) * 0.98;
+    const bloom = this.quality.bloom && this.bloomMeshes.size > 0 && this.fragmentOpacity < 0.98;
+    this.finalPass.material.uniforms.bloomStrength.value = bloom ? 0.55 : 0.0;
+    if (bloom) this.renderBloom();
     this.composer.render();
   }
 }

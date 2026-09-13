@@ -89,14 +89,28 @@ def image_material(name, albedo, bump=None, roughness=0.45, metallic=1.0):
         bt.image = bpy.data.images.load(bump, check_existing=True)
         bt.image.colorspace_settings.name = "Non-Color"
         bt.location = (-700, -100)
-        bn = nt.nodes.new("ShaderNodeBump")
-        bn.inputs["Strength"].default_value = 0.35
-        bn.inputs["Distance"].default_value = 0.15
-        bn.location = (-300, -100)
-        nt.links.new(bt.outputs["Color"], bn.inputs["Height"])
-        nt.links.new(bn.outputs["Normal"], bsdf.inputs["Normal"])
         # engraving is rougher than polished bronze
         nt.links.new(bt.outputs["Color"], bsdf.inputs["Roughness"])
+        # the engraving relief: a real normal map (tools/gen_surface_maps.py derives it from the
+        # bump), which the glTF exporter can export; a Bump node it cannot
+        normal_png = bump.replace("_bump.png", "_normal.png")
+        if os.path.exists(normal_png):
+            nrm = nt.nodes.new("ShaderNodeTexImage")
+            nrm.image = bpy.data.images.load(normal_png, check_existing=True)
+            nrm.image.colorspace_settings.name = "Non-Color"
+            nrm.location = (-700, -400)
+            nm = nt.nodes.new("ShaderNodeNormalMap")
+            nm.inputs["Strength"].default_value = 1.0
+            nm.location = (-300, -400)
+            nt.links.new(nrm.outputs["Color"], nm.inputs["Color"])
+            nt.links.new(nm.outputs["Normal"], bsdf.inputs["Normal"])
+        else:
+            bn = nt.nodes.new("ShaderNodeBump")
+            bn.inputs["Strength"].default_value = 0.35
+            bn.inputs["Distance"].default_value = 0.15
+            bn.location = (-300, -100)
+            nt.links.new(bt.outputs["Color"], bn.inputs["Height"])
+            nt.links.new(bn.outputs["Normal"], bsdf.inputs["Normal"])
     return mat
 
 

@@ -265,6 +265,7 @@ function applyVisibility(): void {
   const showCase = $<HTMLInputElement>("#case").checked;
   for (const r of ["plate", "plate_b1", "dial", "frame_b1"]) g.setVisible(r, !xray);
   g.setVisible("case", showCase && !xray);
+  viewer.setAOStrength(xray ? 0.45 : 0.9);
 }
 
 yearsInput.addEventListener("input", () => setYears(parseFloat(yearsInput.value), true));

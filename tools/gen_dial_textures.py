@@ -146,7 +146,13 @@ class Dial:
             self.img = self.img.transpose(Image.FLIP_LEFT_RIGHT)
             self.bump = self.bump.transpose(Image.FLIP_LEFT_RIGHT)
         self.img.save(os.path.join(OUT, self.name + ".png"))
-        self.bump.filter(ImageFilter.GaussianBlur(0.6)).save(os.path.join(OUT, self.name + "_bump.png"))
+        bump = self.bump.filter(ImageFilter.GaussianBlur(0.6))
+        bump.save(os.path.join(OUT, self.name + "_bump.png"))
+        # a real tangent-space normal map for the engraving (the glTF exporter cannot export a Bump node)
+        import numpy as np
+        from gen_surface_maps import height_to_normal
+        h = np.asarray(bump, dtype=np.float64) / 255.0
+        Image.fromarray(height_to_normal(h, strength=5.0, wrap=False), "RGB").save(os.path.join(OUT, self.name + "_normal.png"), optimize=True)
         return {"name": self.name, "span_mm": self.span, "px": self.px, "centre_mm": [self.cx, self.cy], "back_view": self.back}
 
 
