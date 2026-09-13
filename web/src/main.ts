@@ -8,7 +8,7 @@ import { glyphByMonth, OBSERVED_HOURS } from "./astro/eym";
 import { auditSaros, drawErrorChart, errorSeries } from "./ui/analytics";
 import { Tour } from "./ui/tour";
 import { Onboarding, firstVisit } from "./ui/onboarding";
-import { renderInspector } from "./ui/inspector";
+import { renderInspector, TRAINS } from "./ui/inspector";
 import { Cosmos } from "./ui/cosmos";
 import { fitDevicePhases, type PhaseFit } from "./astro/phases";
 import type { Chart } from "chart.js/auto";
@@ -57,15 +57,19 @@ const viewer = new Viewer({
     cosmos.attach(g);
     applyVisibility();
     update();
-    renderInspector($("#inspector"), g, (ids) => viewer.isolate(ids));
-    if (firstVisit()) {
-      // no autoplay: the invitation is one label over the exhibit, and narration starts from that click
-      $("#begin").hidden = false;
-    } else {
-      setTimeout(() => { if (!playing && !onboarding.active) setPlaying(true, 0.0821918); }, 2900);   // a working model is already turning when you walk up
-    }
+    renderInspector($("#inspector"), g, (ids) => { viewer.isolate(ids); caption(); });
   },
 });
+// the overture has finished (the wheels are home): close the plates, then invite or start the crank
+viewer.onAssembled = () => {
+  applyVisibility();
+  if (firstVisit()) {
+    // no autoplay: the invitation is one label over the exhibit, and narration starts from that click
+    $("#begin").hidden = false;
+  } else {
+    setTimeout(() => { if (!playing && !onboarding.active) setPlaying(true, 0.0821918); }, 1600);   // a working model is already turning when you walk up
+  }
+};
 $("#begin-btn").addEventListener("click", () => { $("#begin").hidden = true; onboarding.start(); });
 $("#begin-skip").addEventListener("click", () => {
   $("#begin").hidden = true;
@@ -113,6 +117,42 @@ function setSky(on: boolean): void {
   stageEl.classList.toggle("sky", on);
   $("#sky-btn").setAttribute("aria-pressed", String(on));
   if (on) document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((x) => x.setAttribute("aria-pressed", "false"));
+  caption();
+}
+
+/**
+ * The manuscript's plate caption under the stage: which plate this is, how the machine is
+ * seen, and the date its pointers are set to. Hidden by CSS in the vitrine.
+ */
+const PLATES: Record<string, [string, string]> = {
+  "front": ["I", "seen from the front"],
+  "front-close": ["I", "seen from the front, close to the dial"],
+  "back": ["II", "seen from the back"],
+  "back-upper": ["II", "seen from the back, close to the Metonic spiral"],
+  "back-lower": ["II", "seen from the back, close to the Saros spiral"],
+  "iso": ["III", "seen three-quarter on"],
+  "crank": ["IV", "seen from the right, where the crank is"],
+  "pinslot": ["VI", "opened at the pin and slot"],
+  "top": ["VII", "seen from above"],
+};
+function caption(): void {
+  if (currentTheme() !== "manuscript") return;
+  const el = $("#plate-caption");
+  const date = formatJd(epoch.jdn + years * TROPICAL_YEAR);
+  const no = (n: string) => `<span class="plate-no">Plate ${n}</span>`;
+  if (stageEl.classList.contains("sky")) {
+    el.innerHTML = `${no("V")}The sky it tracks, Earth at the centre and each body on its epicycle, set to ${date}`;
+    return;
+  }
+  if (viewer.fragmentShown) {
+    el.innerHTML = `${no("VIII")}The real Fragment A, from the CT scan, laid over the reconstruction`;
+    return;
+  }
+  const v = PLATES[viewer.currentView];
+  const ids = viewer.isolatedTrain;
+  const train = ids.length ? TRAINS.find((t) => t.gears.length === ids.length && t.gears.every((x, i) => x === ids[i])) : undefined;
+  const state = train ? `, the ${train.name} train alone` : $<HTMLInputElement>("#xray").checked && viewer.currentView !== "pinslot" ? ", opened" : "";
+  el.innerHTML = `${v ? no(v[0]) : ""}The mechanism ${v ? v[1] : "as you have turned it"}${state}, set to ${date}`;
 }
 $("#sky-btn").addEventListener("click", () => setSky(!stageEl.classList.contains("sky")));
 
@@ -300,6 +340,7 @@ function update(force = false): void {
   lastDom = now;
   $("#date-main").textContent = formatJd(s.jd);
   $("#date-sub").textContent = `${years >= 0 ? "" : "−"}${Math.abs(years).toFixed(2)} years since the epoch`;
+  caption();
   yearsVal.textContent = years.toFixed(4);
   setDl($("#front-dl"), [
     ["Sun (mean)", `${fmt(s.sunMean, 1)}° · ${s.zodiacSign.split(" ")[0]} ${fmt(s.zodiacDeg, 1)}°`],
@@ -354,6 +395,7 @@ function applyVisibility(): void {
   viewer.setInside(inside);
   caseBox.disabled = inside;                                          // the case is already off the plinth
   viewer.setAOStrength(inside ? 0.45 : 0.9);
+  caption();
 }
 
 yearsInput.addEventListener("input", () => setYears(parseFloat(yearsInput.value), true));
@@ -394,6 +436,7 @@ document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) =>
 viewer.onView = (name) => {
   const base = name.split("-")[0];
   document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.view === base)));
+  caption();
 };
 document.querySelectorAll<HTMLButtonElement>("[data-jump]").forEach((b) =>
   b.addEventListener("click", () => {

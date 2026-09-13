@@ -42,8 +42,11 @@
       </header>
       <main class="layout">
         <section class="stage">
-          <canvas id="stage" aria-label="3D view of the mechanism"></canvas>
-          <canvas id="cosmos-stage" class="cosmos-stage" aria-label="the sky the machine tracks: Earth at the centre, each body on its epicycle, trails showing retrograde loops"></canvas>
+          <div class="plate">
+            <canvas id="stage" aria-label="3D view of the mechanism"></canvas>
+            <canvas id="cosmos-stage" class="cosmos-stage" aria-label="the sky the machine tracks: Earth at the centre, each body on its epicycle, trails showing retrograde loops"></canvas>
+          </div>
+          <div id="plate-caption" class="plate-caption" aria-hidden="true"></div>
           <div class="stage-hud">
             <div class="views">
               <span class="seg" role="group" aria-label="viewpoint">

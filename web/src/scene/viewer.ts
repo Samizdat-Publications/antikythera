@@ -86,9 +86,25 @@ function wallTexture(theme: Theme): THREE.Texture {
   const g = c.getContext("2d")!;
   const rg = g.createRadialGradient(256, 210, 20, 256, 256, 330);
   if (theme === "manuscript") {
-    rg.addColorStop(0, "#f3e9d3");
-    rg.addColorStop(0.55, "#e6d8bc");
-    rg.addColorStop(1, "#cbb996");
+    c.width = c.height = 1024;                                     // the fibre must not blur into mottling
+    const rg2 = g.createRadialGradient(512, 420, 40, 512, 512, 660);
+    rg2.addColorStop(0, "#f3e9d3"); rg2.addColorStop(0.55, "#e6d8bc"); rg2.addColorStop(1, "#cbb996");
+    g.fillStyle = rg2;
+    g.fillRect(0, 0, 1024, 1024);
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const img = g.getImageData(0, 0, 1024, 1024), d = img.data;
+    for (let i = 0; i < d.length; i += 4) { const n = (rnd() - 0.5) * 12; d[i] += n; d[i + 1] += n * 0.92; d[i + 2] += n * 0.75; }
+    g.putImageData(img, 0, 0);
+    g.lineWidth = 0.9;                                             // a few longer fibres in the sheet
+    for (let i = 0; i < 700; i++) {
+      const x = rnd() * 1024, y = rnd() * 1024, a = rnd() * Math.PI, l = 10 + rnd() * 40;
+      g.strokeStyle = `rgba(110, 86, 52, ${0.04 + rnd() * 0.06})`;
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke();
+    }
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
   } else {
     // drawn bright: ACES with the gallery exposure crushes the low end
     rg.addColorStop(0, "#6b5443");
@@ -108,9 +124,23 @@ function wallTexture(theme: Theme): THREE.Texture {
  * makes stacked metal read as deep.
  */
 const AO = { strength: { value: 0.9 } };            // shared by every bronze shader; lowered in X-ray
-function withVertexAO(mat: THREE.Material): void {
+/** How much of the plates' mottled albedo shows: 1 in the vitrine, less on parchment, where the tarnish read as stains. */
+const PLATE_MIX = { value: 1.0 };
+function withVertexAO(mat: THREE.Material, mapMix?: THREE.IUniform<number>): void {
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.aoStrength = AO.strength;
+    if (mapMix) {
+      shader.uniforms.mapMix = mapMix;
+      shader.fragmentShader = shader.fragmentShader
+        .replace("#include <common>", "#include <common>\nuniform float mapMix;")
+        .replace("#include <map_fragment>", /* glsl */ `
+          #ifdef USE_MAP
+            vec4 sampledDiffuseColor = texture2D( map, vMapUv );
+            // toward the map's own mean (an orange bronze), so only the mottle's amplitude changes, never the hue
+            sampledDiffuseColor.rgb = mix( vec3( 0.78, 0.55, 0.28 ), sampledDiffuseColor.rgb, mapMix );
+            diffuseColor *= sampledDiffuseColor;
+          #endif`);
+    }
     shader.fragmentShader = shader.fragmentShader
       .replace("#include <common>", "#include <common>\nuniform float aoStrength;")
       .replace("#include <color_fragment>", "")
@@ -131,7 +161,7 @@ function withVertexAO(mat: THREE.Material): void {
         #endif
         #include <aomap_fragment>`);
   };
-  mat.customProgramCacheKey = () => "vao";
+  mat.customProgramCacheKey = () => (mapMix ? "vao-mix" : "vao");
 }
 
 const FinalShader = {
@@ -221,6 +251,10 @@ export class Viewer {
   theme: Theme = "vitrine";
   private bloomBase = 0.55;
   private wood: { mat: THREE.MeshStandardMaterial; base: THREE.Color } | null = null;
+  private plate: { mat: THREE.MeshPhysicalMaterial; base: THREE.Color } | null = null;
+  /** The overture: every wheel spread along its arbor, sliding together layer by layer. */
+  private assembly: { start: number; items: { o: THREE.Object3D; z0: number; off: number; delay: number }[]; ms: number } | null = null;
+  onAssembled: (() => void) | null = null;
   /** The "Inside" reveal: plates, dials and case lifting away over ~1.1 s. */
   private reveal: { on: boolean; start: number; items: RevealItem[] } | null = null;
   private insideOn = false;
@@ -344,7 +378,8 @@ export class Viewer {
       this.graph = new GearGraph(this.root);
       this.graph.setYears(0);
       opts.onReady?.(this.graph);
-      this.view("iso", 2600);                                       // walk up to the vitrine
+      this.assemble();
+      this.view("iso", this.assembling ? 3800 : 2600);              // walk up while the machine comes together
     }, (ev) => opts.onProgress?.(ev.loaded, ev.total), (err) => opts.onError?.(err));
 
     opts.canvas.addEventListener("pointermove", (e) => {
@@ -365,21 +400,21 @@ export class Viewer {
    */
   private dressMaterials(root: THREE.Object3D): void {
     const cache = new Map<string, THREE.Material>();
-    const physical = (src: THREE.MeshStandardMaterial, extra: Partial<THREE.MeshPhysicalMaterial> & { colorMul?: number }): THREE.MeshPhysicalMaterial => {
+    const physical = (src: THREE.MeshStandardMaterial, extra: Partial<THREE.MeshPhysicalMaterial> & { colorMul?: number; mapMix?: THREE.IUniform<number> }): THREE.MeshPhysicalMaterial => {
       const m = new THREE.MeshPhysicalMaterial();
       THREE.MeshStandardMaterial.prototype.copy.call(m, src);   // physical.copy() expects physical-only fields
       m.name = src.name;
-      const { colorMul, ...rest } = extra;
+      const { colorMul, mapMix, ...rest } = extra;
       m.setValues(rest);
       if (colorMul !== undefined) m.color.multiplyScalar(colorMul);
       m.vertexColors = true;
-      withVertexAO(m);
+      withVertexAO(m, mapMix);
       return m;
     };
     const tune: Record<string, (src: THREE.MeshStandardMaterial) => THREE.Material> = {
       // roughness > 1 scales the roughness map up: the plates are duller than the turned gears
       Bronze: (s) => physical(s, { metalness: 1.0, roughness: 1.15, envMapIntensity: 0.85, normalScale: new THREE.Vector2(1.2, 1.2), clearcoat: 0.0 }),
-      PlateBronze: (s) => physical(s, { metalness: 1.0, roughness: 1.35, envMapIntensity: 0.55, normalScale: new THREE.Vector2(1.6, 1.6), colorMul: 0.72 }),
+      PlateBronze: (s) => { const m = physical(s, { metalness: 1.0, roughness: 1.35, envMapIntensity: 0.55, normalScale: new THREE.Vector2(1.6, 1.6), mapMix: PLATE_MIX }); this.plate = { mat: m, base: m.color.clone() }; this.tunePlate(); return m; },
       DarkBronze: (s) => physical(s, { metalness: 0.9, roughness: 1.4, envMapIntensity: 0.5, normalScale: new THREE.Vector2(1.2, 1.2) }),
       Gold: (s) => physical(s, { color: new THREE.Color(0xffcf6e), metalness: 1.0, roughness: 0.2, clearcoat: 1.0, clearcoatRoughness: 0.1, envMapIntensity: 1.3 }),
       MoonSilver: (s) => physical(s, { color: new THREE.Color(0xeeeef4), metalness: 1.0, roughness: 0.26, clearcoat: 0.4, clearcoatRoughness: 0.15 }),
@@ -419,8 +454,8 @@ export class Viewer {
           cache.set(key, made);
         }
         if (!hasAO && (made as THREE.MeshStandardMaterial).vertexColors) {
-          // a mesh without baked AO must not read a missing attribute
-          const clone = (made as THREE.MeshPhysicalMaterial).clone(); clone.vertexColors = false; clone.onBeforeCompile = () => undefined; clone.customProgramCacheKey = () => "novao";
+          // a mesh without baked AO must not read a missing attribute (the AO block is behind USE_COLOR, so the shader hook can stay)
+          const clone = (made as THREE.MeshPhysicalMaterial).clone(); clone.vertexColors = false; clone.onBeforeCompile = made.onBeforeCompile; clone.customProgramCacheKey = () => "novao-" + (made.customProgramCacheKey?.() ?? "");
           return clone;
         }
         return made;
@@ -471,6 +506,64 @@ export class Viewer {
       this.wood.mat.envMapIntensity = m ? 0.8 : 0.55;
       this.wood.mat.roughness = m ? 0.72 : 0.82;
     }
+    this.tunePlate();
+  }
+
+  /** The plates' tarnish is right under a spot at night and reads as stains on parchment by day: most of it is blended out there. */
+  private tunePlate(): void {
+    if (!this.plate) return;
+    const m = this.theme === "manuscript";
+    PLATE_MIX.value = m ? 0.35 : 1.0;
+    this.plate.mat.color.copy(this.plate.base).multiplyScalar(m ? 0.98 : 0.72);
+    this.plate.mat.roughness = m ? 1.05 : 1.35;
+    this.plate.mat.normalScale.setScalar(m ? 1.1 : 1.6);
+    this.plate.mat.envMapIntensity = m ? 0.6 : 0.55;
+  }
+
+  /**
+   * The overture on load: the machine arrives in pieces, every wheel pushed out along its
+   * own arbor (2.8 times its depth in the stack), and slides home layer by layer from the
+   * main wheel outwards; `onAssembled` then lets the plates, dials and case close over it.
+   */
+  assemble(): void {
+    const g = this.graph;
+    if (!g || !this.root) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { setTimeout(() => this.onAssembled?.(), 0); return; }
+    this.setInside(true, false);
+    const [p] = PRESETS.iso;                                        // walk in from the side, where the spread along the arbors shows
+    this.camera.position.set(p[0] * 3.3, p[1] * 1.15, p[2] * 0.45);
+    const K = 2.8, world = new THREE.Vector3();
+    const isNode = new Set<THREE.Object3D>([...g.nodes.values()].map((n) => n.object));
+    const want = new Map<THREE.Object3D, number>();
+    const items: { o: THREE.Object3D; z0: number; off: number; delay: number; wz: number }[] = [];
+    let zmax = 1;
+    this.root.traverse((o) => {                                     // preorder: a wheel's carrier is placed before it
+      if (!isNode.has(o)) return;
+      o.getWorldPosition(world);
+      const w = K * world.z;
+      let inherited = 0;
+      for (let p = o.parent; p; p = p.parent) { const v = want.get(p); if (v !== undefined) { inherited = v; break; } }
+      want.set(o, w);
+      zmax = Math.max(zmax, Math.abs(world.z));
+      items.push({ o, z0: o.position.z, off: w - inherited, delay: 0, wz: Math.abs(world.z) });
+    });
+    for (const it of items) { it.delay = 950 * (it.wz / zmax); it.o.position.z = it.z0 + it.off; }
+    this.assembly = { start: performance.now(), items, ms: 1700 };
+  }
+  get assembling(): boolean { return !!this.assembly; }
+
+  private stepAssembly(now: number): void {
+    const a = this.assembly;
+    if (!a) return;
+    const t = now - a.start;
+    let done = true;
+    for (const it of a.items) {
+      const u = Math.max(0, Math.min(1, (t - it.delay) / a.ms));
+      if (u < 1) done = false;
+      const e = 1 - Math.pow(1 - u, 5);                            // ease-out quint: the wheel seats itself
+      it.o.position.z = it.z0 + it.off * (1 - e);
+    }
+    if (done) { this.assembly = null; this.onAssembled?.(); }
   }
 
   resize(): void {
@@ -782,9 +875,10 @@ export class Viewer {
     if (this.lastFrame) this.autoQuality(now - this.lastFrame);
     this.lastFrame = now;
     this.stepTween(now);
+    this.stepAssembly(now);
     this.stepReveal(now);
     // a visitor left alone drifts slowly round the case
-    if (!this.tween && !this.reveal && !this.controls.autoRotate && now - this.lastInput > 12000 && ["iso", "front", "back", "free"].includes(this.currentView)) this.controls.autoRotate = true;
+    if (!this.tween && !this.reveal && !this.assembly && !this.controls.autoRotate && now - this.lastInput > 12000 && ["iso", "front", "back", "free"].includes(this.currentView)) this.controls.autoRotate = true;
     this.controls.update();
     this.pick(now);
     this.gtao.enabled = this.quality.gtao;

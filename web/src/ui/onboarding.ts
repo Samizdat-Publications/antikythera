@@ -166,7 +166,9 @@ export class Onboarding {
 
   private show(): void {
     const s = this.steps[this.index];
-    this.el.querySelector(".onboard-step")!.textContent = `Walkthrough · ${this.index + 1} of ${this.steps.length}`;
+    const ms = document.documentElement.dataset.theme === "manuscript";        // the manuscript numbers its leaves in roman
+    const num = (n: number) => (ms ? roman(n) : String(n));
+    this.el.querySelector(".onboard-step")!.textContent = `Walkthrough · ${num(this.index + 1)} of ${num(this.steps.length)}`;
     this.el.querySelector(".onboard-title")!.textContent = s.title;
     this.el.querySelector(".onboard-body")!.textContent = s.body;
     (this.el.querySelector(".onboard-progress i") as HTMLElement).style.width = `${((this.index + 1) / this.steps.length) * 100}%`;
@@ -185,6 +187,14 @@ export class Onboarding {
     this.audio.src = `./${f}`;
     this.audio.play().catch(() => undefined);
   }
+}
+
+/** Lower-case roman numerals, as a scribe would number a folio. */
+export function roman(n: number): string {
+  const t: [number, string][] = [[10, "x"], [9, "ix"], [5, "v"], [4, "iv"], [1, "i"]];
+  let out = "";
+  for (const [v, s] of t) while (n >= v) { out += s; n -= v; }
+  return out;
 }
 
 export function firstVisit(): boolean {
