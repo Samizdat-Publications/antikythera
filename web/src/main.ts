@@ -6,6 +6,8 @@ import { calibrate, type CalibrationSet } from "./astro/calibration";
 import { loadCanon, nextEclipse, prevEclipse, eclipsesBetween, describeType, skyState, type EclipseRow } from "./astro/truth";
 import { glyphByMonth, OBSERVED_HOURS } from "./astro/eym";
 import { auditSaros, drawErrorChart, errorSeries } from "./ui/analytics";
+import { Tour } from "./ui/tour";
+import { renderInspector } from "./ui/inspector";
 import type { Chart } from "chart.js/auto";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -28,9 +30,23 @@ const viewer = new Viewer({
     g.setCalibration(calib.pointers);
     applyVisibility();
     update();
+    renderInspector($("#inspector"), g, (ids) => viewer.isolate(ids));
   },
 });
 loadCanon().then((c) => { canon = c; update(); refreshAnalytics(); });
+(window as unknown as { __viewer: Viewer }).__viewer = viewer;
+
+// ---- guided tour + sounds
+const tour = new Tour();
+tour.onView = (v) => viewer.view(v as "front");
+tour.onClip = (clip, i, n) => {
+  $("#tour-text").textContent = clip ? `${i + 1}/${n} · ${clip.text}` : "";
+  $("#tour-btn").textContent = clip ? "■ stop tour" : "▶ guided tour";
+};
+tour.load().then((ok) => { $("#tour-btn").toggleAttribute("disabled", !ok); });
+$("#tour-btn").addEventListener("click", () => (tour.playing ? tour.stop() : tour.start()));
+$("#sfx").addEventListener("change", (e) => tour.setSfx((e.target as HTMLInputElement).checked));
+let lastSarosCell = -1;
 let chart: Chart | undefined;
 
 function refreshAnalytics(): void {
@@ -166,6 +182,10 @@ function update(): void {
   }
   drawMoon($<HTMLCanvasElement>("#moon"), s.elongation);
   eclipsePanel(s);
+  if (s.sarosCell !== lastSarosCell) {
+    if (lastSarosCell >= 0 && GLYPHS.has(s.sarosCell)) tour.chime();
+    lastSarosCell = s.sarosCell;
+  }
 }
 
 function applyVisibility(): void {
@@ -211,6 +231,7 @@ $("#goto").addEventListener("click", () => {
   const y = parseInt($<HTMLInputElement>("#goto-year").value, 10);
   if (Number.isFinite(y)) setYears((civilToJdn(y, 1, 1) - epoch.jdn) / TROPICAL_YEAR);
 });
+renderInspector($("#inspector"), null, (ids) => viewer.isolate(ids));
 viewer.onHover = (id) => {
   if (!id || !viewer.graph) { hover.textContent = ""; return; }
   const n = viewer.graph.get(id);
@@ -221,6 +242,7 @@ function loop(now: number): void {
   if (playing) {
     setYears(years + ((now - last) / 1000) * speed);
   }
+  tour.crankRunning(playing);
   last = now;
   viewer.render();
   requestAnimationFrame(loop);

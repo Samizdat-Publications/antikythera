@@ -59,3 +59,10 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 .dim { color: var(--ink-dim); }
 .foot { margin: 8px 0 0; font-size: 11px; color: var(--ink-dim); line-height: 1.35; }
 .chart-wrap { position: relative; height: 170px; margin-bottom: 6px; }
+.inspector { display: flex; flex-direction: column; gap: 6px; }
+.train { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; cursor: pointer; }
+.train:hover { border-color: var(--bronze); }
+.train-h { font-family: var(--font-display); font-size: 15px; color: var(--accent); }
+.train-r { font-family: var(--mono); font-size: 11.5px; color: var(--ink); }
+.train-g { font-family: var(--mono); font-size: 11px; color: var(--ink-dim); word-break: break-all; }
+.train-n { font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; }

@@ -57,22 +57,34 @@ export class Viewer {
     loader.setMeshoptDecoder(MeshoptDecoder);
     loader.load(opts.url, (gltf) => {
       this.root = gltf.scene;
+      // material pass: the GLB carries flat PBR values; give every family a tuned look
       const bronze = new THREE.MeshStandardMaterial({ color: 0xa8763a, metalness: 0.95, roughness: 0.4, envMapIntensity: 1.0 });
       const plate = new THREE.MeshStandardMaterial({ color: 0x7a5426, metalness: 0.9, roughness: 0.55, envMapIntensity: 0.8 });
+      const dark = new THREE.MeshStandardMaterial({ color: 0x3b2a14, metalness: 0.8, roughness: 0.6 });
+      const byName: Record<string, THREE.Material> = {
+        Bronze: bronze, PlateBronze: plate, DarkBronze: dark,
+        Gold: new THREE.MeshStandardMaterial({ color: 0xffc866, metalness: 1.0, roughness: 0.25 }),
+        MoonSilver: new THREE.MeshStandardMaterial({ color: 0xe8e8ee, metalness: 1.0, roughness: 0.3 }),
+        MoonBlack: new THREE.MeshStandardMaterial({ color: 0x050505, metalness: 0.2, roughness: 0.6 }),
+      };
       this.root.traverse((o) => {
-        if ((o as THREE.Mesh).isMesh) {
-          const m = o as THREE.Mesh;
-          const name = (m.material as THREE.Material)?.name ?? "";
-          if (name.startsWith("Bronze")) m.material = bronze;
-          else if (name.startsWith("PlateBronze")) m.material = plate;
-          else {
-            const mat = m.material as THREE.MeshStandardMaterial;
-            if (mat && "envMapIntensity" in mat) {
-              mat.envMapIntensity = 0.8;
-              if (mat.map) { mat.metalness = 0.55; mat.roughness = 0.55; }   // engraved dial faces, wood
+        if (!(o as THREE.Mesh).isMesh) return;
+        const m = o as THREE.Mesh;
+        const mats = Array.isArray(m.material) ? m.material : [m.material];
+        const out = mats.map((mat) => {
+          const name = mat.name.replace(/\.\d+$/, "");
+          if (byName[name]) return byName[name];
+          const std = mat as THREE.MeshStandardMaterial;
+          if ("envMapIntensity" in std) {
+            std.envMapIntensity = 0.8;
+            if (std.map) {                                   // engraved dial faces and wood
+              std.metalness = name === "Wood" ? 0.0 : 0.55;
+              std.roughness = name === "Wood" ? 0.7 : 0.55;
             }
           }
-        }
+          return mat;
+        });
+        m.material = Array.isArray(m.material) ? out : out[0];
       });
       this.scene.add(this.root);
       this.graph = new GearGraph(this.root);
@@ -143,6 +155,25 @@ export class Viewer {
       }
     });
   }
+
+  /** Show only the given gear ids (plus their carriers); empty list restores everything. */
+  isolate(ids: string[]): void {
+    if (!this.root || !this.graph) return;
+    const keep = new Set(ids);
+    if (!keep.size || this.isolated) {
+      this.root.traverse((o) => { o.visible = true; });
+      this.isolated = false;
+      return;
+    }
+    this.root.traverse((o) => {
+      const id = o.userData.am_id as string | undefined;
+      const role = o.userData.am_role as string | undefined;
+      if (id && this.graph!.nodes.has(id)) o.visible = keep.has(id);
+      else if (role) o.visible = false;
+    });
+    this.isolated = true;
+  }
+  private isolated = false;
 
   render(): void {
     this.controls.update();
