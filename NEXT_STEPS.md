@@ -19,11 +19,13 @@ _Updated 2026-09-13 (late evening). Read this first in a new session._
   "Hellenistic manuscript" light theme too: build it later as a second theme / A-B.
 - Progressive disclosure allowed (analytics, gear trains, back dials may collapse).
 - Mobile is secondary. Size of assets doesn't matter; performance does.
-- CT scan of Fragment A (Pakzad, CC BY): Stewart will download it from Sketchfab
-  (login via Epic account) into `Downloads`. Then run
-  `python tools/bl.py blender/fragment.py 900 --set SRC=<path>` and add the crossfade
-  (fragment GLB + opacity slider) to the viewer. Not yet done: file not downloaded as of
-  writing.
+- CT scan of Fragment A (Pakzad, CC BY): DOWNLOADED (Sketchfab glTF, 43.6 MB) to
+  `Downloads/antikythera_mechanism_main_fragment_ct.zip`, copied to `assets/raw/`
+  (gitignored), imported with `blender/fragment.py` (2.78M → 180k tris) and exported to
+  `dist/fragment_a.glb` (10.6 MB, tracked) and `web/public/models/fragment_a.glb`.
+  The viewer crossfade ("Fragment A" slider) is being wired in this session; its
+  alignment to the main wheel b1 (rotation/offset constants in `web/src/scene/viewer.ts`)
+  may still need tuning by eye.
 
 ## In flight
 

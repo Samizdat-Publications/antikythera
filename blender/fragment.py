@@ -101,4 +101,13 @@ bpy.ops.export_scene.gltf(filepath=OUT, export_format="GLB", use_selection=True,
                           export_apply=True, export_extras=True, export_animations=False,
                           export_texcoords=True, export_normals=True, export_materials="EXPORT")
 result = {"source": path, "tris_before": tris, "tris_after": tris_after, "dims_mm": [round(v, 1) for v in frag.dimensions],
-          "out": OUT, "bytes": os.path.getsize(OUT)}
+          "out": OUT, "bytes": os.path.getsize(OUT), "materials": [m.name for m in frag.data.materials]}
+# keep the fragment in a collection of its own, hidden, so the mechanism export never picks it up
+c = bpy.data.collections.get("Fragment") or bpy.data.collections.new("Fragment")
+if c.name not in bpy.context.scene.collection.children:
+    bpy.context.scene.collection.children.link(c)
+for cc in frag.users_collection:
+    cc.objects.unlink(frag)
+c.objects.link(frag)
+frag.hide_set(True)
+frag.hide_render = True
