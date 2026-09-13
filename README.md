@@ -29,7 +29,7 @@ python tools/gen_dial_textures.py
 python tools/bl.py blender/build_all.py 600
 python tools/bl.py blender/dials.py 600
 python tools/bl.py blender/export_glb.py 600
-cd web && npx gltf-transform optimize ../dist/antikythera.glb public/models/antikythera.glb --texture-size 2048 --compress meshopt --texture-compress false --palette false
+cd web && npx gltf-transform optimize ../dist/antikythera.glb public/models/antikythera.glb --texture-size 2048 --compress meshopt --texture-compress false --palette false --join false --flatten false
 cd web && npm run dev
 ```
 

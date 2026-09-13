@@ -140,6 +140,16 @@ function eclipsePanel(s: MechanismState): void {
   el.innerHTML = parts.join("");
 }
 
+const PLANET_DRIVERS: [string, string, string][] = [
+  ["Mercury", "mercury", "mercury_ptr"], ["Venus", "venus", "venus_ptr"], ["True Sun", "true_sun", "true_sun_ptr"],
+  ["Mars", "mars", "ma80b"], ["Jupiter", "jupiter", "ju65b"], ["Saturn", "saturn", "sa86b"],
+];
+function planetRows(): [string, string][] {
+  const g = viewer.graph;
+  if (!g) return [];
+  return PLANET_DRIVERS.map(([label, display, driver]) => [label, `${fmt(g.reading(display, driver), 1)}°`]);
+}
+
 function update(): void {
   const s: MechanismState = mechanismState(years, epoch.jdn, mechCalibration());
   viewer.setYears(years);
@@ -152,6 +162,7 @@ function update(): void {
     ["  anomaly", `${signed(s.moonAnomaly)}°`],
     ["Dragon hand", `${fmt(s.nodes, 1)}° (asc. node)`],
     ["Egyptian date", `${s.egyptianMonth} ${s.egyptianDayOfMonth}`],
+    ...planetRows(),
   ]);
   setDl($("#moon-dl"), [
     ["Phase", s.phaseName],
@@ -232,6 +243,7 @@ $("#goto").addEventListener("click", () => {
   if (Number.isFinite(y)) setYears((civilToJdn(y, 1, 1) - epoch.jdn) / TROPICAL_YEAR);
 });
 renderInspector($("#inspector"), null, (ids) => viewer.isolate(ids));
+canvas.addEventListener("pointerleave", () => { hover.textContent = ""; });
 viewer.onHover = (id) => {
   if (!id || !viewer.graph) { hover.textContent = ""; return; }
   const n = viewer.graph.get(id);

@@ -43,7 +43,7 @@ bpy.ops.export_scene.gltf(
     export_morph=False,
     export_cameras=False,
     export_lights=False,
-    export_texcoords=False,
+    export_texcoords=True,
     export_normals=True,
     export_materials="EXPORT",
     export_image_format="AUTO",

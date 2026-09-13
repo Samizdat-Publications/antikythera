@@ -19,3 +19,14 @@ See README "Attributions" for licences.
   Mars 6.58 / Jupiter 1.58 / Saturn 1.50 mm; pin radii 10.00 / 8.22 / 14.37 mm.
 - 2026-09-12 Back-train arbor directions taken from Thomas Weibel's CC-BY model (assets/raw); distances
   always recomputed from tooth counts and modules.
+- 2026-09-12 Web export pipeline gotchas (all fixed): the glTF exporter must have `export_texcoords=True` or
+  the dial textures have no UVs; `gltf-transform optimize` must run with `--join false --flatten false
+  --palette false` or it merges the gears into one mesh and kills the node hierarchy the gear graph needs;
+  Blender driver variables that read another driven object's rotation must be SINGLE_PROP
+  (`rotation_euler[2]`), not TRANSFORMS/LOCAL_SPACE, which returned 0 for chain-driven objects in 5.1.
+- 2026-09-12 Pointer calibration: at years = 0 every gear sits at zero and each pointer carries an
+  assembly offset equal to the real sky at the epoch (astronomy-engine); the lunar pin is assumed at
+  apogee at the epoch (the reason Carman & Evans / Freeth 2014 picked that full moon).
+- 2026-09-12 Schematic (not attested) content: parapegma line positions and most Greek phrasing, Saros
+  glyph hours outside the 15 surviving cells (Freeth 2014 Table S3), index-letter assignment, the Games
+  dial 4th year (Halieia), Callippic dial existence.

@@ -51,7 +51,9 @@ export class Viewer {
     fill.position.set(-300, -100, 200);
     const back = new THREE.DirectionalLight(0xffd9a8, 1.2);
     back.position.set(0, 200, -400);
-    this.scene.add(key, fill, back);
+    const backKey = new THREE.DirectionalLight(0xfff1dc, 1.6);      // lights the back dials
+    backKey.position.set(-200, 120, -420);
+    this.scene.add(key, fill, back, backKey);
 
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
