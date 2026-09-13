@@ -77,7 +77,7 @@ export function auditSaros(epochJdn: number, sarosMonth0: number, canon: { solar
   return a;
 }
 
-const DARK = { grid: "rgba(255,255,255,0.06)", tick: "#9a938a" };
+const DARK = { grid: "rgba(230, 210, 170, 0.08)", tick: "#a89c86", font: "Alegreya, Georgia, serif" };
 
 export function drawErrorChart(canvas: HTMLCanvasElement, series: ErrorSeries, existing?: Chart): Chart {
   existing?.destroy();
@@ -86,19 +86,19 @@ export function drawErrorChart(canvas: HTMLCanvasElement, series: ErrorSeries, e
     data: {
       labels: series.years.map((y) => y.toFixed(1)),
       datasets: [
-        { label: "Moon (with pin-and-slot)", data: series.moonErr, borderColor: "#ffc766", borderWidth: 1.2, pointRadius: 0, tension: 0 },
-        { label: "Moon (mean only)", data: series.moonMeanErr, borderColor: "rgba(255,199,102,0.35)", borderWidth: 1, pointRadius: 0, tension: 0 },
-        { label: "Sun (mean)", data: series.sunErr, borderColor: "#7fb3ff", borderWidth: 1.2, pointRadius: 0, tension: 0 },
+        { label: "Moon, with the pin-and-slot", data: series.moonErr, borderColor: "#e8c27a", borderWidth: 1.2, pointRadius: 0, tension: 0 },
+        { label: "Moon, mean motion only", data: series.moonMeanErr, borderColor: "rgba(232,194,122,0.35)", borderWidth: 1, pointRadius: 0, tension: 0 },
+        { label: "Sun", data: series.sunErr, borderColor: "#7fb8a8", borderWidth: 1.2, pointRadius: 0, tension: 0 },
       ],
     },
     options: {
       animation: false,
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: DARK.tick, boxWidth: 10, font: { size: 10 } } }, tooltip: { enabled: true } },
+      plugins: { legend: { labels: { color: DARK.tick, boxWidth: 14, boxHeight: 2, font: { size: 12, family: DARK.font } } }, tooltip: { enabled: true } },
       scales: {
-        x: { ticks: { color: DARK.tick, maxTicksLimit: 8, font: { size: 10 } }, grid: { color: DARK.grid }, title: { display: true, text: "years from epoch", color: DARK.tick, font: { size: 10 } } },
-        y: { ticks: { color: DARK.tick, font: { size: 10 } }, grid: { color: DARK.grid }, title: { display: true, text: "mechanism − sky, degrees", color: DARK.tick, font: { size: 10 } } },
+        x: { ticks: { color: DARK.tick, maxTicksLimit: 8, font: { size: 11, family: DARK.font } }, grid: { color: DARK.grid }, title: { display: true, text: "years from the epoch", color: DARK.tick, font: { size: 12, family: DARK.font, style: "italic" } } },
+        y: { ticks: { color: DARK.tick, font: { size: 11, family: DARK.font } }, grid: { color: DARK.grid }, title: { display: true, text: "machine minus sky, degrees", color: DARK.tick, font: { size: 12, family: DARK.font, style: "italic" } } },
       },
     },
   };

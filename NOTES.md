@@ -34,3 +34,12 @@ See README "Attributions" for licences.
   `npx wrangler deploy --assets web/dist` after `npm run build`). Source: private repo
   github.com/Samizdat-Publications/antikythera. The Claude Design mockup round was skipped in favour of
   building the dashboard directly so Stewart can review the live thing.
+- 2026-09-13 Design critique (two independent assessments: design-director review + `impeccable`
+  detector) verdict on the first dashboard: generic dark-card SaaS look (Cormorant + IBM Plex Mono,
+  eight identical cards, 11px text, moon glow, glassy card, chart-blue), no progressive disclosure,
+  the column jittered while the crank ran, the walkthrough card covered the exhibit, no primary
+  action. Heuristic total 22/40. Restyled to the museum-vitrine direction in `.impeccable.md`:
+  Marcellus + Alegreya, catalogue column with hairline rules, collapsed advanced sections,
+  "Turn the crank" as the one filled button, 4 Hz column updates while playing with fixed-height
+  eclipse rows, walkthrough docked under the stage, human names in the hover, JD moved off the header.
+  Lighting: hand-built warm gallery PMREM environment, shadow-casting key + back key, GTAO pass.

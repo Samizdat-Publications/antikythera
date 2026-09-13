@@ -12,6 +12,8 @@ export interface StepHooks {
   focus(selector: string | null): void;
   jumpNextLunarEclipse(): void;
   setEpoch(id: string): void;
+  /** put the scene back the way a visitor expects after the tour */
+  reset(): void;
 }
 
 export interface Step {
@@ -29,7 +31,7 @@ export const STEPS: Step[] = [
   {
     id: "welcome", title: "A machine that models the sky", clip: "welcome",
     body: "This is a working reconstruction of the Antikythera mechanism, the geared astronomical calculator pulled from a Roman-era shipwreck in 1901. All 69 gears turn here with the tooth counts read from the X-ray scans, following the 2021 UCL reconstruction, so every pointer moves exactly as the bronze would have.",
-    run: (h) => { h.isolate([]); h.xray(false); h.view("iso"); h.setYears(0); h.play(true, 1); h.focus(null); },
+    run: (h) => { h.isolate([]); h.xray(false); h.view("iso"); h.setYears(0); h.play(false); h.focus(null); },
   },
   {
     id: "crank", title: "One crank, one year", clip: "crank",
@@ -104,11 +106,13 @@ export class Onboarding {
         <p class="onboard-body"></p>
         <div class="onboard-foot">
           <label class="chk"><input type="checkbox" class="onboard-narrate" checked /> narration</label>
+          <span class="onboard-keys small">← → keys · Esc closes</span>
           <span class="onboard-dots"></span>
           <span class="btns"><button class="mini onboard-prev">◀ back</button><button class="mini onboard-next">next ▶</button></span>
         </div>
       </div>`;
-    document.body.appendChild(this.el);
+    (document.getElementById("onboard-slot") ?? document.body).replaceWith(this.el);
+    this.el.id = "onboard-slot";
     this.el.querySelector(".onboard-close")!.addEventListener("click", () => this.close());
     this.el.querySelector(".onboard-prev")!.addEventListener("click", () => this.prev());
     this.el.querySelector(".onboard-next")!.addEventListener("click", () => this.next());
@@ -155,13 +159,14 @@ export class Onboarding {
     this.el.hidden = true;
     this.audio.pause();
     this.hooks.focus(null);
+    this.hooks.reset();
     try { localStorage.setItem("am_onboarded", "1"); } catch { /* ignore */ }
     this.onDone?.();
   }
 
   private show(): void {
     const s = this.steps[this.index];
-    this.el.querySelector(".onboard-step")!.textContent = `${this.index + 1} / ${this.steps.length}`;
+    this.el.querySelector(".onboard-step")!.textContent = `Walkthrough · ${this.index + 1} of ${this.steps.length}`;
     this.el.querySelector(".onboard-title")!.textContent = s.title;
     this.el.querySelector(".onboard-body")!.textContent = s.body;
     this.el.querySelector(".onboard-dots")!.replaceChildren(

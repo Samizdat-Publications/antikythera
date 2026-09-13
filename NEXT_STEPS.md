@@ -35,6 +35,22 @@ _Updated 2026-09-13 (late evening). Read this first in a new session._
 
 ## Backlog, in priority order
 
+0. **Lighting and depth (Stewart, 2026-09-13: "graphic polish is particularly important on this
+   piece to give it true depth").** Plan, cheapest-first:
+   a. three.js: replace the flat RoomEnvironment with a warm gallery environment (a hand-built
+      PMREM scene: one large warm key panel high-left, a cool dim fill, a thin rim strip behind),
+      shadow-casting key light with soft PCF shadows, GTAO ambient-occlusion pass so gears
+      separate from the plates, ACES tone mapping tuned for bronze. (Started in this session.)
+   b. Materials: brushed-bronze micro-normal map + roughness variation baked in Blender (or a
+      tileable normal generated with Pillow), clearcoat on the polished rings, deeper engraving
+      bump on the dials, vertex-baked ambient occlusion from Blender (Cycles bake -> vertex colour)
+      multiplied into the base colour.
+   c. Cinematic touches for the hero views: subtle bloom on the golden sun ball and the stones,
+      depth-of-field on the iso preset, a dust/vignette overlay on the vitrine glass.
+   d. A real HDRI (Poly Haven, CC0) if the hand-built environment is not enough; ask before
+      downloading.
+   e. Blender hero renders: Cycles with an HDRI and area lights for the README / social images.
+
 1. **Design pass to "museum vitrine"** (`/polish`, `/typeset`, `/layout`, `/colorize`):
    replace the generic dark-card look. Fonts: drop Cormorant Garamond and IBM Plex Mono
    (reflex fonts); candidates checked on Google Fonts: Marcellus or Cinzel for lapidary

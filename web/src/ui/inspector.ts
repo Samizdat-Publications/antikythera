@@ -26,8 +26,10 @@ export const TRAINS: TrainSpec[] = [
 export function renderInspector(el: HTMLElement, graph: GearGraph | null, onPick: (ids: string[]) => void): void {
   el.replaceChildren(
     ...TRAINS.map((t) => {
-      const row = document.createElement("div");
+      const row = document.createElement("button");
+      row.type = "button";
       row.className = "train";
+      row.setAttribute("aria-pressed", "false");
       row.id = "train-" + t.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-$/, "");
       const h = document.createElement("div");
       h.className = "train-h";
@@ -39,13 +41,18 @@ export function renderInspector(el: HTMLElement, graph: GearGraph | null, onPick
       g.className = "train-g";
       g.textContent = t.gears.map((id) => {
         const n = graph?.get(id);
-        return n?.teeth ? `${id}(${n.teeth})` : id;
-      }).join(" ~ ");
+        return n?.teeth ? `${id} (${n.teeth})` : id;
+      }).join("  ~  ");
       const n = document.createElement("div");
       n.className = "train-n";
       n.textContent = t.note;
       row.append(h, r, g, n);
-      row.addEventListener("click", () => onPick(t.gears));
+      row.addEventListener("click", () => {
+        const on = row.getAttribute("aria-pressed") === "true";
+        el.querySelectorAll(".train").forEach((r) => r.setAttribute("aria-pressed", "false"));
+        row.setAttribute("aria-pressed", on ? "false" : "true");
+        onPick(t.gears);
+      });
       return row;
     }),
   );
