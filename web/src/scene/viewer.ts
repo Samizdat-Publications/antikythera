@@ -239,7 +239,7 @@ export class Viewer {
       "back": [[0, -30, -560], [0, -10, 0]],
       "back-upper": [[20, 40, -260], [0, 58, -40]],
       "back-lower": [[20, -110, -260], [0, -81, -40]],
-      "pinslot": [[80, -90, -200], [15, -10, -25]],
+      "pinslot": [[75, -70, -150], [28, -32, -25]],
       "iso": [[300, -220, 420], [0, 0, 0]],
       "crank": [[520, 0, 80], [60, 0, 0]],
       "top": [[0, 560, 1], [0, 0, 0]],
@@ -248,7 +248,11 @@ export class Viewer {
     this.camera.position.set(...pos);
     this.controls.target.set(...tgt);
     this.controls.update();
+    this.currentView = name;
+    this.onView?.(name);
   }
+  currentView = "iso";
+  onView: ((name: string) => void) | null = null;
 
   private pick(): void {
     if (!this.root) return;

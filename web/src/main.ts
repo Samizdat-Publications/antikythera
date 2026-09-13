@@ -285,11 +285,12 @@ $<HTMLInputElement>("#fragment").addEventListener("input", (e) => {
 });
 $("#case").addEventListener("change", applyVisibility);
 document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) =>
-  b.addEventListener("click", () => {
-    viewer.view(b.dataset.view as string);
-    document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-  }),
+  b.addEventListener("click", () => viewer.view(b.dataset.view as string)),
 );
+viewer.onView = (name) => {
+  const base = name.split("-")[0];
+  document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.view === base)));
+};
 document.querySelectorAll<HTMLButtonElement>("[data-jump]").forEach((b) =>
   b.addEventListener("click", () => {
     if (!canon) return;
