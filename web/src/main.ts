@@ -10,6 +10,7 @@ import { Tour } from "./ui/tour";
 import { Onboarding, firstVisit } from "./ui/onboarding";
 import { renderInspector } from "./ui/inspector";
 import { Cosmos } from "./ui/cosmos";
+import { fitDevicePhases, type PhaseFit } from "./astro/phases";
 import type { Chart } from "chart.js/auto";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -52,6 +53,7 @@ const viewer = new Viewer({
   onReady: (g) => {
     $("#loading").hidden = true;
     g.setCalibration(calib.pointers);
+    fitPhases();
     cosmos.attach(g);
     applyVisibility();
     update();
@@ -338,9 +340,24 @@ $<HTMLSelectElement>("#epoch").addEventListener("change", (e) => {
   epoch = EPOCHS.find((x) => x.id === (e.target as HTMLSelectElement).value) ?? EPOCHS[0];
   calib = calibrate(epoch.jdn);
   viewer.graph?.setCalibration(calib.pointers);
+  fitPhases();
   setYears(0);
   refreshAnalytics();
 });
+
+/** Turn each anomaly device's pin to the phase the sky had at the epoch; report how well the machine then tracks. */
+let phaseReport: PhaseFit[] = [];
+function fitPhases(): void {
+  const g = viewer.graph;
+  if (!g) return;
+  const t0 = performance.now();
+  phaseReport = fitDevicePhases(g, epoch.jdn, calib.pointers);
+  console.info(`[antikythera] device phases fitted in ${(performance.now() - t0).toFixed(0)} ms: ` +
+    phaseReport.map((r) => `${r.display} ${r.phaseDeg.toFixed(1)}° (rms ${r.rmsDeg.toFixed(1)}°, worst ${r.worstDeg.toFixed(1)}°)`).join("; "));
+  (window as unknown as { __phases: PhaseFit[] }).__phases = phaseReport;
+  const label: Record<string, string> = { true_sun: "true Sun", mercury: "Mercury", venus: "Venus", mars: "Mars", jupiter: "Jupiter", saturn: "Saturn" };
+  setDl($("#phase-dl"), phaseReport.map((r) => [label[r.display] ?? r.display, `rms ${r.rmsDeg.toFixed(1)}° · worst ${r.worstDeg.toFixed(1)}°`]));
+}
 $("#epoch-btn").addEventListener("click", () => setYears(0));
 $("#xray").addEventListener("change", applyVisibility);
 $<HTMLInputElement>("#fragment").addEventListener("input", (e) => {

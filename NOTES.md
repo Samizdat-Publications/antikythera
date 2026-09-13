@@ -100,3 +100,13 @@ See README "Attributions" for licences.
   and Mercury show their real retrograde loops with the mechanism's own ratios (Mars e = 6.58/10 = 0.66,
   the Sun's equation of centre e = 1.375/32.7). Verdigris ticks are astronomy-engine truth. Shown small in
   the column and full size on the stage ("Sky" in the view segment).
+- 2026-09-13 (night) The Sky view exposed a calibration gap: the pointers were set on the true longitude at
+  the epoch, but each anomaly device (pin-and-slot, pin-follower) has a second degree of freedom, the
+  pin's phase when the crank reads zero, which was the Blender zero, so Mars drifted up to ±40° within a
+  synodic period. `web/src/astro/phases.ts` now turns each device's pin (su56, me20, r1, ma71, ju43, sa68;
+  `GearGraph.setPhase`) to the phase minimising the RMS error of its pointer against astronomy-engine over
+  ±1.5 cycles around the epoch (36 trial phases, then a refinement; the pointer is re-zeroed at the epoch
+  for every trial), then re-applies the pointer calibration. Result at the Carman & Evans epoch: true Sun
+  rms 0.3°, Saturn 1.2°, Jupiter 1.3°, Venus 1.8°, Mercury 4.9° (worst 12°), Mars 7.4° (worst 21°): the
+  irreducible error of one epicycle against Mars's eccentric orbit, shown in "Against the real sky".
+  The Moon's phase was already right by construction (pin at apogee at the epoch).

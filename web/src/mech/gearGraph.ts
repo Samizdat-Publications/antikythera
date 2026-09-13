@@ -41,6 +41,7 @@ export class GearGraph {
   readonly roles = new Map<string, Object3D[]>();        // role -> objects
   private ordered: GearNode[] = [];
   private offsets = new Map<string, number>();           // display -> radians (Blender sense)
+  private phases = new Map<string, number>();            // node -> assembly phase, radians (pin gears of the devices)
   private years = 0;
 
   constructor(root: Object3D) {
@@ -116,13 +117,23 @@ export class GearGraph {
     for (const o of this.roles.get(role) ?? []) o.visible = visible;
   }
 
+  /**
+   * Assembly phase of a plainly driven node (a pin gear or epicycle): the angle it was
+   * mounted at when the crank read zero. The pointers' own offsets fix where each pointer
+   * points at the epoch; the phases fix where in its cycle each anomaly device is.
+   */
+  setPhase(id: string, radians: number): void {
+    this.phases.set(id, radians);
+  }
+  getPhase(id: string): number { return this.phases.get(id) ?? 0; }
+
   /** Set every node's rotation for the given number of b1 turns. */
   setYears(years: number): void {
     this.years = years;
     for (const n of this.ordered) {
       const c = n.coupling;
       if (!c) {
-        const angle = -TAU * n.rateRel * years;
+        const angle = -TAU * n.rateRel * years + (this.phases.get(n.id) ?? 0);
         if (n.kind === "contrate") n.object.rotation.x = angle;
         else n.object.rotation.z = angle;
         continue;
