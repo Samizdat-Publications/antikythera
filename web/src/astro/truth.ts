@@ -90,6 +90,21 @@ export function skyState(jd: number): SkyState {
   return { sunLon: sun.elon, moonLon: moon.lon, moonLat: moon.lat, elongation, illuminated: ill.phase_fraction, moonDistanceKm: moon.dist * 149597870.7 };
 }
 
+/** Geocentric ecliptic longitudes of the seven bodies the machine shows, degrees. */
+export function skyLongitudes(jd: number): Record<string, number> {
+  const t = timeFromJd(jd);
+  const geo = (b: Astronomy.Body) => Astronomy.Ecliptic(Astronomy.GeoVector(b, t, true)).elon;
+  return {
+    sun: Astronomy.SunPosition(t).elon,
+    moon: Astronomy.EclipticGeoMoon(t).lon,
+    mercury: geo(Astronomy.Body.Mercury),
+    venus: geo(Astronomy.Body.Venus),
+    mars: geo(Astronomy.Body.Mars),
+    jupiter: geo(Astronomy.Body.Jupiter),
+    saturn: geo(Astronomy.Body.Saturn),
+  };
+}
+
 /** Longitude of the Moon's apogee (from the anomaly): the mechanism's e3 carrier. */
 export function moonApogeeLon(jd: number): number {
   // Meeus ch. 47 mean perigee longitude; apogee = perigee + 180

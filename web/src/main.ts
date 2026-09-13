@@ -9,6 +9,7 @@ import { auditSaros, drawErrorChart, errorSeries } from "./ui/analytics";
 import { Tour } from "./ui/tour";
 import { Onboarding, firstVisit } from "./ui/onboarding";
 import { renderInspector } from "./ui/inspector";
+import { Cosmos } from "./ui/cosmos";
 import type { Chart } from "chart.js/auto";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -41,17 +42,54 @@ let canon: { solar: EclipseRow[]; lunar: EclipseRow[] } | null = null;
 const viewer = new Viewer({
   canvas,
   url: "./models/antikythera.glb",
+  onProgress: (loaded, total) => {
+    const mb = (n: number) => (n / 1048576).toFixed(1);
+    $("#loading").innerHTML = `loading the mechanism<span class="sub">${total ? `${mb(loaded)} of ${mb(total)} MB` : `${mb(loaded)} MB`} · 69 gears, 17 trains</span>`;
+  },
+  onError: () => {
+    $("#loading").innerHTML = `the mechanism could not be loaded<span class="sub">the model file did not arrive. Check the connection and reload the page.</span>`;
+  },
   onReady: (g) => {
     $("#loading").hidden = true;
     g.setCalibration(calib.pointers);
+    cosmos.attach(g);
     applyVisibility();
     update();
     renderInspector($("#inspector"), g, (ids) => viewer.isolate(ids));
-    if (firstVisit()) setTimeout(() => onboarding.start(), 600);
+    if (firstVisit()) {
+      // no autoplay: the invitation is one label over the exhibit, and narration starts from that click
+      $("#begin").hidden = false;
+    } else {
+      setTimeout(() => { if (!playing && !onboarding.active) setPlaying(true, 0.0821918); }, 2900);   // a working model is already turning when you walk up
+    }
   },
+});
+$("#begin-btn").addEventListener("click", () => { $("#begin").hidden = true; onboarding.start(); });
+$("#begin-skip").addEventListener("click", () => {
+  $("#begin").hidden = true;
+  try { localStorage.setItem("am_onboarded", "1"); } catch { /* ignore */ }
+  setPlaying(true, 0.0821918);
 });
 loadCanon().then((c) => { canon = c; update(); refreshAnalytics(); });
 (window as unknown as { __viewer: Viewer }).__viewer = viewer;
+
+// ---- the sky it tracks: the small diagram in the column and the same thing over the stage
+const cosmos = new Cosmos([$<HTMLCanvasElement>("#cosmos"), $<HTMLCanvasElement>("#cosmos-stage")]);
+$("#cosmos-legend").replaceChildren(...cosmos.list.map((b) => {
+  const btn = document.createElement("button");
+  const dot = document.createElement("i"); dot.style.background = b.colour;
+  btn.append(dot, b.label);
+  btn.addEventListener("pointerenter", () => cosmos.hover(b.id));
+  btn.addEventListener("pointerleave", () => cosmos.hover(null));
+  return btn;
+}));
+const stageEl = $(".stage");
+function setSky(on: boolean): void {
+  stageEl.classList.toggle("sky", on);
+  $("#sky-btn").setAttribute("aria-pressed", String(on));
+  if (on) document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((x) => x.setAttribute("aria-pressed", "false"));
+}
+$("#sky-btn").addEventListener("click", () => setSky(!stageEl.classList.contains("sky")));
 
 // ---- sounds (crank loop, eclipse chime)
 const tour = new Tour();
@@ -77,13 +115,14 @@ const onboarding = new Onboarding({
   isolate: (ids) => viewer.isolate(ids),
   focus: (sel) => {
     focused?.classList.remove("focus");
-    focused = sel ? document.querySelector<HTMLElement>(sel) : null;
-    if (focused) {
-      const panel = focused.closest(".panel") as HTMLElement | null;
+    focused = null;
+    const el = sel ? document.querySelector<HTMLElement>(sel) : null;
+    if (el) {
+      const panel = el.closest(".panel") as HTMLElement | null;
       panel?.querySelectorAll("details").forEach((d) => { d.open = true; });
-      (panel ?? focused).classList.add("focus");
-      focused = panel ?? focused;
-      focused.scrollIntoView({ behavior: "smooth", block: "center" });
+      focused = panel ?? el;
+      focused.classList.add("focus");
+      el.scrollIntoView({ behavior: "smooth", block: "center" });     // the row itself, not the panel it sits in
     }
   },
   jumpNextLunarEclipse: () => {
@@ -92,7 +131,13 @@ const onboarding = new Onboarding({
     if (r) setYears((r.jd - epoch.jdn) / TROPICAL_YEAR);
   },
   setEpoch: (id) => { $<HTMLSelectElement>("#epoch").value = id; $<HTMLSelectElement>("#epoch").dispatchEvent(new Event("change")); },
-  reset: () => { viewer.isolate([]); $<HTMLInputElement>("#xray").checked = false; applyVisibility(); setPlaying(false); viewer.view("iso"); },
+  reset: () => { viewer.isolate([]); $<HTMLInputElement>("#xray").checked = false; applyVisibility(); setPlaying(false, 1); viewer.view("iso"); },
+});
+addEventListener("keydown", (e) => {                                   // space turns the crank, unless a field has focus
+  const t = e.target as HTMLElement | null;
+  if (e.key !== " " || (t && /^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(t.tagName))) return;
+  e.preventDefault();
+  setPlaying(!playing);
 });
 onboarding.load();
 $("#tour-btn").addEventListener("click", () => onboarding.start());
@@ -124,11 +169,27 @@ const fmt = (x: number, digits = 2) => x.toFixed(digits);
 const signed = (x: number, digits = 2) => `${x >= 0 ? "+" : ""}${x.toFixed(digits)}`;
 function wrap180(d: number): number { return ((d + 180) % 360 + 360) % 360 - 180; }
 
+/** Glosses for the terms a museum label would footnote (shown on hover). */
+const GLOSS: Record<string, string> = {
+  "Saros": "the Saros: 223 lunar months (18 years 11 days), after which eclipses repeat; the lower back spiral counts them",
+  "Exeligmos": "three Saros cycles (54 years); the small dial adds 0, 8 or 16 hours to the glyph's eclipse time",
+  "Metonic": "the Metonic cycle: 235 lunar months equal 19 solar years; the upper back spiral counts them",
+  "Callippic": "four Metonic cycles less one day, 76 years",
+  "Games": "the four-year round of the Panhellenic games (Olympia, Nemea, Isthmia, Delphi)",
+  "Dragon hand": "the pointer that tracks the Moon's nodes, where eclipses can happen (18.6-year cycle)",
+  "Egyptian date": "the 365-day Egyptian civil calendar on the front ring: 12 months of 30 days and 5 extra days",
+  "Sun (mean)": "the Sun's average position along the zodiac; the true Sun pointer adds the yearly wobble",
+  "anomaly": "the pin-and-slot correction: the Moon runs fast near perigee and slow near apogee, up to about 6.5 degrees",
+  "Julian Day": "the astronomers' day count, one number for any date, so that BC dates need no calendar arithmetic",
+  "Phase": "how much of the Moon's face is lit, shown by the half-silver ball on the front dial",
+};
+
 function setDl(el: HTMLElement, rows: [string, string][]): void {
   el.replaceChildren(...rows.flatMap(([k, v]) => {
     const dt = document.createElement("dt");
     if (k.startsWith("  ")) { dt.className = "sub"; k = k.trimStart(); }
     dt.textContent = k;
+    if (GLOSS[k]) dt.title = GLOSS[k];
     const dd = document.createElement("dd"); dd.textContent = v;
     return [dt, dd];
   }));
@@ -208,6 +269,7 @@ let lastDom = 0;
 function update(force = false): void {
   const s: MechanismState = mechanismState(years, epoch.jdn, mechCalibration());
   viewer.setYears(years);
+  cosmos.tick(years, s.jd);
   const now = performance.now();
   if (playing && !force && now - lastDom < 250) return;     // the column updates four times a second while the crank runs
   lastDom = now;
@@ -261,11 +323,12 @@ function update(force = false): void {
 function applyVisibility(): void {
   const g = viewer.graph;
   if (!g) return;
-  const xray = $<HTMLInputElement>("#xray").checked || viewer.fragmentShown;
-  const showCase = $<HTMLInputElement>("#case").checked;
-  for (const r of ["plate", "plate_b1", "dial", "frame_b1"]) g.setVisible(r, !xray);
-  g.setVisible("case", showCase && !xray);
-  viewer.setAOStrength(xray ? 0.45 : 0.9);
+  const inside = $<HTMLInputElement>("#xray").checked || viewer.fragmentShown;
+  const caseBox = $<HTMLInputElement>("#case");
+  viewer.setCase(caseBox.checked);
+  viewer.setInside(inside);
+  caseBox.disabled = inside;                                          // the case is already off the plinth
+  viewer.setAOStrength(inside ? 0.45 : 0.9);
 }
 
 yearsInput.addEventListener("input", () => setYears(parseFloat(yearsInput.value), true));
@@ -286,7 +349,7 @@ $<HTMLInputElement>("#fragment").addEventListener("input", (e) => {
 });
 $("#case").addEventListener("change", applyVisibility);
 document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) =>
-  b.addEventListener("click", () => viewer.view(b.dataset.view as string)),
+  b.addEventListener("click", () => { setSky(false); viewer.view(b.dataset.view as string); }),
 );
 viewer.onView = (name) => {
   const base = name.split("-")[0];
@@ -312,13 +375,15 @@ viewer.onHover = (id) => {
   hover.replaceChildren();
   if (!id || !viewer.graph) return;
   const n = viewer.graph.get(id);
-  const name = NAMES[id] ?? id;
-  const parts = [name];
-  if (n?.teeth) parts.push(`${n.teeth} teeth`, `${Math.abs(n.rate).toFixed(4)} turns a year`);
-  if (n?.status) parts.push(n.status);
-  hover.append(parts.join(" · "));
-  const idEl = document.createElement("span"); idEl.className = "id"; idEl.textContent = id;
-  hover.append(idEl);
+  const el = (cls: string, text: string) => { const s = document.createElement("span"); s.className = cls; s.textContent = text; return s; };
+  hover.append(el("name", NAMES[id] ?? id));
+  if (n?.teeth) {
+    const r = Math.abs(n.rate);
+    const turns = r >= 1 ? `turns ${r.toFixed(r >= 10 ? 1 : 2)} times a year` : r > 0 ? `one turn every ${(1 / r).toFixed(1)} years` : "fixed";
+    hover.append(el("meta", `${n.teeth} teeth · ${turns}`));
+  }
+  if (n?.status) hover.append(el("tag", n.status));
+  hover.append(el("id", id));
 };
 
 function loop(now: number): void {
@@ -328,6 +393,7 @@ function loop(now: number): void {
   tour.crankRunning(playing);
   last = now;
   viewer.render();
+  cosmos.draw();
   requestAnimationFrame(loop);
 }
 update();

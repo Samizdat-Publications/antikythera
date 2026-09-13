@@ -65,7 +65,7 @@ sc.world = world
 world.use_nodes = True
 bg = world.node_tree.nodes.get("Background")
 if bg:
-    bg.inputs[0].default_value = (0.012, 0.009, 0.007, 1)
+    bg.inputs[0].default_value = (0.035, 0.026, 0.02, 1)     # a faintly lit warm room
     bg.inputs[1].default_value = 1.0
 
 master = bpy.data.objects.get("MASTER")
@@ -92,15 +92,24 @@ def light(name, color, energy, size):
     return ob
 
 
-def aim(ob, target):
-    d = Vector(ob.location) - Vector(target)
-    ob.rotation_euler = d.to_track_quat("Z", "Y").to_euler()
+def aim(ob, target, up=(0.0, 1.0, 0.0)):
+    """Point the object's -Z at the target with its +Y toward `up` (this model is +Y up, not +Z,
+    so Vector.to_track_quat would roll the camera 90 degrees)."""
+    from mathutils import Matrix
+    pos = Vector(ob.location)
+    f = (Vector(target) - pos).normalized()
+    r = f.cross(Vector(up)).normalized()
+    u = r.cross(f).normalized()
+    m = Matrix((r, u, -f)).transposed().to_4x4()
+    m.translation = pos
+    ob.matrix_world = m
 
 
-key = light("Key", (1.0, 0.86, 0.68), 5.5e6, 260)
-fill = light("Fill", (0.72, 0.78, 0.90), 1.4e6, 420)
-rim = light("Rim", (1.0, 0.78, 0.52), 2.6e6, 160)
-back_key = light("BackKey", (1.0, 0.88, 0.72), 4.5e6, 260)
+# big soft sources: a gallery softbox, not a bare bulb, so the roughness mottling stays subtle
+key = light("Key", (1.0, 0.86, 0.68), 6.0e6, 520)
+fill = light("Fill", (0.72, 0.78, 0.90), 1.6e6, 700)
+rim = light("Rim", (1.0, 0.78, 0.52), 2.4e6, 300)
+back_key = light("BackKey", (1.0, 0.88, 0.72), 5.0e6, 520)
 for o in bpy.data.objects:
     if o.type == "LIGHT" and o.name not in ("Key", "Fill", "Rim", "BackKey"):
         o.hide_render = True                         # the old Sun etc.
@@ -140,9 +149,17 @@ for v in VIEWS:
     rim.location = (60, 240, -420) if front else (60, 240, 420); aim(rim, tgt)
     back_key.location = (-220, 160, -460); aim(back_key, tgt)
     back_key.hide_render = front
+    # the pin-and-slot sits between the plates: strip plates, dials and case for that view (x-ray)
+    xray = v == "pinslot"
+    for o in bpy.data.objects:
+        if o.get("am_role") in ("plate", "plate_b1", "dial", "frame_b1", "case"):
+            o.hide_render = xray
     sc.render.filepath = os.path.join(OUT, f"{v}.jpg")
     bpy.ops.render.render(write_still=True)
     rendered.append((v, round(time.time() - t0)))
+for o in bpy.data.objects:
+    if o.get("am_role") in ("plate", "plate_b1", "dial", "frame_b1", "case"):
+        o.hide_render = False
 
 if frag is not None:
     frag.hide_render = frag_hidden

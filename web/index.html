@@ -29,21 +29,32 @@
       <main class="layout">
         <section class="stage">
           <canvas id="stage" aria-label="3D view of the mechanism"></canvas>
+          <canvas id="cosmos-stage" class="cosmos-stage" aria-label="the sky the machine tracks: Earth at the centre, each body on its epicycle, trails showing retrograde loops"></canvas>
           <div class="stage-hud">
             <div class="views">
               <span class="seg" role="group" aria-label="viewpoint">
                 <button data-view="front" aria-pressed="false">Front</button>
                 <button data-view="back" aria-pressed="false">Back</button>
-                <button data-view="iso" aria-pressed="true">Iso</button>
+                <button data-view="iso" aria-pressed="true">Three-quarter</button>
                 <button data-view="crank" aria-pressed="false">Crank</button>
+                <button id="sky-btn" data-mode="cosmos" aria-pressed="false" title="the sky the machine tracks, drawn from its own gears">Sky</button>
               </span>
-              <label class="chk"><input type="checkbox" id="xray" /> X-ray</label>
-              <label class="chk"><input type="checkbox" id="case" checked /> Case</label>
-              <label class="chk frag"><span>The real Fragment A</span><input type="range" id="fragment" min="0" max="100" value="0" aria-label="crossfade to the CT scan of Fragment A" title="crossfade to the CT scan of the real Fragment A (Ashkan Pakzad, CC BY 4.0)" /></label>
+              <label class="chk inside" title="lift the case, plates and dials away to see the gears"><input type="checkbox" id="xray" /> Inside</label>
+              <details class="exhibit">
+                <summary>Exhibit</summary>
+                <div class="exhibit-body">
+                  <label class="chk"><input type="checkbox" id="case" checked /> wooden case</label>
+                  <label class="chk frag"><span>the real Fragment A</span><input type="range" id="fragment" min="0" max="100" value="0" aria-label="crossfade to the CT scan of Fragment A" title="crossfade to the CT scan of the real Fragment A (Ashkan Pakzad, CC BY 4.0)" /></label>
+                </div>
+              </details>
             </div>
             <div id="hover" class="hover" aria-live="polite"></div>
           </div>
           <div id="loading" class="loading">loading the mechanism…</div>
+          <div id="begin" class="begin" hidden>
+            <button id="begin-btn" class="primary">Begin the walkthrough</button>
+            <span class="begin-sub">eleven short steps, narrated · <button id="begin-skip" class="link">or explore on your own</button></span>
+          </div>
           <div id="onboard-slot"></div>
         </section>
         <aside class="panels">
@@ -93,9 +104,17 @@
               <dl id="moon-dl" class="grid"></dl>
             </div>
           </section>
+          <section class="panel" id="panel-cosmos">
+            <h2>The sky it tracks</h2>
+            <canvas id="cosmos" class="cosmos-panel" aria-label="geocentric diagram of the machine's Sun, Moon and planets"></canvas>
+            <div class="cosmos-legend" id="cosmos-legend"></div>
+            <p class="foot">Earth in the middle, the zodiac around it. Each body is drawn where its own pin-and-slot puts it, so the trail it leaves is the path Ptolemy would have drawn: the outer planets loop backwards each time the Earth overtakes them. <span class="src">Verdigris</span> ticks are the true sky; bronze ticks are what the machine shows.</p>
+          </section>
           <section class="panel">
-            <h2>The front dial</h2>
-            <dl id="front-dl" class="grid"></dl>
+            <details>
+              <summary>The front dial <span class="hint">what every pointer reads</span></summary>
+              <dl id="front-dl" class="grid"></dl>
+            </details>
           </section>
           <section class="panel">
             <details>
@@ -124,6 +143,14 @@
               <summary>The gear trains <span class="hint">seventeen trains, as the papers write them</span></summary>
               <div id="inspector" class="inspector"></div>
               <p class="foot">Choose a train to see it alone in the machine; choose it again to bring everything back.</p>
+            </details>
+          </section>
+          <section class="panel colophon">
+            <details>
+              <summary>Sources <span class="hint">who this rests on</span></summary>
+              <p class="foot">Reconstruction after Freeth, Higgon, Dacanalis, MacDonald, Georgakopoulou and Wojcik, <em>A Model of the Cosmos in the ancient Greek Antikythera Mechanism</em>, Scientific Reports 11:5821 (2021), CC BY 4.0, with the earlier AMRP papers (2006–2014). Epochs: Carman &amp; Evans 2014; Voulgaris, Mouratidis &amp; Vossinakis 2022.</p>
+              <p class="foot">Eclipses: <span class="src">NASA's Five Millennium Canon</span> (Espenak &amp; Meeus). Sky: <span class="src">astronomy-engine</span> (Don Cross). Fragment A CT scan: Ashkan Pakzad, CC BY 4.0. Layout reference: Thomas Weibel, CC BY.</p>
+              <p class="foot">Every gear here is generated from one tooth table; the parapegma lines and the Saros glyph hours beyond the 15 surviving cells are schematic.</p>
             </details>
           </section>
         </aside>

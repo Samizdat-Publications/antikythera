@@ -6,6 +6,14 @@ Metonic, Callippic, Games, Saros and Exeligmos back dials) built parametrically
 in Blender 5.1 from a single gear table, exported as glTF, and driven date by
 date in a web dashboard that compares what the machine shows with the real sky.
 
+![The reconstruction in its case, Cycles render](docs/renders/iso.jpg)
+
+Live: https://antikythera.stewartgregerson.workers.dev
+
+| ![Front dial](docs/renders/front.jpg) | ![Back dials](docs/renders/back.jpg) |
+|---|---|
+| The front dial: zodiac and Egyptian calendar rings, the Sun, Moon and five planets | The back: Metonic and Saros spirals with the Games and Exeligmos sub-dials |
+
 ## Layout
 
 ```

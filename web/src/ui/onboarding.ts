@@ -80,8 +80,8 @@ export const STEPS: Step[] = [
   },
   {
     id: "explore", title: "Explore", clip: "explore",
-    body: "Drag to orbit, scroll to zoom, hover a gear for its tooth count and rate, click a train to isolate it. X-ray strips the plates away; the jump buttons take you to the next eclipse; type a year to travel there. Everything you see is computed from the gear table, and everything it claims is checked against the sky.",
-    run: (h) => { h.view("iso"); h.setYears(0); h.play(false); h.focus(null); },
+    body: "Drag to orbit, scroll to zoom, hover a gear for its tooth count and rate, choose a train to see it alone. Inside lifts the plates away; the space bar turns the crank; the jump buttons take you to the next eclipse; type a year to travel there. Everything you see is computed from the gear table, and everything it claims is checked against the sky.",
+    run: (h) => { h.isolate([]); h.xray(false); h.view("iso"); h.play(true, 0.0821918); h.focus(null); },   // leave it turning, as a museum would
   },
 ];
 
@@ -107,9 +107,9 @@ export class Onboarding {
         <div class="onboard-foot">
           <label class="chk"><input type="checkbox" class="onboard-narrate" checked /> narration</label>
           <span class="onboard-keys small">← → keys · Esc closes</span>
-          <span class="onboard-dots"></span>
-          <span class="btns"><button class="mini onboard-prev">◀ back</button><button class="mini onboard-next">next ▶</button></span>
+          <span class="btns"><button class="mini onboard-prev">back</button><button class="mini onboard-next">next</button></span>
         </div>
+        <span class="onboard-progress"><i></i></span>
       </div>`;
     (document.getElementById("onboard-slot") ?? document.body).replaceWith(this.el);
     this.el.id = "onboard-slot";
@@ -155,11 +155,11 @@ export class Onboarding {
     this.show();
   }
 
+  /** Closing keeps the scene as it is: a visitor who stops at the pin and slot stays there. */
   close(): void {
     this.el.hidden = true;
     this.audio.pause();
     this.hooks.focus(null);
-    this.hooks.reset();
     try { localStorage.setItem("am_onboarded", "1"); } catch { /* ignore */ }
     this.onDone?.();
   }
@@ -169,16 +169,9 @@ export class Onboarding {
     this.el.querySelector(".onboard-step")!.textContent = `Walkthrough · ${this.index + 1} of ${this.steps.length}`;
     this.el.querySelector(".onboard-title")!.textContent = s.title;
     this.el.querySelector(".onboard-body")!.textContent = s.body;
-    this.el.querySelector(".onboard-dots")!.replaceChildren(
-      ...this.steps.map((_, i) => {
-        const d = document.createElement("i");
-        d.className = i === this.index ? "on" : i < this.index ? "done" : "";
-        d.addEventListener("click", () => { this.index = i; this.show(); });
-        return d;
-      }),
-    );
+    (this.el.querySelector(".onboard-progress i") as HTMLElement).style.width = `${((this.index + 1) / this.steps.length) * 100}%`;
     (this.el.querySelector(".onboard-prev") as HTMLButtonElement).disabled = this.index === 0;
-    this.el.querySelector(".onboard-next")!.textContent = this.index === this.steps.length - 1 ? "finish" : "next ▶";
+    this.el.querySelector(".onboard-next")!.textContent = this.index === this.steps.length - 1 ? "finish" : "next";
     s.run(this.hooks);
     this.speak();
   }

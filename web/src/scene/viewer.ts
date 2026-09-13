@@ -41,7 +41,7 @@ function galleryEnvironment(): THREE.Scene {
   };
   const plane = (w: number, h: number) => new THREE.PlaneGeometry(w, h);
   panel(plane(5, 6), 0xffe2b8, 6.0, [-6, 5, 5], [0, 0, 0]);          // key, warm, high left
-  panel(new THREE.CircleGeometry(0.45, 32), 0xfff4e2, 32.0, [-5.6, 5.4, 5.4], [0, 0, 0]); // the lamp itself
+  panel(new THREE.CircleGeometry(0.45, 32), 0xfff4e2, 22.0, [-5.6, 5.4, 5.4], [0, 0, 0]); // the lamp itself
   panel(plane(6, 4), 0x9fb4c8, 1.3, [7, 2, 3], [0, 0, 0]);           // fill, cool, right
   panel(plane(9, 0.6), 0xffc98a, 5.0, [0, 6, -7], [0, 0, 0]);        // rim strip, behind and above
   panel(plane(3, 3), 0xfff1dc, 1.8, [0, -5.5, 4], [0, 0, 0]);        // floor bounce
@@ -129,10 +129,14 @@ const FinalShader = {
     }`,
 };
 
+interface RevealItem { o: THREE.Object3D; mats: THREE.Material[]; p0: THREE.Vector3; d: THREE.Vector3 }
+
 export interface ViewerOptions {
   canvas: HTMLCanvasElement;
   url: string;
   onReady?: (graph: GearGraph) => void;
+  onProgress?: (loaded: number, total: number) => void;
+  onError?: (err: unknown) => void;
 }
 
 type Preset = [[number, number, number], [number, number, number]];
@@ -163,7 +167,7 @@ export class Viewer {
   root: THREE.Group | null = null;
   private highlightMats: Map<THREE.Mesh, THREE.Material | THREE.Material[]> = new Map();
   private raycaster = new THREE.Raycaster();
-  private pointer = new THREE.Vector2();
+  private pointer = new THREE.Vector2(9, 9);        // off-canvas until the pointer arrives
   private pointerDirty = false;
   private lastPick = 0;
   hovered: string | null = null;
@@ -174,6 +178,15 @@ export class Viewer {
   private fragmentOpacity = 0;
   /** Alignment of the scan to the reconstruction (mm, radians), tuned by eye. */
   static FRAGMENT_POSE = { position: [0, 0, 0] as [number, number, number], rotation: [0, Math.PI / 2, 0] as [number, number, number], scale: 1.0 };
+
+  /** Gallery furniture (plinth, floor): hidden while the Fragment A scan is shown alone. */
+  private set: THREE.Object3D[] = [];
+  /** The "Inside" reveal: plates, dials and case lifting away over ~1.1 s. */
+  private reveal: { on: boolean; start: number; items: RevealItem[] } | null = null;
+  private insideOn = false;
+  private ghostMat = new THREE.MeshPhysicalMaterial({ color: 0x8a6a3a, metalness: 0.9, roughness: 0.5, transparent: true, opacity: 0.13, depthWrite: false, envMapIntensity: 0.4 });
+  private ghosted: [THREE.Mesh, THREE.Material | THREE.Material[]][] = [];
+  private lastInput = performance.now();
 
   // selective bloom bookkeeping
   private bloomMeshes = new Set<THREE.Mesh>();
@@ -210,11 +223,13 @@ export class Viewer {
     this.controls = new OrbitControls(this.camera, opts.canvas);
     this.controls.enableDamping = true;
     this.controls.target.set(...t);
-    this.controls.addEventListener("start", () => { this.tween = null; this.setView("free"); });
+    this.controls.addEventListener("start", () => { this.tween = null; this.controls.autoRotate = false; this.lastInput = performance.now(); this.setView("free"); });
     this.controls.addEventListener("change", () => { this.pointerDirty = true; });
+    this.controls.autoRotateSpeed = 0.35;                         // one turn in ~3 minutes: a visitor drifting round the case
+    for (const ev of ["pointerdown", "wheel", "keydown", "touchstart"]) opts.canvas.addEventListener(ev, () => { this.lastInput = performance.now(); this.controls.autoRotate = false; }, { passive: true });
 
     // the exhibit light: one warm spot from high left with soft shadows
-    const key = new THREE.SpotLight(0xffe4bf, 2.6, 0, 0.46, 0.65, 0);
+    const key = new THREE.SpotLight(0xffe4bf, 2.2, 0, 0.46, 0.65, 0);
     key.position.set(-300, 360, 520);
     key.target.position.set(0, -10, 10);
     key.castShadow = true;
@@ -227,15 +242,33 @@ export class Viewer {
     fill.position.set(380, -40, 260);
     const rim = new THREE.DirectionalLight(0xffc98a, 1.2);
     rim.position.set(60, 240, -420);
-    const backKey = new THREE.DirectionalLight(0xffe6c4, 1.7);      // lights the back dials
-    backKey.position.set(-220, 160, -460);
+    // raking lights: low over each dial face so engraving, spirals and the brushed plate cast micro-shadows
+    const frontRake = new THREE.DirectionalLight(0xffd9a8, 0.9);
+    frontRake.position.set(-480, 300, 110);
+    const backKey = new THREE.DirectionalLight(0xffe6c4, 1.9);      // lights the back dials, raking from upper left
+    backKey.position.set(-420, 280, -170);
+    backKey.target.position.set(0, -10, -40);
     backKey.castShadow = true;
     backKey.shadow.mapSize.set(2048, 2048);
     backKey.shadow.bias = -0.0004;
-    backKey.shadow.normalBias = 0.6;
+    backKey.shadow.normalBias = 0.8;
     const bcam = backKey.shadow.camera as THREE.OrthographicCamera;
-    bcam.left = -260; bcam.right = 260; bcam.top = 260; bcam.bottom = -260; bcam.near = 50; bcam.far = 1200;
-    this.scene.add(key, key.target, fill, rim, backKey);
+    bcam.left = -280; bcam.right = 280; bcam.top = 280; bcam.bottom = -280; bcam.near = 50; bcam.far = 1200;
+    this.scene.add(key, key.target, fill, rim, frontRake, backKey, backKey.target);
+
+    // the gallery set: a stone plinth under the case and a floor for the light pool and the contact shadow
+    const plinth = new THREE.Mesh(new THREE.BoxGeometry(320, 70, 220), new THREE.MeshStandardMaterial({ color: 0x2a2624, roughness: 0.62, metalness: 0.05, envMapIntensity: 0.5 }));
+    plinth.position.set(0, -216, -4);                             // the case bottom is at y = -180
+    plinth.castShadow = true; plinth.receiveShadow = true;
+    const plinthTop = new THREE.Mesh(new THREE.BoxGeometry(336, 6, 236), new THREE.MeshStandardMaterial({ color: 0x3a3330, roughness: 0.4, metalness: 0.05, envMapIntensity: 0.6 }));
+    plinthTop.position.set(0, -183, -4);
+    plinthTop.castShadow = true; plinthTop.receiveShadow = true;
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), new THREE.MeshStandardMaterial({ color: 0x241d18, roughness: 0.9, metalness: 0.0, envMapIntensity: 0.35 }));
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -252;
+    floor.receiveShadow = true;
+    this.scene.add(plinth, plinthTop, floor);
+    this.set.push(plinth, plinthTop, floor);
 
     // post: bloom of the glowing parts only (everything else painted black) ...
     this.bloomComposer = new EffectComposer(this.renderer);
@@ -269,7 +302,7 @@ export class Viewer {
       this.graph.setYears(0);
       opts.onReady?.(this.graph);
       this.view("iso", 2600);                                       // walk up to the vitrine
-    });
+    }, (ev) => opts.onProgress?.(ev.loaded, ev.total), (err) => opts.onError?.(err));
 
     opts.canvas.addEventListener("pointermove", (e) => {
       const r = opts.canvas.getBoundingClientRect();
@@ -303,7 +336,7 @@ export class Viewer {
     const tune: Record<string, (src: THREE.MeshStandardMaterial) => THREE.Material> = {
       // roughness > 1 scales the roughness map up: the plates are duller than the turned gears
       Bronze: (s) => physical(s, { metalness: 1.0, roughness: 1.15, envMapIntensity: 0.85, normalScale: new THREE.Vector2(1.2, 1.2), clearcoat: 0.0 }),
-      PlateBronze: (s) => physical(s, { metalness: 1.0, roughness: 1.7, envMapIntensity: 0.35, normalScale: new THREE.Vector2(1.6, 1.6), colorMul: 0.9 }),
+      PlateBronze: (s) => physical(s, { metalness: 1.0, roughness: 1.35, envMapIntensity: 0.55, normalScale: new THREE.Vector2(1.6, 1.6), colorMul: 0.72 }),
       DarkBronze: (s) => physical(s, { metalness: 0.9, roughness: 1.4, envMapIntensity: 0.5, normalScale: new THREE.Vector2(1.2, 1.2) }),
       Gold: (s) => physical(s, { color: new THREE.Color(0xffcf6e), metalness: 1.0, roughness: 0.2, clearcoat: 1.0, clearcoatRoughness: 0.1, envMapIntensity: 1.3 }),
       MoonSilver: (s) => physical(s, { color: new THREE.Color(0xeeeef4), metalness: 1.0, roughness: 0.26, clearcoat: 0.4, clearcoatRoughness: 0.15 }),
@@ -316,8 +349,8 @@ export class Viewer {
       Wood: (s) => { s.metalness = 0; s.roughness = 0.82; s.envMapIntensity = 0.55; s.color.multiplyScalar(0.85); return s; },
     };
     const dial = (s: THREE.MeshStandardMaterial): THREE.Material => {
-      s.metalness = 0.5; s.roughness = 0.75; s.envMapIntensity = 0.6;
-      if (s.normalMap) s.normalScale.set(1.35, 1.35);
+      s.metalness = 0.72; s.roughness = 0.66; s.envMapIntensity = 0.6; s.color.multiplyScalar(0.9);
+      if (s.normalMap) s.normalScale.set(1.5, 1.5);
       return s;
     };
     root.traverse((o) => {
@@ -334,7 +367,7 @@ export class Viewer {
         let made = cache.get(key);
         if (!made) {
           const std = mat as THREE.MeshStandardMaterial;
-          if (polished) made = physical(std, { metalness: 1.0, roughness: 0.75, clearcoat: 0.9, clearcoatRoughness: 0.18, envMapIntensity: 1.2, normalScale: new THREE.Vector2(0.5, 0.5) });
+          if (polished) made = physical(std, { metalness: 1.0, roughness: 0.8, clearcoat: 0.8, clearcoatRoughness: 0.2, envMapIntensity: 0.85, normalScale: new THREE.Vector2(0.5, 0.5) });
           else if (tune[name]) made = tune[name](std);
           else if (std.map) made = dial(std);
           else made = std;
@@ -353,8 +386,8 @@ export class Viewer {
         const src = (Array.isArray(m.material) ? m.material[0] : m.material) as THREE.MeshStandardMaterial;
         const glow = new THREE.MeshBasicMaterial({ color: src.color.clone() });
         if (m.name === "sun_ball") glow.color.set(0xffb340).multiplyScalar(1.6);
-        else if (m.name === "moon_ball") glow.color.set(0xd8dcff).multiplyScalar(0.5);
-        else glow.color.multiplyScalar(1.1).lerp(new THREE.Color(0xffffff), 0.25);
+        else if (m.name === "moon_ball") glow.color.set(0xe8e2d0).multiplyScalar(0.35);
+        else glow.color.multiplyScalar(0.7);                      // the stones keep their own hue, no LED white
         this.glowMats.set(m, glow);
       }
     });
@@ -427,6 +460,7 @@ export class Viewer {
     for (const m of this.fragmentMats) { m.opacity = this.fragmentOpacity; m.depthWrite = this.fragmentOpacity > 0.95; }
     if (this.fragment) this.fragment.visible = this.fragmentOpacity > 0;
     if (this.root) this.root.visible = this.fragmentOpacity < 0.98;
+    for (const o of this.set) o.visible = this.fragmentOpacity < 0.98;
   }
   get fragmentShown(): boolean { return this.fragmentOpacity > 0; }
 
@@ -435,6 +469,13 @@ export class Viewer {
     const [pos, tgt] = PRESETS[name] ?? PRESETS.front;
     const p1 = new THREE.Vector3(...pos);
     const t1 = new THREE.Vector3(...tgt);
+    const k2 = this.graph?.get("k2")?.object;
+    if (name === "pinslot" && k2) {                                // frame the actual pin-and-slot pair, wherever it has turned to
+      k2.getWorldPosition(t1);
+      p1.copy(t1).add(new THREE.Vector3(55, -40, -120).normalize().multiplyScalar(135));
+    }
+    this.lastInput = performance.now();
+    this.controls.autoRotate = false;
     if (ms <= 0) {
       this.camera.position.copy(p1);
       this.controls.target.copy(t1);
@@ -514,29 +555,112 @@ export class Viewer {
     });
   }
 
-  /** Show only the given gear ids (plus their carriers); empty list restores everything. */
+  /**
+   * Show the given gear ids in bronze and ghost every other gear at 13 % so the train reads
+   * in context; an empty list (or the same list again) brings everything back. Isolating
+   * implies looking inside, so the plates lift away.
+   */
   isolate(ids: string[]): void {
     if (!this.root || !this.graph) return;
-    const keep = new Set(ids);
+    for (const [m, mat] of this.ghosted) m.material = mat;
+    this.ghosted.length = 0;
     const same = this.isolated && ids.length === this.isolatedIds.length && ids.every((x, i) => x === this.isolatedIds[i]);
-    if (!keep.size || same) {
-      this.root.traverse((o) => { o.visible = true; });
+    if (!ids.length || same) {
       this.isolated = false;
       this.isolatedIds = [];
       return;
     }
-    this.root.traverse((o) => { o.visible = true; });
     this.isolatedIds = ids;
-    this.root.traverse((o) => {
-      const id = o.userData.am_id as string | undefined;
-      const role = o.userData.am_role as string | undefined;
-      if (id && this.graph!.nodes.has(id)) o.visible = keep.has(id);
-      else if (role) o.visible = false;
-    });
     this.isolated = true;
+    this.setInside(true);
+    const keep = new Set(ids);
+    const ghost = (o: THREE.Object3D, rootNode: THREE.Object3D): void => {
+      if (o !== rootNode && typeof o.userData.am_id === "string") return;    // another node: its own turn
+      const m = o as THREE.Mesh;
+      if (m.isMesh) { this.ghosted.push([m, m.material]); m.material = this.ghostMat; }
+      for (const c of o.children) ghost(c, rootNode);
+    };
+    for (const n of this.graph.nodes.values()) if (!keep.has(n.id)) ghost(n.object, n.object);
   }
   private isolated = false;
   private isolatedIds: string[] = [];
+  get isolatedTrain(): string[] { return this.isolatedIds; }
+
+  /**
+   * "Inside": the case, plates and dials lift away from the gears along their own axis and
+   * fade over ~1.1 s (the reverse when closing), so looking inside is the machine moving,
+   * not a checkbox flipping.
+   */
+  setInside(on: boolean, animate = true): void {
+    if (!this.graph || on === this.insideOn) return;
+    this.insideOn = on;
+    if (this.reveal) this.finishReveal(this.reveal, true);
+    const items: RevealItem[] = [];
+    const seen = new Set<THREE.Object3D>();
+    for (const role of ["plate", "plate_b1", "dial", "frame_b1", "case"]) {
+      for (const o of this.graph.roles.get(role) ?? []) {
+        if (seen.has(o)) continue;
+        seen.add(o);
+        if (role === "case" && !this.caseShown) continue;
+        const w = o.getWorldPosition(new THREE.Vector3());
+        const d = new THREE.Vector3();
+        if (role === "case") {                                       // the boards part outwards
+          const ax = Math.abs(w.x) > Math.abs(w.y) ? "x" : "y";
+          d[ax] = Math.sign(w[ax] || 1) * 110;
+        } else d.z = (w.z >= 0 ? 1 : -1) * 90;
+        const mats: THREE.Material[] = [];
+        o.traverse((c) => {
+          const m = c as THREE.Mesh;
+          if (!m.isMesh) return;
+          const src = Array.isArray(m.material) ? m.material : [m.material];
+          const clones = src.map((s) => { const k = s.clone(); k.transparent = true; k.opacity = on ? 1 : 0; return k; });
+          m.userData.am_restore = m.material;
+          m.material = Array.isArray(m.material) ? clones : clones[0];
+          mats.push(...clones);
+        });
+        o.visible = true;
+        items.push({ o, mats, p0: o.position.clone(), d });
+      }
+    }
+    this.reveal = { on, start: performance.now(), items };
+    if (!animate) this.finishReveal(this.reveal, false);
+  }
+  get inside(): boolean { return this.insideOn; }
+  private caseShown = true;
+  /** The wooden case on or off (kept off while Inside is on). */
+  setCase(on: boolean): void {
+    this.caseShown = on;
+    if (!this.graph || this.insideOn) return;
+    for (const o of this.graph.roles.get("case") ?? []) o.visible = on;
+  }
+
+  private stepReveal(now: number): void {
+    const rv = this.reveal;
+    if (!rv) return;
+    const u = Math.min(1, (now - rv.start) / 1100);
+    const e = 1 - Math.pow(1 - u, 3);
+    const k = rv.on ? e : 1 - e;
+    for (const it of rv.items) {
+      it.o.position.copy(it.p0).addScaledVector(it.d, k * k);
+      for (const m of it.mats) m.opacity = 1 - k;
+    }
+    if (u >= 1) this.finishReveal(rv, false);
+  }
+
+  private finishReveal(rv: NonNullable<typeof this.reveal>, abort: boolean): void {
+    for (const it of rv.items) {
+      it.o.position.copy(it.p0);
+      it.o.traverse((c) => {
+        const m = c as THREE.Mesh;
+        if (m.isMesh && m.userData.am_restore) { m.material = m.userData.am_restore as THREE.Material; delete m.userData.am_restore; }
+      });
+      for (const m of it.mats) m.dispose();
+      const role = it.o.userData.am_role as string;
+      it.o.visible = abort ? !this.insideOn : !rv.on;
+      if (role === "case" && !this.caseShown) it.o.visible = false;
+    }
+    if (this.reveal === rv) this.reveal = null;
+  }
 
   /** Paint everything but the glowing parts black, render the bloom, restore. */
   private renderBloom(): void {
@@ -545,7 +669,7 @@ export class Viewer {
       const m = o as THREE.Mesh;
       if (!m.isMesh || !m.visible) return;
       this.swapped.push([m, m.material]);
-      m.material = this.glowMats.get(m) ?? this.darkMat;
+      m.material = (m.material !== this.ghostMat && this.glowMats.get(m)) || this.darkMat;
     });
     this.savedBackground = this.scene.background;
     this.scene.background = null;
@@ -578,6 +702,9 @@ export class Viewer {
     if (this.lastFrame) this.autoQuality(now - this.lastFrame);
     this.lastFrame = now;
     this.stepTween(now);
+    this.stepReveal(now);
+    // a visitor left alone drifts slowly round the case
+    if (!this.tween && !this.reveal && !this.controls.autoRotate && now - this.lastInput > 12000 && ["iso", "front", "back", "free"].includes(this.currentView)) this.controls.autoRotate = true;
     this.controls.update();
     this.pick(now);
     this.gtao.enabled = this.quality.gtao;

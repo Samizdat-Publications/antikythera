@@ -30,17 +30,28 @@ export function drawMoon(canvas: HTMLCanvasElement, elongationDeg: number): void
   const w = canvas.width, h = canvas.height;
   const cx = w / 2, cy = h / 2, R = Math.min(w, h) / 2 - 6;
   ctx.clearRect(0, 0, w, h);
+  // the phase ball in the model: a silvered half and a lamp-black half, lit from the upper left
   ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
-  ctx.fillStyle = "#15171d"; ctx.fill();                       // night side + earthshine
+  const night = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.05, cx, cy, R);
+  night.addColorStop(0, "#2a2320");
+  night.addColorStop(1, "#110e0c");
+  ctx.fillStyle = night; ctx.fill();
   const poly = litPolygon(cx, cy, R, elongationDeg);
   ctx.beginPath();
   poly.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
   ctx.closePath();
-  const grad = ctx.createRadialGradient(cx - R * 0.25, cy - R * 0.25, R * 0.1, cx, cy, R);
-  grad.addColorStop(0, "#fff8ea");
-  grad.addColorStop(1, "#d6ccb4");
+  const grad = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.08, cx, cy, R * 1.05);
+  grad.addColorStop(0, "#f6efe1");
+  grad.addColorStop(0.6, "#cfc3ad");
+  grad.addColorStop(1, "#8f8470");
   ctx.fillStyle = grad;
   ctx.fill();
+  // the terminator softens with a faint glaze rather than a hard edge
+  ctx.save();
+  ctx.clip();
   ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(255,240,210,0.22)"; ctx.lineWidth = 1; ctx.stroke();
+  ctx.strokeStyle = "rgba(30,24,20,0.35)"; ctx.lineWidth = 3; ctx.stroke();
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(201,151,63,0.35)"; ctx.lineWidth = 1; ctx.stroke();      // the bronze rim of the drum
 }

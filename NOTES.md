@@ -67,3 +67,36 @@ See README "Attributions" for licences.
   bounce) is the environment. Stewart's note tonight: the dark vitrine look is "sort of bland"; he wants
   to try the Hellenistic-manuscript theme next, plus more animation, and suggested a higher-quality
   moon/cosmos simulation that shows how complex the motion being tracked is.
+- 2026-09-13 (night) Second design critique, after the lighting pass. Two independent assessments
+  (design-director sub-agent with fresh 1600 px screenshots; `npx impeccable --json web/index.html`).
+  Heuristic total 25/40 (was 22): status 3, real-world 3, control 3, consistency 2, error prevention 2,
+  recognition 2, flexibility 2, minimalism 3, error recovery 1, help 4. AI-slop verdict: no tells (the
+  residue was the segmented control + pill checkboxes, carousel dots, a stock Chart.js legend and stones
+  that bloomed LED-white). Detector: five typography warnings, all on uppercase panel summaries whose
+  italic hints it counted as body text, and the loading label's tracking; treated as false positives
+  except the tracking, which was reduced. The two P0s: (1) "the exhibit reads as a lit paper poster on
+  black": no floor, plinth or contact shadow, head-on back light so the spirals cast nothing, matte
+  plates; (2) the walkthrough's peak steps (pin and slot, Mars) framed the wrong gears and scrolled the
+  wrong element. Acted on tonight: stone plinth + floor with the spot's pool and contact shadow; raking
+  key on the back dials and a raking fill on the front; plates and dials back to metal (darker albedo
+  multiplier instead of matte); "Inside" replaces the X-ray checkbox and is an animation (case boards
+  part outwards, plates and dials lift ±90 mm along the axis and fade, 1.1 s, reversed on close);
+  isolating a train ghosts the rest at 13 % instead of hiding it; the pin-and-slot camera targets k2's
+  live world position; the walkthrough is a wall label over the lower-left of the stage (the stage keeps
+  its full height), closing it keeps the scene, the last step leaves the crank turning; first visit shows
+  one "Begin the walkthrough" invitation instead of autoplaying blocked narration; the crank runs at a
+  month per second on arrival for returning visitors; idle 12 s → slow orbit; space bar = crank; HUD is
+  Front / Back / Three-quarter / Crank / Sky + Inside + an "Exhibit" disclosure (case, Fragment A); hover
+  label restyled (name in Marcellus, teeth and period in words, status as a small-caps tag); glossary
+  titles on the ledger terms; loader progress and a label-voice failure message; the front-dial ledger
+  collapsed; a Sources colophon; the moon disc drawn like the phase ball. Not done: pointer trails on the
+  3D Mars stone (the Sky view covers it), URL state, drag-the-crank, tablet camera framing.
+- 2026-09-13 (night) "The sky it tracks": `web/src/ui/cosmos.ts` draws the machine's own cosmos. Every
+  planetary output is a pin-and-slot or pin-follower, i.e. the direction of q = a + r·u(t) from the slot
+  axis, which is an epicycle on a deferent; each body is drawn at q, rotated so its direction equals the
+  pointer's dial reading and scaled so the larger of |a| and r is its deferent radius. The mirror
+  ambiguity does not matter: |q| is the same either way and the direction is forced. Trails are sampled
+  from the gear graph (setYears backwards over 0.085–2.3 years per body, then restored), so Mars, Venus
+  and Mercury show their real retrograde loops with the mechanism's own ratios (Mars e = 6.58/10 = 0.66,
+  the Sun's equation of centre e = 1.375/32.7). Verdigris ticks are astronomy-engine truth. Shown small in
+  the column and full size on the stage ("Sky" in the view segment).
