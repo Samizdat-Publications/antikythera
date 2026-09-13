@@ -78,10 +78,24 @@ export class GearGraph {
     return this.nodes.get(id);
   }
 
-  /** Assembly offsets for the pointers, degrees measured clockwise from the dial zero. */
-  setCalibration(offsetsDeg: Record<string, number>): void {
-    for (const [k, v] of Object.entries(offsetsDeg)) this.offsets.set(k, (-v * Math.PI) / 180);
+  /**
+   * Set the machine: at years = 0 each display must READ the given dial angle
+   * (degrees clockwise from the zodiac zero). Followers, slot gears and the moon
+   * chain do not sit at zero when the crank is at zero, so the assembly offset is
+   * the desired angle minus whatever the driving node shows at the epoch.
+   */
+  setCalibration(desiredDeg: Record<string, number>): void {
+    const saved = this.years;
+    this.setYears(0);
+    for (const [display, deg] of Object.entries(desiredDeg)) {
+      const objs = this.pointers.get(display);
+      if (!objs?.length) continue;
+      const parent = objs[0].parent;
+      const parent0 = parent ? this.worldZOf(parent) : 0;
+      this.offsets.set(display, (-deg * Math.PI) / 180 - parent0);
+    }
     this.applyOffsets();
+    this.setYears(saved);
   }
 
   private applyOffsets(): void {
@@ -89,6 +103,13 @@ export class GearGraph {
       const off = this.offsets.get(display) ?? 0;
       for (const o of objs) o.rotation.z = off;
     }
+  }
+
+  private worldZOf(o: Object3D): number {
+    let a = 0;
+    let p: Object3D | null = o;
+    while (p) { a += p.rotation.z; p = p.parent; }
+    return a;
   }
 
   setVisible(role: string, visible: boolean): void {
@@ -164,9 +185,10 @@ export class GearGraph {
   }
 
   /** Dial reading of a display in degrees clockwise from the dial zero (includes calibration). */
-  reading(display: string, driverId: string): number {
-    const off = this.offsets.get(display) ?? 0;
-    return clockwiseDeg(this.worldZ(driverId) + off);
+  reading(display: string, _driverId?: string): number {
+    const objs = this.pointers.get(display);
+    if (!objs?.length) return 0;
+    return clockwiseDeg(this.worldZOf(objs[0]));
   }
 }
 
