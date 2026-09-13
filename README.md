@@ -26,12 +26,18 @@ Blender 5.1 open with the Lab MCP add-on (socket 127.0.0.1:9876):
 
 ```
 python tools/gen_dial_textures.py
+python tools/gen_surface_maps.py
 python tools/bl.py blender/build_all.py 600
 python tools/bl.py blender/dials.py 600
+python tools/bl.py blender/surface.py 1800        # UVs, textured bronze, baked ambient occlusion
 python tools/bl.py blender/export_glb.py 600
 cd web && npx gltf-transform optimize ../dist/antikythera.glb public/models/antikythera.glb --texture-size 2048 --compress meshopt --texture-compress false --palette false --join false --flatten false
+cd web && npx gltf-transform webp public/models/antikythera.glb public/models/antikythera.glb --quality 90
+cd web && npx gltf-transform meshopt public/models/antikythera.glb public/models/antikythera.glb --level medium   # webp decodes meshopt; re-apply
 cd web && npm run dev
 ```
+
+Hero renders (Cycles, GPU): `python tools/bl.py blender/hero_render.py 1800` writes `docs/renders/*.jpg`.
 
 Tests: `cd python && python -m pytest`, `cd web && npx vitest run`.
 

@@ -58,9 +58,10 @@ function wallTexture(): THREE.Texture {
   c.width = c.height = 512;
   const g = c.getContext("2d")!;
   const rg = g.createRadialGradient(256, 210, 20, 256, 256, 330);
-  rg.addColorStop(0, "#3b2e23");
-  rg.addColorStop(0.45, "#241b15");
-  rg.addColorStop(1, "#110e0b");
+  // drawn bright: ACES with the gallery exposure crushes the low end
+  rg.addColorStop(0, "#6b5443");
+  rg.addColorStop(0.45, "#3a2c22");
+  rg.addColorStop(1, "#17120e");
   g.fillStyle = rg;
   g.fillRect(0, 0, 512, 512);
   const t = new THREE.CanvasTexture(c);
@@ -301,9 +302,9 @@ export class Viewer {
     };
     const tune: Record<string, (src: THREE.MeshStandardMaterial) => THREE.Material> = {
       // roughness > 1 scales the roughness map up: the plates are duller than the turned gears
-      Bronze: (s) => physical(s, { metalness: 1.0, roughness: 1.15, envMapIntensity: 0.85, normalScale: new THREE.Vector2(0.9, 0.9), clearcoat: 0.0 }),
-      PlateBronze: (s) => physical(s, { metalness: 1.0, roughness: 1.7, envMapIntensity: 0.35, normalScale: new THREE.Vector2(1.0, 1.0), colorMul: 0.9 }),
-      DarkBronze: (s) => physical(s, { metalness: 0.9, roughness: 1.4, envMapIntensity: 0.5, normalScale: new THREE.Vector2(0.8, 0.8) }),
+      Bronze: (s) => physical(s, { metalness: 1.0, roughness: 1.15, envMapIntensity: 0.85, normalScale: new THREE.Vector2(1.2, 1.2), clearcoat: 0.0 }),
+      PlateBronze: (s) => physical(s, { metalness: 1.0, roughness: 1.7, envMapIntensity: 0.35, normalScale: new THREE.Vector2(1.6, 1.6), colorMul: 0.9 }),
+      DarkBronze: (s) => physical(s, { metalness: 0.9, roughness: 1.4, envMapIntensity: 0.5, normalScale: new THREE.Vector2(1.2, 1.2) }),
       Gold: (s) => physical(s, { color: new THREE.Color(0xffcf6e), metalness: 1.0, roughness: 0.2, clearcoat: 1.0, clearcoatRoughness: 0.1, envMapIntensity: 1.3 }),
       MoonSilver: (s) => physical(s, { color: new THREE.Color(0xeeeef4), metalness: 1.0, roughness: 0.26, clearcoat: 0.4, clearcoatRoughness: 0.15 }),
       MoonBlack: (s) => physical(s, { color: new THREE.Color(0x07070a), metalness: 0.2, roughness: 0.45, clearcoat: 0.6, clearcoatRoughness: 0.2 }),

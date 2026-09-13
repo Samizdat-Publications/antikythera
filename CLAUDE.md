@@ -30,11 +30,17 @@ web/                     Vite + TypeScript + three.js dashboard (`npm run dev` o
 
 ```
 python tools/gen_dial_textures.py
+python tools/gen_surface_maps.py                  # bronze normal/roughness/albedo + dial normal maps
 python tools/bl.py blender/build_all.py 600
 python tools/bl.py blender/dials.py 600
+python tools/bl.py blender/surface.py 1800        # UVs, textured materials, AO bake (--set BAKE=0 to skip)
 python tools/bl.py blender/export_glb.py 600
 cd web && npx gltf-transform optimize ../dist/antikythera.glb public/models/antikythera.glb --texture-size 2048 --compress meshopt --texture-compress false --palette false --join false --flatten false
+cd web && npx gltf-transform webp public/models/antikythera.glb public/models/antikythera.glb --quality 90
+cd web && npx gltf-transform meshopt public/models/antikythera.glb public/models/antikythera.glb --level medium   # webp decodes meshopt; re-apply
 ```
+Cloudflare caps each static asset at 25 MiB, so the WebP step is not optional.
+Hero renders: `python tools/bl.py blender/hero_render.py 1800` -> docs/renders/*.jpg.
 
 Deploy: `cd web && npm run build && cd .. && npx wrangler deploy --assets web/dist`
 → https://antikythera.stewartgregerson.workers.dev (Cloudflare Workers static assets).

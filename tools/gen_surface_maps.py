@@ -116,7 +116,7 @@ def roughness() -> np.ndarray:
     TARNISH = tarnish_mask() if TARNISH is None else TARNISH
     fine = fft_noise(PX, 3.0 * PX_PER_MM / 12.8)
     zones = fft_noise(PX, 60.0 * PX_PER_MM / 12.8)
-    r = 0.40 + 0.035 * fine + 0.06 * zones + 0.20 * TARNISH
+    r = 0.40 + 0.035 * fine + 0.06 * zones + 0.12 * TARNISH
     r = np.clip(r, 0.26, 0.74)
     g = np.clip(r * 255 + 0.5, 0, 255).astype(np.uint8)
     return np.stack([g, g, g], axis=-1)
@@ -131,7 +131,7 @@ def albedo() -> np.ndarray:
     mott = 1.0 + 0.035 * fine + 0.04 * fft_noise(PX, 9.0 * PX_PER_MM / 12.8) + 0.04 * fft_noise(PX, 60.0 * PX_PER_MM / 12.8)
     col = base[None, None, :] * mott[..., None]
     # the tarnish shows mainly as dullness (roughness); in the colour it is only a faint shadow
-    col = col * (1 - 0.14 * TARNISH[..., None]) + dark[None, None, :] * (0.14 * TARNISH[..., None])
+    col = col * (1 - 0.10 * TARNISH[..., None]) + dark[None, None, :] * (0.10 * TARNISH[..., None])
     return np.clip(col * 255 + 0.5, 0, 255).astype(np.uint8)
 
 

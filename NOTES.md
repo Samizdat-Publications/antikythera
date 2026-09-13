@@ -43,3 +43,27 @@ See README "Attributions" for licences.
   "Turn the crank" as the one filled button, 4 Hz column updates while playing with fixed-height
   eclipse rows, walkthrough docked under the stage, human names in the hover, JD moved off the header.
   Lighting: hand-built warm gallery PMREM environment, shadow-casting key + back key, GTAO pass.
+- 2026-09-13 (night) Lighting phases b–c. The glTF exporter had been shipping each dial's grey *bump*
+  image as its normal texture (a Bump node has no glTF equivalent), which tilted every dial face by a
+  constant ~55° and washed the engraving out; `tools/gen_surface_maps.py` now derives real tangent-space
+  normals from the bump maps and `dials.py` wires a NormalMap node. Bronze gets procedural tileable maps
+  (spun/concentric for turned parts, brushed+hammered for plates, roughness with sparse tarnish, faintly
+  mottled albedo) drawn at 2048 px per 160 mm; `blender/surface.py` box-projects UVs on the 127 meshes
+  that had none (gear UVs centred on the axis so the spun map is concentric), textures the materials in
+  Blender so the GLB carries them, and bakes ambient occlusion to a vertex colour with OptiX. Moving parts
+  are baked with only static parts, same-axis parts and wheels ≥ 40 mm radius as occluders, so nothing
+  rotation-dependent is frozen in; the bake is honest and harsh (plates sit flush on dials, so hidden
+  faces are 0) and the web shader lifts it with pow(ao, 0.6) and feeds it into *indirect* light only
+  (never the albedo), at 0.9 strength, 0.45 in X-ray where the occluding plates are hidden.
+  Web: spot key (decay 0) with PCF shadows, cool fill for the case volume, selective bloom (Sun ball,
+  stones, moon ball painted with glow materials while everything else is black), BokehPass only on the
+  idle iso preset, vignette + static per-pixel grain in the final composite (nothing animates), ACES 0.85,
+  great-circle camera tweens with a slight pull-back, an intro dolly on load, picking only when the
+  pointer moves (was a 9 ms raycast every frame), and an auto-quality guard that drops bloom/DoF when the
+  median frame exceeds 26 ms. Cloudflare Workers caps static assets at 25 MiB; the textured GLB was 31,
+  so `gltf-transform webp --quality 90` runs after `optimize` in the rebuild order.
+  Phase d (Poly Haven HDRI) NOT done: it needs a download and Stewart asked to be asked first; the
+  hand-built PMREM gallery (key panel + a small bright lamp disc for glints, cool fill, rim strip, floor
+  bounce) is the environment. Stewart's note tonight: the dark vitrine look is "sort of bland"; he wants
+  to try the Hellenistic-manuscript theme next, plus more animation, and suggested a higher-quality
+  moon/cosmos simulation that shows how complex the motion being tracked is.
