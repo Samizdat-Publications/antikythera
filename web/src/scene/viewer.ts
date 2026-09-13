@@ -115,14 +115,22 @@ export class Viewer {
     this.graph?.setYears(years);
   }
 
-  /** Camera presets, Blender coordinates. */
-  view(name: "front" | "back" | "iso" | "crank" | "top"): void {
-    const p: Record<string, [number, number, number]> = {
-      front: [0, -30, 560], back: [0, -30, -560], iso: [300, -220, 420], crank: [520, 0, 80], top: [0, 560, 1],
+  /** Camera presets, Blender coordinates (position, target). */
+  view(name: string): void {
+    const p: Record<string, [[number, number, number], [number, number, number]]> = {
+      "front": [[0, -30, 560], [0, -10, 0]],
+      "front-close": [[30, -40, 300], [0, 0, 30]],
+      "back": [[0, -30, -560], [0, -10, 0]],
+      "back-upper": [[20, 40, -260], [0, 58, -40]],
+      "back-lower": [[20, -110, -260], [0, -81, -40]],
+      "pinslot": [[80, -90, -200], [15, -10, -25]],
+      "iso": [[300, -220, 420], [0, 0, 0]],
+      "crank": [[520, 0, 80], [60, 0, 0]],
+      "top": [[0, 560, 1], [0, 0, 0]],
     };
-    const [x, y, z] = p[name];
-    this.camera.position.set(x, y, z);
-    this.controls.target.set(0, 0, 0);
+    const [pos, tgt] = p[name] ?? p.front;
+    this.camera.position.set(...pos);
+    this.controls.target.set(...tgt);
     this.controls.update();
   }
 
@@ -162,11 +170,15 @@ export class Viewer {
   isolate(ids: string[]): void {
     if (!this.root || !this.graph) return;
     const keep = new Set(ids);
-    if (!keep.size || this.isolated) {
+    const same = this.isolated && ids.length === this.isolatedIds.length && ids.every((x, i) => x === this.isolatedIds[i]);
+    if (!keep.size || same) {
       this.root.traverse((o) => { o.visible = true; });
       this.isolated = false;
+      this.isolatedIds = [];
       return;
     }
+    this.root.traverse((o) => { o.visible = true; });
+    this.isolatedIds = ids;
     this.root.traverse((o) => {
       const id = o.userData.am_id as string | undefined;
       const role = o.userData.am_role as string | undefined;
@@ -176,6 +188,7 @@ export class Viewer {
     this.isolated = true;
   }
   private isolated = false;
+  private isolatedIds: string[] = [];
 
   render(): void {
     this.controls.update();

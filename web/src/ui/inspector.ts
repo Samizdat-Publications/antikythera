@@ -28,6 +28,7 @@ export function renderInspector(el: HTMLElement, graph: GearGraph | null, onPick
     ...TRAINS.map((t) => {
       const row = document.createElement("div");
       row.className = "train";
+      row.id = "train-" + t.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-$/, "");
       const h = document.createElement("div");
       h.className = "train-h";
       h.textContent = t.name;

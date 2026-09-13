@@ -15,6 +15,10 @@
           <span class="brand-title">ANTIKYTHERA</span>
           <span class="brand-sub">a working model of the cosmos · Freeth et al. 2021 reconstruction</span>
         </div>
+        <div class="topbar-actions">
+          <button id="tour-btn" class="mini tour-btn">? walkthrough</button>
+          <label class="chk"><input type="checkbox" id="sfx" /> sounds</label>
+        </div>
         <div class="date-readout">
           <span id="date-main">—</span>
           <span id="date-sub">—</span>
@@ -37,7 +41,7 @@
           <div id="loading" class="loading">loading the mechanism…</div>
         </section>
         <aside class="panels">
-          <section class="panel">
+          <section class="panel" id="panel-crank">
             <h2>Crank</h2>
             <div class="crank-row">
               <button id="play" class="play" title="turn the crank">▶</button>
@@ -68,14 +72,6 @@
             <div class="row small"><span>date</span>
               <span class="btns"><input id="goto-year" type="number" placeholder="year (−204 = 205 BC)" /><button class="mini" id="goto">go</button></span>
             </div>
-          </section>
-          <section class="panel">
-            <h2>Tour</h2>
-            <div class="crank-row">
-              <button id="tour-btn" class="mini" disabled>▶ guided tour</button>
-              <label class="chk"><input type="checkbox" id="sfx" /> sounds</label>
-            </div>
-            <p id="tour-text" class="foot"></p>
           </section>
           <section class="panel">
             <h2>Eclipse predictor</h2>

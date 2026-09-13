@@ -7,6 +7,7 @@ import { loadCanon, nextEclipse, prevEclipse, eclipsesBetween, describeType, sky
 import { glyphByMonth, OBSERVED_HOURS } from "./astro/eym";
 import { auditSaros, drawErrorChart, errorSeries } from "./ui/analytics";
 import { Tour } from "./ui/tour";
+import { Onboarding, firstVisit } from "./ui/onboarding";
 import { renderInspector } from "./ui/inspector";
 import type { Chart } from "chart.js/auto";
 
@@ -31,22 +32,49 @@ const viewer = new Viewer({
     applyVisibility();
     update();
     renderInspector($("#inspector"), g, (ids) => viewer.isolate(ids));
+    if (firstVisit()) setTimeout(() => onboarding.start(), 600);
   },
 });
 loadCanon().then((c) => { canon = c; update(); refreshAnalytics(); });
 (window as unknown as { __viewer: Viewer }).__viewer = viewer;
 
-// ---- guided tour + sounds
+// ---- sounds (crank loop, eclipse chime)
 const tour = new Tour();
-tour.onView = (v) => viewer.view(v as "front");
-tour.onClip = (clip, i, n) => {
-  $("#tour-text").textContent = clip ? `${i + 1}/${n} · ${clip.text}` : "";
-  $("#tour-btn").textContent = clip ? "■ stop tour" : "▶ guided tour";
-};
-tour.load().then((ok) => { $("#tour-btn").toggleAttribute("disabled", !ok); });
-$("#tour-btn").addEventListener("click", () => (tour.playing ? tour.stop() : tour.start()));
+tour.load();
 $("#sfx").addEventListener("change", (e) => tour.setSfx((e.target as HTMLInputElement).checked));
 let lastSarosCell = -1;
+
+// ---- onboarding walkthrough
+let focused: HTMLElement | null = null;
+function setPlaying(on: boolean, spd?: number): void {
+  playing = on;
+  if (spd !== undefined) { speed = spd; $<HTMLSelectElement>("#speed").value = String(spd); }
+  $("#play").textContent = playing ? "❚❚" : "▶";
+  last = performance.now();
+}
+const onboarding = new Onboarding({
+  view: (v) => viewer.view(v),
+  setYears,
+  play: setPlaying,
+  xray: (on) => { $<HTMLInputElement>("#xray").checked = on; applyVisibility(); },
+  isolate: (ids) => viewer.isolate(ids),
+  focus: (sel) => {
+    focused?.classList.remove("focus");
+    focused = sel ? document.querySelector<HTMLElement>(sel) : null;
+    if (focused) {
+      focused.classList.add("focus");
+      focused.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  },
+  jumpNextLunarEclipse: () => {
+    if (!canon) return;
+    const r = nextEclipse(canon.lunar, epoch.jdn + years * TROPICAL_YEAR + 0.5);
+    if (r) setYears((r.jd - epoch.jdn) / TROPICAL_YEAR);
+  },
+  setEpoch: (id) => { $<HTMLSelectElement>("#epoch").value = id; $<HTMLSelectElement>("#epoch").dispatchEvent(new Event("change")); },
+});
+onboarding.load();
+$("#tour-btn").addEventListener("click", () => onboarding.start());
 let chart: Chart | undefined;
 
 function refreshAnalytics(): void {
@@ -209,11 +237,7 @@ function applyVisibility(): void {
 }
 
 yearsInput.addEventListener("input", () => setYears(parseFloat(yearsInput.value)));
-$("#play").addEventListener("click", () => {
-  playing = !playing;
-  $("#play").textContent = playing ? "❚❚" : "▶";
-  last = performance.now();
-});
+$("#play").addEventListener("click", () => setPlaying(!playing));
 $<HTMLSelectElement>("#speed").addEventListener("change", (e) => { speed = parseFloat((e.target as HTMLSelectElement).value); });
 $<HTMLSelectElement>("#epoch").addEventListener("change", (e) => {
   epoch = EPOCHS.find((x) => x.id === (e.target as HTMLSelectElement).value) ?? EPOCHS[0];

@@ -18,6 +18,25 @@ OUT = os.path.join(ROOT, "web", "public", "audio")
 os.makedirs(OUT, exist_ok=True)
 
 TOUR = [
+    ("welcome", "iso",
+     "Welcome. What you are looking at is a working reconstruction of the Antikythera mechanism, the geared astronomical calculator recovered from a shipwreck in 1901. "
+     "Every one of its sixty-nine gears turns here with the tooth counts the researchers read from the X-ray scans, so the pointers move exactly as the bronze would have. "
+     "This short walk-through shows you how to read it."),
+    ("epoch", "front",
+     "One idea makes everything else on this screen make sense: the machine has no clock inside it. It was set by hand once, on one particular day, and after that it only ever counts turns of the crank. "
+     "That starting day is the epoch. Nothing on the bronze states it, so scholars had to work it out from the eclipse glyphs on the Saros dial: the pattern of fifty-one glyphs only fits certain starting months. "
+     "Carman and Evans found the full moon of the twelfth of May, 205 BC; Voulgaris and his colleagues argue for the winter-solstice eclipse of December 178 BC. You can switch between them, and every dial re-sets. "
+     "Because the machine only knows turns, every date here is written as years since epoch, and its errors grow the further you crank away from it."),
+    ("zodiac", "front",
+     "The front dial is the sky. The inner ring is the zodiac, twelve signs of thirty degrees; the outer ring is the Egyptian civil calendar of 365 days, which the owner could slip round by one day every four years. "
+     "The date pointer reads the calendar; the true-sun pointer, with its little golden ball, reads the zodiac. Around the plate, the parapegma lists the risings and settings of stars, keyed to letters on the dial."),
+    ("backdials", "back",
+     "Turn the machine round. The upper spiral is the Metonic calendar: 235 months in five turns, nineteen years, named in the Corinthian dialect of north-west Greece. "
+     "Inside it a small dial counts the seventy-six-year Callippic period, and another runs through the four-year cycle of the great games: Olympia, Pythia, Nemea, Isthmia. "
+     "Both spiral pointers carry a pin that slides outward along the groove as the years pass."),
+    ("explore", "iso",
+     "That is the machine. Drag to orbit, scroll to zoom, hover any gear to see its tooth count and rate, and click a train in the list to isolate it. "
+     "Use X-ray to strip the plates away, jump straight to the next eclipse, and watch the analytics panel to see where twenty-two centuries of gearing agree with the sky, and where they drift. Enjoy the cosmos."),
     ("discovery", "front",
      "In 1901, sponge divers working a Roman-era shipwreck off the island of Antikythera brought up a corroded lump of bronze. "
      "Inside it were gears — thirty of them survive — cut by hand more than two thousand years ago. "
