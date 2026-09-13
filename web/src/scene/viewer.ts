@@ -389,7 +389,9 @@ export class Viewer {
       Carnelian: (s) => physical(s, { metalness: 0, roughness: 0.22, clearcoat: 1.0, clearcoatRoughness: 0.05, ior: 1.65 }),
       Crystal: (s) => physical(s, { color: new THREE.Color(0xf4f2ff), metalness: 0.05, roughness: 0.08, clearcoat: 1.0, clearcoatRoughness: 0.03, ior: 1.55, specularIntensity: 1.2 }),
       Obsidian: (s) => physical(s, { color: new THREE.Color(0x0b0b10), metalness: 0.15, roughness: 0.12, clearcoat: 1.0, clearcoatRoughness: 0.04 }),
-      Wood: (s) => { s.metalness = 0; s.roughness = 0.82; s.envMapIntensity = 0.55; this.wood = { mat: s, base: s.color.clone() }; s.color.multiplyScalar(this.theme === "manuscript" ? 2.4 : 0.85); return s; },
+      // the boards' baked occlusion is near zero where they meet the plates; the loader would multiply it
+      // into the wood and paint the case black, so the wood ignores the bake (GTAO handles its contacts)
+      Wood: (s) => { s.metalness = 0; s.roughness = 0.82; s.envMapIntensity = 0.55; s.vertexColors = false; s.needsUpdate = true; this.wood = { mat: s, base: s.color.clone() }; s.color.multiplyScalar(this.theme === "manuscript" ? 1.15 : 0.85); return s; },
     };
     const dial = (s: THREE.MeshStandardMaterial): THREE.Material => {
       s.metalness = 0.72; s.roughness = 0.66; s.envMapIntensity = 0.6; s.color.multiplyScalar(0.9);
@@ -465,7 +467,7 @@ export class Viewer {
     u.grain.value = m ? 0.02 : 0.035;
     this.bloomBase = m ? 0.32 : 0.55;
     if (this.wood) {                                               // the case reads as black lacquer against parchment otherwise
-      this.wood.mat.color.copy(this.wood.base).multiplyScalar(m ? 2.4 : 0.85);   // pale oak on the desk, not lacquer
+      this.wood.mat.color.copy(this.wood.base).multiplyScalar(m ? 1.15 : 0.85);
       this.wood.mat.envMapIntensity = m ? 0.8 : 0.55;
       this.wood.mat.roughness = m ? 0.72 : 0.82;
     }
