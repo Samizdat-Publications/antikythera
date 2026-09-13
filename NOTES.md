@@ -30,3 +30,7 @@ See README "Attributions" for licences.
 - 2026-09-12 Schematic (not attested) content: parapegma line positions and most Greek phrasing, Saros
   glyph hours outside the 15 surviving cells (Freeth 2014 Table S3), index-letter assignment, the Games
   dial 4th year (Halieia), Callippic dial existence.
+- 2026-09-12 Deployed: https://antikythera.stewartgregerson.workers.dev (Cloudflare Workers static assets,
+  `npx wrangler deploy --assets web/dist` after `npm run build`). Source: private repo
+  github.com/Samizdat-Publications/antikythera. The Claude Design mockup round was skipped in favour of
+  building the dashboard directly so Stewart can review the live thing.
