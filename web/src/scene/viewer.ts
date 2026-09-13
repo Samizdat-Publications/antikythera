@@ -32,7 +32,7 @@ export class Viewer {
     this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.1;
+    this.renderer.toneMappingExposure = 0.85;
     this.scene.background = new THREE.Color(0x0b0d12);
     const pmrem = new THREE.PMREMGenerator(this.renderer);
     this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -43,23 +43,27 @@ export class Viewer {
     this.controls.enableDamping = true;
     this.controls.target.set(0, 0, 0);
 
-    const key = new THREE.DirectionalLight(0xfff1dc, 2.2);
+    const key = new THREE.DirectionalLight(0xfff1dc, 1.4);
     key.position.set(200, 150, 400);
-    const fill = new THREE.DirectionalLight(0xb9c8ff, 0.7);
+    const fill = new THREE.DirectionalLight(0xb9c8ff, 0.35);
     fill.position.set(-300, -100, 200);
-    const back = new THREE.DirectionalLight(0xffd9a8, 1.2);
+    const back = new THREE.DirectionalLight(0xffd9a8, 0.8);
     back.position.set(0, 200, -400);
-    this.scene.add(key, fill, back, new THREE.AmbientLight(0x404050, 0.6));
+    this.scene.add(key, fill, back);
 
     new GLTFLoader().load(opts.url, (gltf) => {
       this.root = gltf.scene;
+      const bronze = new THREE.MeshStandardMaterial({ color: 0x9c6b2f, metalness: 1.0, roughness: 0.42, envMapIntensity: 0.9 });
+      const plate = new THREE.MeshStandardMaterial({ color: 0x6e4a20, metalness: 1.0, roughness: 0.55, envMapIntensity: 0.7 });
       this.root.traverse((o) => {
         if ((o as THREE.Mesh).isMesh) {
           const m = o as THREE.Mesh;
-          m.castShadow = false;
-          const mat = m.material as THREE.MeshStandardMaterial;
-          if (mat && "metalness" in mat) {
-            mat.envMapIntensity = 1.0;
+          const name = (m.material as THREE.Material)?.name ?? "";
+          if (name.startsWith("Bronze")) m.material = bronze;
+          else if (name.startsWith("PlateBronze")) m.material = plate;
+          else {
+            const mat = m.material as THREE.MeshStandardMaterial;
+            if (mat && "envMapIntensity" in mat) mat.envMapIntensity = 0.9;
           }
         }
       });

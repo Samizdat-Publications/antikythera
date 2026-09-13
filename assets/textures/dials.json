@@ -1,0 +1,68 @@
+{
+ "dials": [
+  {
+   "name": "front_dial",
+   "span_mm": 165.0,
+   "px": 4096,
+   "centre_mm": [
+    0.0,
+    0.0
+   ],
+   "back_view": false
+  },
+  {
+   "name": "back_upper",
+   "span_mm": 150.0,
+   "px": 4096,
+   "centre_mm": [
+    0.0,
+    58.183550084041016
+   ],
+   "back_view": true
+  },
+  {
+   "name": "back_lower",
+   "span_mm": 150.0,
+   "px": 4096,
+   "centre_mm": [
+    0.0,
+    -81.36591830005379
+   ],
+   "back_view": true
+  },
+  {
+   "name": "parapegma_upper",
+   "span_mm": 150.0,
+   "px": 2048,
+   "centre_mm": [
+    0.0,
+    0.0
+   ],
+   "back_view": false
+  },
+  {
+   "name": "parapegma_lower",
+   "span_mm": 150.0,
+   "px": 2048,
+   "centre_mm": [
+    0.0,
+    0.0
+   ],
+   "back_view": false
+  }
+ ],
+ "spirals": {
+  "metonic": {
+   "r0": 36.0,
+   "pitch": 5.4,
+   "turns": 5,
+   "cells": 235
+  },
+  "saros": {
+   "r0": 36.0,
+   "pitch": 6.6,
+   "turns": 4,
+   "cells": 223
+  }
+ }
+}

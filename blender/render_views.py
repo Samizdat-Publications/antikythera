@@ -35,10 +35,6 @@ if master is not None:
     master.update_tag()
 
 cam = sc.camera
-for pl in ("front_plate", "back_plate"):
-    ob = bpy.data.objects.get(pl)
-    if ob:
-        ob.hide_render = True
 
 # key + fill lights
 for name in ("Key", "Fill", "Rim"):

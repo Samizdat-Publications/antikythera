@@ -10,9 +10,13 @@
  *       pin_follower  {epicycle, cx, cy, d} theta = atan2(cy + d sin t, cx + d cos t)
  *       chain         {from, ratio, carrierFrom, carrierTo}  theta = ratio*t (+ carrier terms)
  *       differential  {a, b, axis}          theta_x = theta_a - theta_b
- *   am_order      evaluation order (0 linear, 10 devices, 20+ chains, 30 differential)
+ *       spiral        {rate, turns, r0, pitch} follower pin slides: x = r0 + pitch*((rate*years) mod turns)
+ *   am_order      evaluation order (0 linear, 10 devices, 20+ chains, 30 differential, 40 spiral)
+ *   am_role       'pointer' | 'dial' | 'plate' | 'case' | 'tube' | 'frame_b1' ... (visibility groups)
+ *   am_pointer    which display a pointer/ring belongs to (date, moon, mars, metonic, ...)
  *
  * Blender convention: rotation.z = -2*pi*rateRel*years (clockwise from the front = positive rate).
+ * Pointers additionally carry an assembly offset (calibration, degrees clockwise) set at runtime.
  */
 import type { Object3D } from "three";
 
@@ -28,15 +32,30 @@ export interface GearNode {
   coupling: Record<string, unknown> | null;
   teeth: number | null;
   frame: string;
+  status: string;
 }
 
 export class GearGraph {
   readonly nodes = new Map<string, GearNode>();
+  readonly pointers = new Map<string, Object3D[]>();     // display -> pointer/ring objects
+  readonly roles = new Map<string, Object3D[]>();        // role -> objects
   private ordered: GearNode[] = [];
+  private offsets = new Map<string, number>();           // display -> radians (Blender sense)
+  private years = 0;
 
   constructor(root: Object3D) {
     root.traverse((o) => {
       const u = o.userData as Record<string, unknown>;
+      if (typeof u.am_role === "string") {
+        const list = this.roles.get(u.am_role) ?? [];
+        list.push(o);
+        this.roles.set(u.am_role, list);
+      }
+      if (typeof u.am_pointer === "string") {
+        const list = this.pointers.get(u.am_pointer) ?? [];
+        list.push(o);
+        this.pointers.set(u.am_pointer, list);
+      }
       if (typeof u.am_id !== "string") return;
       const coupling = typeof u.am_coupling === "string" ? (JSON.parse(u.am_coupling) as Record<string, unknown>) : null;
       this.nodes.set(u.am_id, {
@@ -49,6 +68,7 @@ export class GearGraph {
         coupling,
         teeth: u.am_teeth == null ? null : Number(u.am_teeth),
         frame: String(u.am_frame ?? "world"),
+        status: String(u.am_status ?? ""),
       });
     });
     this.ordered = [...this.nodes.values()].sort((a, b) => a.order - b.order);
@@ -58,8 +78,26 @@ export class GearGraph {
     return this.nodes.get(id);
   }
 
+  /** Assembly offsets for the pointers, degrees measured clockwise from the dial zero. */
+  setCalibration(offsetsDeg: Record<string, number>): void {
+    for (const [k, v] of Object.entries(offsetsDeg)) this.offsets.set(k, (-v * Math.PI) / 180);
+    this.applyOffsets();
+  }
+
+  private applyOffsets(): void {
+    for (const [display, objs] of this.pointers) {
+      const off = this.offsets.get(display) ?? 0;
+      for (const o of objs) o.rotation.z = off;
+    }
+  }
+
+  setVisible(role: string, visible: boolean): void {
+    for (const o of this.roles.get(role) ?? []) o.visible = visible;
+  }
+
   /** Set every node's rotation for the given number of b1 turns. */
   setYears(years: number): void {
+    this.years = years;
     for (const n of this.ordered) {
       const c = n.coupling;
       if (!c) {
@@ -96,11 +134,17 @@ export class GearGraph {
           else n.object.rotation.z = a;
           break;
         }
+        case "spiral": {
+          const turns = c.turns as number;
+          const t = (((c.rate as number) * years) % turns + turns) % turns;
+          n.object.position.x = (c.r0 as number) + (c.pitch as number) * t;
+          break;
+        }
       }
     }
   }
 
-  /** Continuous (unwrapped) local Z rotation of a node, radians. */
+  /** Local Z rotation of a node, radians. */
   localZ(id: string): number {
     const n = this.nodes.get(id);
     return n ? n.object.rotation.z : 0;
@@ -117,6 +161,12 @@ export class GearGraph {
       o = o.parent;
     }
     return a;
+  }
+
+  /** Dial reading of a display in degrees clockwise from the dial zero (includes calibration). */
+  reading(display: string, driverId: string): number {
+    const off = this.offsets.get(display) ?? 0;
+    return clockwiseDeg(this.worldZ(driverId) + off);
   }
 }
 

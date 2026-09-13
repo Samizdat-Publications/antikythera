@@ -209,6 +209,18 @@
    "coupling": null,
    "order": 0
   },
+  "calendar_ring": {
+   "node": "calendar_ring",
+   "teeth": null,
+   "kind": "empty",
+   "rate": 0.0,
+   "rateRel": 0.0,
+   "rateFrac": null,
+   "frame": "world",
+   "status": "",
+   "coupling": null,
+   "order": 0
+  },
   "d1": {
    "node": "d1",
    "teeth": 24,
@@ -863,6 +875,42 @@
    "status": "hypothesised",
    "coupling": null,
    "order": 0
+  },
+  "pin_metonic": {
+   "node": "pin_metonic",
+   "teeth": null,
+   "kind": "empty",
+   "rate": null,
+   "rateRel": null,
+   "rateFrac": null,
+   "frame": "n1",
+   "status": "",
+   "coupling": {
+    "type": "spiral",
+    "rate": -0.2631578947368421,
+    "turns": 5,
+    "r0": 36.0,
+    "pitch": 5.4
+   },
+   "order": 40
+  },
+  "pin_saros": {
+   "node": "pin_saros",
+   "teeth": null,
+   "kind": "empty",
+   "rate": null,
+   "rateRel": null,
+   "rateFrac": null,
+   "frame": "g1",
+   "status": "",
+   "coupling": {
+    "type": "spiral",
+    "rate": -0.22185508614585792,
+    "turns": 4,
+    "r0": 36.0,
+    "pitch": 6.6
+   },
+   "order": 40
   },
   "q1": {
    "node": "q1",

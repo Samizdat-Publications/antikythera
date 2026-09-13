@@ -16,3 +16,4 @@ assets/raw/
 # OS
 Thumbs.db
 .DS_Store
+assets/textures/_*
