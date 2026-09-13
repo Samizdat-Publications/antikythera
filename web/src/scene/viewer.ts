@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { GearGraph } from "../mech/gearGraph";
 
 export interface ViewerOptions {
@@ -32,29 +33,32 @@ export class Viewer {
     this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.85;
+    this.renderer.toneMappingExposure = 0.9;
     this.scene.background = new THREE.Color(0x0b0d12);
     const pmrem = new THREE.PMREMGenerator(this.renderer);
     this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    this.scene.environmentIntensity = 0.32;
 
     this.camera = new THREE.PerspectiveCamera(38, 1, 1, 5000);
-    this.camera.position.set(90, -140, 330);
+    this.camera.position.set(140, -120, 520);
     this.controls = new OrbitControls(this.camera, opts.canvas);
     this.controls.enableDamping = true;
     this.controls.target.set(0, 0, 0);
 
-    const key = new THREE.DirectionalLight(0xfff1dc, 1.4);
+    const key = new THREE.DirectionalLight(0xfff1dc, 2.4);
     key.position.set(200, 150, 400);
-    const fill = new THREE.DirectionalLight(0xb9c8ff, 0.35);
+    const fill = new THREE.DirectionalLight(0xb9c8ff, 0.5);
     fill.position.set(-300, -100, 200);
-    const back = new THREE.DirectionalLight(0xffd9a8, 0.8);
+    const back = new THREE.DirectionalLight(0xffd9a8, 1.2);
     back.position.set(0, 200, -400);
     this.scene.add(key, fill, back);
 
-    new GLTFLoader().load(opts.url, (gltf) => {
+    const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
+    loader.load(opts.url, (gltf) => {
       this.root = gltf.scene;
-      const bronze = new THREE.MeshStandardMaterial({ color: 0x9c6b2f, metalness: 1.0, roughness: 0.42, envMapIntensity: 0.9 });
-      const plate = new THREE.MeshStandardMaterial({ color: 0x6e4a20, metalness: 1.0, roughness: 0.55, envMapIntensity: 0.7 });
+      const bronze = new THREE.MeshStandardMaterial({ color: 0xa8763a, metalness: 0.95, roughness: 0.4, envMapIntensity: 1.0 });
+      const plate = new THREE.MeshStandardMaterial({ color: 0x7a5426, metalness: 0.9, roughness: 0.55, envMapIntensity: 0.8 });
       this.root.traverse((o) => {
         if ((o as THREE.Mesh).isMesh) {
           const m = o as THREE.Mesh;
@@ -63,7 +67,10 @@ export class Viewer {
           else if (name.startsWith("PlateBronze")) m.material = plate;
           else {
             const mat = m.material as THREE.MeshStandardMaterial;
-            if (mat && "envMapIntensity" in mat) mat.envMapIntensity = 0.9;
+            if (mat && "envMapIntensity" in mat) {
+              mat.envMapIntensity = 0.8;
+              if (mat.map) { mat.metalness = 0.55; mat.roughness = 0.55; }   // engraved dial faces, wood
+            }
           }
         }
       });
@@ -97,7 +104,7 @@ export class Viewer {
   /** Camera presets, Blender coordinates. */
   view(name: "front" | "back" | "iso" | "crank" | "top"): void {
     const p: Record<string, [number, number, number]> = {
-      front: [0, -40, 380], back: [0, -40, -380], iso: [220, -160, 300], crank: [380, 0, 60], top: [0, 380, 1],
+      front: [0, -30, 560], back: [0, -30, -560], iso: [300, -220, 420], crank: [520, 0, 80], top: [0, 560, 1],
     };
     const [x, y, z] = p[name];
     this.camera.position.set(x, y, z);

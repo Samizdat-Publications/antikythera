@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Antikythera Cosmos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./src/ui/style.css" />
   </head>
   <body>
@@ -11,7 +13,7 @@
       <header class="topbar">
         <div class="brand">
           <span class="brand-title">ANTIKYTHERA</span>
-          <span class="brand-sub">a working model of the cosmos, 205 BC</span>
+          <span class="brand-sub">a working model of the cosmos · Freeth et al. 2021 reconstruction</span>
         </div>
         <div class="date-readout">
           <span id="date-main">—</span>
@@ -27,22 +29,25 @@
               <button data-view="back">Back</button>
               <button data-view="iso">Iso</button>
               <button data-view="crank">Crank</button>
+              <label class="chk"><input type="checkbox" id="xray" /> X-ray</label>
+              <label class="chk"><input type="checkbox" id="case" checked /> Case</label>
             </div>
             <div id="hover" class="hover"></div>
           </div>
+          <div id="loading" class="loading">loading the mechanism…</div>
         </section>
         <aside class="panels">
           <section class="panel">
             <h2>Crank</h2>
             <div class="crank-row">
-              <button id="play" class="play">▶</button>
+              <button id="play" class="play" title="turn the crank">▶</button>
               <select id="speed">
                 <option value="0.002739726">1 day / s</option>
                 <option value="0.0821918">1 month / s</option>
                 <option value="1" selected>1 year / s</option>
                 <option value="10">10 years / s</option>
               </select>
-              <button id="epoch-btn" class="ghost">epoch</button>
+              <button id="epoch-btn" class="ghost" title="return to the epoch">epoch</button>
             </div>
             <input id="years" type="range" min="-300" max="2400" step="0.0001" value="0" />
             <div class="row small"><span>years since epoch</span><span id="years-val">0.0000</span></div>
@@ -52,10 +57,21 @@
                 <option value="voulgaris">22 Dec 178 BC · Voulgaris</option>
               </select>
             </div>
+            <div class="row small"><span>go to</span>
+              <span class="btns">
+                <button class="mini" data-jump="prev-solar">◀ solar</button>
+                <button class="mini" data-jump="prev-lunar">◀ lunar</button>
+                <button class="mini" data-jump="next-lunar">lunar ▶</button>
+                <button class="mini" data-jump="next-solar">solar ▶</button>
+              </span>
+            </div>
+            <div class="row small"><span>date</span>
+              <span class="btns"><input id="goto-year" type="number" placeholder="year (−204 = 205 BC)" /><button class="mini" id="goto">go</button></span>
+            </div>
           </section>
           <section class="panel">
-            <h2>Front dial</h2>
-            <dl id="front-dl" class="grid"></dl>
+            <h2>Eclipse predictor</h2>
+            <div id="eclipse" class="eclipse"></div>
           </section>
           <section class="panel">
             <h2>Moon</h2>
@@ -63,6 +79,22 @@
               <canvas id="moon" width="140" height="140"></canvas>
               <dl id="moon-dl" class="grid"></dl>
             </div>
+          </section>
+          <section class="panel">
+            <h2>Front dial</h2>
+            <dl id="front-dl" class="grid"></dl>
+          </section>
+          <section class="panel">
+            <h2>Against the real sky</h2>
+            <dl id="sky-dl" class="grid"></dl>
+            <p class="foot">Truth: astronomy-engine (VSOP87/NOVAS, ±1′ modern era) and the NASA Five Millennium Canon (Espenak &amp; Meeus).</p>
+          </section>
+          <section class="panel">
+            <h2>Analytics</h2>
+            <div class="chart-wrap"><canvas id="chart-moon"></canvas></div>
+            <p class="foot">Pointer error against the ephemeris. The ±6.5° anomaly device removes most of the moon's equation of centre; the remaining band is evection and variation, which the machine does not model.</p>
+            <dl id="audit-dl" class="grid"></dl>
+            <p class="foot">Saros glyphs (Freeth 2014 eclipse-year model) checked against NASA's canon month by month from the epoch.</p>
           </section>
           <section class="panel">
             <h2>Back dials</h2>
