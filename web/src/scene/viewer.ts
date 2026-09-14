@@ -244,7 +244,7 @@ export class Viewer {
   private fragmentMats: THREE.MeshStandardMaterial[] = [];
   private fragmentOpacity = 0;
   /** Alignment of the scan to the reconstruction (mm, radians), tuned by eye. */
-  static FRAGMENT_POSE = { position: [0, 0, 0] as [number, number, number], rotation: [0, Math.PI / 2, 0] as [number, number, number], scale: 1.0 };
+  static FRAGMENT_POSE = { position: [0, 0, 0] as [number, number, number], rotation: [0, Math.PI / 2, -Math.PI / 4] as [number, number, number], scale: 1.0 };   // turned by eye so the scan's four spokes lie on b1's cross at the epoch
 
   /** Gallery furniture (plinth, floor): hidden while the Fragment A scan is shown alone. */
   private set: THREE.Object3D[] = [];
@@ -990,10 +990,17 @@ export class Viewer {
     }
   }
 
+  /** Frame-time statistics for the `?fps=1` overlay: median and worst of the last second. */
+  private recent: number[] = [];
+  stats(): { fps: number; medianMs: number; worstMs: number } {
+    const s = [...this.recent].sort((a, b) => a - b);
+    const med = s.length ? s[s.length >> 1] : 0;
+    return { fps: med ? 1000 / med : 0, medianMs: med, worstMs: s.length ? s[s.length - 1] : 0 };
+  }
   private lastFrame = 0;
   render(): void {
     const now = performance.now();
-    if (this.lastFrame) this.autoQuality(now - this.lastFrame);
+    if (this.lastFrame) { const dt = now - this.lastFrame; this.autoQuality(dt); this.recent.push(dt); if (this.recent.length > 60) this.recent.shift(); }
     this.lastFrame = now;
     this.stepTween(now);
     this.stepApart(now);
@@ -1007,7 +1014,9 @@ export class Viewer {
     const dof = this.quality.dof && this.currentView === "iso" && !this.tween;
     this.bokeh.enabled = dof;
     if (dof) (this.bokeh.uniforms as Record<string, THREE.IUniform>).focus.value = this.camera.position.distanceTo(this.controls.target) * 0.98;
-    const bloom = this.quality.bloom && this.bloomMeshes.size > 0 && this.fragmentOpacity < 0.98;
+    // the glowing parts (Sun ball, stones, moon ball) are all on the front: seen from behind with the plates on, the bloom pass would only re-render the scene black
+    const glowVisible = this.insideOn || this.apartTarget === 1 || this.camera.position.z > -30;
+    const bloom = this.quality.bloom && this.bloomMeshes.size > 0 && this.fragmentOpacity < 0.98 && glowVisible;
     this.finalPass.material.uniforms.bloomStrength.value = bloom ? this.bloomBase : 0.0;
     if (bloom) this.renderBloom();
     this.composer.render();

@@ -268,6 +268,63 @@ export class Cosmos {
     }
   }
 
+  /**
+   * The retrograde strip: each body's longitude against time over its own trail, so a loop in the
+   * diagram is a backwards step here. Longitude runs up the strip (0° at the bottom, 360° at the top,
+   * the twelve signs as bands); time runs left to right and ends now, at the right edge.
+   */
+  drawStrip(canvas: HTMLCanvasElement): void {
+    if (!canvas.isConnected || canvas.clientWidth === 0 || canvas.closest("[hidden]")) return;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    const ms = this.theme === "manuscript";
+    const bronze = ms ? "84,60,36" : "201,151,63", vellum = ms ? "58,44,30" : "232,222,204";
+    const left = 22, right = w - 6, top = 4, bottom = h - 14;
+    const span = Math.max(...this.bodies.map((b) => b.spec.span));            // the longest trail sets the width
+    const X = (yearsAgo: number) => right - (yearsAgo / span) * (right - left);
+    const Y = (lon: number) => bottom - (lon / 360) * (bottom - top);
+    ctx.font = `10px "Segoe UI Symbol", "Noto Sans Symbols", "Apple Symbols", sans-serif`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for (let i = 0; i < 12; i++) {                                              // the twelve signs as bands
+      const y0 = Y(i * 30), y1 = Y(i * 30 + 30);
+      ctx.fillStyle = `rgba(${bronze},${i % 2 ? 0.04 : 0.09})`;
+      ctx.fillRect(left, y1, right - left, y0 - y1);
+      ctx.fillStyle = `rgba(${vellum},0.55)`;
+      ctx.fillText(SIGNS[i], left / 2, (y0 + y1) / 2);
+    }
+    ctx.strokeStyle = `rgba(${bronze},0.35)`; ctx.lineWidth = 1;
+    ctx.strokeRect(left + 0.5, top + 0.5, right - left - 1, bottom - top - 1);
+    const now = this.lastYears;
+    for (const b of this.bodies) {
+      const col = this.stone(b.spec.id);
+      const emph = this.hovered === null || this.hovered === b.spec.id;
+      ctx.strokeStyle = hexToRgba(col, 0.9 * (emph ? 1 : 0.25));
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      let prev: Sample | null = null;
+      for (const s of b.trail) {
+        const x = X(now - s.years), y = Y(s.lon);
+        if (prev && Math.abs(s.lon - prev.lon) > 180) ctx.moveTo(x, y);        // the wrap at 360°: lift the pen
+        else if (prev) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+        prev = s;
+      }
+      ctx.stroke();
+      ctx.fillStyle = hexToRgba(col, emph ? 1 : 0.25);
+      ctx.beginPath(); ctx.arc(right - 1, Y(b.lon), 2.4, 0, TAU); ctx.fill();
+    }
+    ctx.fillStyle = `rgba(${vellum},0.6)`;
+    ctx.font = `italic 10.5px ${ms ? "Cardo" : "Alegreya"}, Georgia, serif`;
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    ctx.fillText(`${span.toFixed(1)} years ago`, left + 2, h - 3);
+    ctx.textAlign = "right";
+    ctx.fillText("now", right - 1, h - 3);
+  }
+
   /** Which body the pointer is over (for emphasis); pass null to clear. */
   hover(id: string | null): void { this.hovered = id; }
   get list(): { id: string; label: string; colour: string }[] { return BODIES.map((b) => ({ id: b.id, label: b.label, colour: this.stone(b.id) })); }

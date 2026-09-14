@@ -209,3 +209,19 @@ See README "Attributions" for licences.
   walkthrough keeps the scene but restores the room (`onDone`), and `reset` does too. The explore
   leaf now names Taken apart, the crank drag and the crank & chime box (a critique leftover: the
   sounds were found by accident).
+- 2026-09-13 (night) Down the backlog. **Fragment A alignment**: with b1 isolated and the scan at
+  50 % from 175 mm straight on, the scan's spokes lie diagonally across b1's cross at rotation 0;
+  turned −45° about the axis (`FRAGMENT_POSE.rotation = [0, π/2, −π/4]`) they fall under b1's spokes
+  at the epoch, and the scan's rim follows b1's rim on the left. +45° put dark bars across the
+  spokes. Judged from screenshots at a few hundred pixels; the position is untouched. **Retrograde
+  strip** (`Cosmos.drawStrip`, `#retro` under the Sky panel): each body's trail as longitude against
+  time, 0–360° up the strip with the twelve signs as bands, the longest span (Mars, 2.3 yr) across
+  the width, the pen lifted at the 360° wrap, the present at the right edge with a dot per body.
+  **Parapegma row** in the front-dial ledger: the 24 attested lines (Bitsakis & Jones 2016) with
+  English glosses in main.ts; the index letters sit at 2.2° and 17.2° into each sign as the texture
+  draws them (schematic), so the row names the letter under the mean-Sun pointer within ±0.6° (the
+  row goes accent-coloured) or the next letter ahead and how far. **Performance**: `?fps=1` shows
+  fps, median and worst frame of the last 60 (this machine: 120 fps, 8.4 ms median); the bloom pass is
+  skipped when the camera is behind the machine with the plates on and nothing taken apart, since
+  every glowing part is on the front (`glowVisible`). Not done: merging static meshes (an export
+  job), the 3D lit moon, the HDRI (needs Stewart's go-ahead to download).

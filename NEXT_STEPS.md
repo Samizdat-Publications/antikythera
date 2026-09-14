@@ -71,6 +71,9 @@ _Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, d
     eclipse beat (lights dip with the chime when a glyph and NASA agree, at slow speeds or on a
     jump), phone-width framing (wider fov on narrow stages), reconstructed gears in italic in the
     train list, an oak table under the case in the manuscript.
+12. **Night batch**: Fragment A turned −45° onto b1's spokes; the retrograde strip under the Sky
+    panel; the parapegma row in the front-dial ledger; `?fps=1`; bloom skipped from behind; per-leaf
+    lighting; the manuscript's opened back lit from behind; chart legend; pen-stroke trails.
 
 ## Backlog, in priority order
 
@@ -84,12 +87,12 @@ _Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, d
    Also re-render the hero images after any material change (`blender/hero_render.py`, ~3 min).
 3. **Tablet/mobile**: ~~aspect-aware framing~~ DONE (fov widens below 6:5). Left: the Sky view and
    the HUD on narrow screens; touch for the crank drag is untested.
-4. **Fragment A alignment** by eye against b1's four spokes.
-5. **3D lit moon** in the Moon panel; **retrograde strip** (longitude vs time) beside the Sky view.
-6. **Parapegma highlight** when the Sun pointer crosses an index letter; transcribe Bitsakis &
-   Jones 2016 for the real lines (currently schematic).
-7. **Performance**: FPS overlay; merge static meshes; the bloom pass re-renders the scene (skip it
-   when no glowing part is on screen).
+4. ~~Fragment A alignment~~ DONE by eye (−45°); its position could still be nudged a few mm.
+5. **3D lit moon** in the Moon panel; ~~retrograde strip~~ DONE.
+6. ~~Parapegma highlight~~ DONE (a ledger row); the letters' degree positions on the ring are still
+   schematic, and the lines are the attested set with reconstructed Greek.
+7. **Performance**: ~~FPS overlay~~ (`?fps=1`), ~~bloom skipped from behind~~ DONE; merge static
+   meshes (export job).
 8. ~~Attested-vs-reconstructed styling in the inspector~~ DONE (italic = reconstructed). Freeth 2014
    Table S3 hours into the Saros dial texture.
 9. Critique leftovers: ~~the accuracy chart's stock legend~~ DONE; its 5-day sampling; ~~"crank &

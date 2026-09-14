@@ -63,6 +63,8 @@ button { cursor: pointer; }
 .hover .name { font-family: var(--font-display); font-size: 14px; color: var(--accent); letter-spacing: 0.02em; }
 .hover .tag { font-variant: small-caps; letter-spacing: 0.08em; color: var(--ink-faint); font-size: 12px; }
 .hover .id { color: var(--ink-faint); font-variant-numeric: tabular-nums; font-size: 12px; }
+.grid dd.on-letter { color: var(--accent); }
+.fps { position: absolute; right: 14px; top: 12px; font-size: 12px; color: var(--ink-dim); font-variant-numeric: tabular-nums; pointer-events: none; }
 .loading[hidden] { display: none; }
 .loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--bronze); font-family: var(--font-display); font-size: 20px; letter-spacing: 0.06em; pointer-events: none; text-align: center; padding: 0 24px; }
 .loading .sub { display: block; margin-top: 8px; font-family: var(--font-body); font-size: 14px; letter-spacing: 0; color: var(--ink-dim); font-style: italic; }
@@ -132,6 +134,7 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 .chart-legend { margin-top: 2px; }
 .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .chart-legend i { width: 16px; height: 2px; border-radius: 0; }
+.retro-strip { display: block; width: 100%; height: 132px; margin-top: 10px; }
 .cosmos-stage { position: absolute; inset: 0; width: 100%; height: 100%; display: none; background: radial-gradient(ellipse at 50% 45%, oklch(0.2 0.016 62), var(--bg) 70%); }
 .stage.sky .cosmos-stage { display: block; }
 .stage.sky #stage { visibility: hidden; }

@@ -120,6 +120,44 @@ loadCanon().then((c) => { canon = c; update(); refreshAnalytics(); });
 
 // ---- the sky it tracks: the small diagram in the column and the same thing over the stage
 const cosmos = new Cosmos([$<HTMLCanvasElement>("#cosmos"), $<HTMLCanvasElement>("#cosmos-stage")]);
+const retro = $<HTMLCanvasElement>("#retro");
+
+/**
+ * The parapegma: the star-calendar lines on the plates above and below the front dial, keyed to
+ * index letters on the zodiac ring. The lines are the attested ones (Bitsakis & Jones 2016, Fragment
+ * C); the letters' positions on the ring are schematic, at 2.2° and 17.2° into each sign, as drawn.
+ */
+const PARAPEGMA: [string, string, string][] = [
+  ["Α", "ΙΣΗΜΕΡΙΑ ΕΑΡΙΝΗ", "spring equinox"], ["Β", "ΠΛΕΙΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΣΠΕΡΙΑΙ", "the Pleiades set in the evening"],
+  ["Γ", "ΥΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΣΠΕΡΙΑΙ", "the Hyades set in the evening"], ["Δ", "ΚΡΙΟΣ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", "Aries begins to rise"],
+  ["Ε", "ΤΑΥΡΟΣ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", "Taurus begins to rise"], ["Ζ", "ΛΥΡΑ ΕΠΙΤΕΛΛΕΙ ΕΣΠΕΡΙΑ", "Lyra rises in the evening"],
+  ["Η", "ΠΛΕΙΑΣ ΕΠΙΤΕΛΛΕΙ ΕΩΙΑ", "the Pleiades rise at dawn"], ["Θ", "ΥΑΣ ΕΠΙΤΕΛΛΕΙ ΕΩΙΑ", "the Hyades rise at dawn"],
+  ["Ι", "ΔΙΔΥΜΟΙ ΑΡΧΟΝΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", "Gemini begins to rise"], ["Κ", "ΑΕΤΟΣ ΕΠΙΤΕΛΛΕΙ ΕΣΠΕΡΙΟΣ", "Aquila rises in the evening"],
+  ["Λ", "ΑΡΚΤΟΥΡΟΣ ΔΥΝΕΙ ΕΩΙΟΣ", "Arcturus sets at dawn"], ["Μ", "ΤΡΟΠΑΙ ΘΕΡΙΝΑΙ", "summer solstice"],
+  ["Ν", "ΚΥΩΝ ΕΠΙΤΕΛΛΕΙ ΕΩΙΟΣ", "Sirius rises at dawn"], ["Ξ", "ΛΕΩΝ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", "Leo begins to rise"],
+  ["Ο", "ΑΕΤΟΣ ΔΥΝΕΙ ΕΩΙΟΣ", "Aquila sets at dawn"], ["Π", "ΑΡΚΤΟΥΡΟΣ ΕΠΙΤΕΛΛΕΙ ΕΩΙΟΣ", "Arcturus rises at dawn"],
+  ["Ρ", "ΙΣΗΜΕΡΙΑ ΦΘΙΝΟΠΩΡΙΝΗ", "autumn equinox"], ["Σ", "ΠΛΕΙΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΩΙΑΙ", "the Pleiades set at dawn"],
+  ["Τ", "ΥΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΩΙΑΙ", "the Hyades set at dawn"], ["Υ", "ΩΡΙΩΝ ΔΥΝΕΙ ΕΩΙΟΣ", "Orion sets at dawn"],
+  ["Φ", "ΤΡΟΠΑΙ ΧΕΙΜΕΡΙΝΑΙ", "winter solstice"], ["Χ", "ΛΥΡΑ ΔΥΝΕΙ ΕΩΙΑ", "Lyra sets at dawn"],
+  ["Ψ", "ΑΡΚΤΟΥΡΟΣ ΔΥΝΕΙ ΕΣΠΕΡΙΟΣ", "Arcturus sets in the evening"], ["Ω", "ΙΧΘΥΕΣ ΑΡΧΟΝΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", "Pisces begins to rise"],
+];
+const LETTER_OFFSETS = [2.2, 17.2];
+/** What the Sun pointer is passing on the parapegma: the letter under it (within ±0.6°) or the next one ahead. */
+function parapegmaRow(sunMean: number): [string, string] {
+  const r = ((sunMean % 360) + 360) % 360;
+  const sign = Math.floor(r / 30), d = r - sign * 30;
+  for (let k = 0; k < 2; k++) {
+    if (Math.abs(d - LETTER_OFFSETS[k]) <= 0.6) {
+      const [letter, greek, english] = PARAPEGMA[(2 * sign + k) % 24];
+      return ["parapegma", `${letter} · ${greek} · ${english}`];
+    }
+  }
+  let ahead = d < LETTER_OFFSETS[0] ? LETTER_OFFSETS[0] - d : d < LETTER_OFFSETS[1] ? LETTER_OFFSETS[1] - d : 30 - d + LETTER_OFFSETS[0];
+  const idx = d < LETTER_OFFSETS[0] ? 2 * sign : d < LETTER_OFFSETS[1] ? 2 * sign + 1 : 2 * sign + 2;
+  ahead = Math.round(ahead * 10) / 10;
+  const [letter, , english] = PARAPEGMA[idx % 24];
+  return ["parapegma", `${letter} in ${ahead}°: ${english}`];
+}
 function buildLegend(): void {
   $("#cosmos-legend").replaceChildren(...cosmos.list.map((b) => {
     const btn = document.createElement("button");
@@ -403,8 +441,11 @@ function update(force = false): void {
     ["  anomaly", `${signed(s.moonAnomaly)}°`],
     ["Dragon hand", `${fmt(s.nodes, 1)}° (asc. node)`],
     ["Egyptian date", `${s.egyptianMonth} ${s.egyptianDayOfMonth}`],
+    parapegmaRow(s.sunMean),
     ...planetRows(),
   ]);
+  const pdt = [...$("#front-dl").querySelectorAll("dt")].find((x) => x.textContent === "parapegma");
+  pdt?.nextElementSibling?.classList.toggle("on-letter", /·/.test(pdt.nextElementSibling.textContent ?? ""));   // the row lights while the pointer is on a letter
   setDl($("#moon-dl"), [
     ["Phase", s.phaseName],
     ["Elongation", `${fmt(s.elongation, 1)}°`],
@@ -542,6 +583,9 @@ viewer.onHover = (id) => {
   hover.append(el("id", id));
 };
 
+// `?fps=1`: a small frame-time readout in the corner of the stage, for tuning
+const fpsEl = new URLSearchParams(location.search).get("fps") === "1" ? Object.assign(document.createElement("div"), { className: "fps" }) : null;
+if (fpsEl) $(".stage").append(fpsEl);
 function loop(now: number): void {
   if (playing) {
     setYears(years + ((now - last) / 1000) * speed);
@@ -550,6 +594,8 @@ function loop(now: number): void {
   last = now;
   viewer.render();
   cosmos.draw();
+  cosmos.drawStrip(retro);
+  if (fpsEl) { const st = viewer.stats(); fpsEl.textContent = `${st.fps.toFixed(0)} fps · ${st.medianMs.toFixed(1)} ms median · ${st.worstMs.toFixed(0)} ms worst`; }
   requestAnimationFrame(loop);
 }
 update();
