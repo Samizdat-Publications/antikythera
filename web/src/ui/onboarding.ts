@@ -16,6 +16,8 @@ export interface StepHooks {
   fragment(opacity: number): void;
   /** the Sky view on the stage */
   sky(on: boolean): void;
+  /** the room's light: "spot" brings it down around the exhibit */
+  mood(name: "room" | "spot"): void;
   /** put the scene back the way a visitor expects after the tour */
   reset(): void;
 }
@@ -34,22 +36,22 @@ export const STEPS: Step[] = [
   {
     id: "welcome", title: "A machine that models the sky", clip: "welcome",
     body: "This is a working reconstruction of the Antikythera mechanism, the geared astronomical calculator pulled from a Roman-era shipwreck in 1901. All 69 gears turn here with the tooth counts read from the X-ray scans, following the 2021 UCL reconstruction, so every pointer moves exactly as the bronze would have.",
-    run: (h) => { h.sky(false); h.fragment(0); h.isolate([]); h.xray(false); h.view("iso"); h.setYears(0); h.play(false); h.focus(null); },
+    run: (h) => { h.mood("room"); h.sky(false); h.fragment(0); h.isolate([]); h.xray(false); h.view("iso"); h.setYears(0); h.play(false); h.focus(null); },
   },
   {
     id: "found", title: "What the divers found", clip: "discovery",
     body: "In 1901 sponge divers working a Roman-era wreck off Antikythera brought up a corroded lump of bronze that split into fragments. This is Fragment A, the largest, from a CT scan of the original: two thousand years of seawater have turned the metal to a green crust, but the four spokes of the main wheel still show through it. Thirty of the gears survive in the fragments; the rest are inferred from those.",
-    run: (h) => { h.sky(false); h.isolate([]); h.xray(false); h.play(false); h.setYears(0); h.fragment(1); h.view("front-close"); h.focus(null); },
+    run: (h) => { h.mood("spot"); h.sky(false); h.isolate([]); h.xray(false); h.play(false); h.setYears(0); h.fragment(1); h.view("front-close"); h.focus(null); },
   },
   {
     id: "xray", title: "Seeing inside the corrosion", clip: "xray",
     body: "In 2005 a twelve-tonne X-ray tomography machine was carried to Athens and scanned the fragments slice by slice. Inside the crust were the gears, their teeth countable one by one, and two thousand characters of Greek that no one had read since antiquity. Here the reconstruction is laid inside the scan so the wheels show through the corrosion: everything that follows was built from those tooth counts.",
-    run: (h) => { h.sky(false); h.isolate([]); h.fragment(0.45); h.xray(true); h.play(true, 0.0821918); h.view("front-close"); h.focus(null); },
+    run: (h) => { h.mood("spot"); h.sky(false); h.isolate([]); h.fragment(0.45); h.xray(true); h.play(true, 0.0821918); h.view("front-close"); h.focus(null); },
   },
   {
     id: "crank", title: "One crank, one year", clip: "crank",
     body: "Everything starts at the crank on the right. It turns a 48-tooth crown wheel against the 223-tooth main wheel: four and two-thirds turns of the crank move the main wheel once round, which is one year. Every other pointer is geared off that single rotation.",
-    run: (h) => { h.view("crank"); h.play(true, 1); h.focus("#panel-crank"); },
+    run: (h) => { h.mood("room"); h.fragment(0); h.xray(false); h.view("crank"); h.play(true, 1); h.focus("#panel-crank"); },
   },
   {
     id: "epoch", title: "Why everything is counted from an epoch", clip: "epoch",
@@ -69,12 +71,12 @@ export const STEPS: Step[] = [
   {
     id: "pinslot", title: "The pin and slot", clip: "pinslot",
     body: "Hidden at the back are two 50-tooth gears face to face on axes offset by 1.1 mm, a pin on one riding in a slot on the other. As they turn, the slotted gear speeds up and slows down by ±6.5°: the Moon's own acceleration near perigee. The pair rides on a 223-tooth platform that creeps round once in nine years, so the swing follows the slowly turning lunar orbit. Nothing this sophisticated appears again for over a thousand years.",
-    run: (h) => { h.play(true, 0.0821918); h.xray(true); h.isolate(LUNAR_TRAIN); h.view("pinslot"); h.focus("#train-lunar-anomaly"); },
+    run: (h) => { h.mood("spot"); h.play(true, 0.0821918); h.xray(true); h.isolate(LUNAR_TRAIN); h.view("pinslot"); h.focus("#train-lunar-anomaly"); },
   },
   {
     id: "backdials", title: "The calendars on the back", clip: "backdials",
     body: "The upper spiral is the Metonic calendar: 235 months in five turns, nineteen years, named in the Corinthian dialect of north-west Greece. Inside it one small dial counts the 76-year Callippic period and another the four-year cycle of the games: Olympia, Pythia, Nemea, Isthmia. Both spiral pointers carry a pin that slides outward along the groove as the years pass.",
-    run: (h) => { h.isolate([]); h.xray(false); h.view("back-upper"); h.play(true, 1); h.focus("#back-dl"); },
+    run: (h) => { h.mood("room"); h.isolate([]); h.xray(false); h.view("back-upper"); h.play(true, 1); h.focus("#back-dl"); },
   },
   {
     id: "saros", title: "Predicting eclipses", clip: "saros",
@@ -98,8 +100,8 @@ export const STEPS: Step[] = [
   },
   {
     id: "explore", title: "Explore", clip: "explore",
-    body: "Drag to orbit, scroll to zoom, hover a gear for its tooth count and rate, choose a train to see it alone. Inside lifts the plates away; the space bar turns the crank; the jump buttons take you to the next eclipse; type a year to travel there. Everything you see is computed from the gear table, and everything it claims is checked against the sky.",
-    run: (h) => { h.sky(false); h.fragment(0); h.isolate([]); h.xray(false); h.view("iso"); h.play(true, 0.0821918); h.focus(null); },   // leave it turning, as a museum would
+    body: "Drag to orbit, scroll to zoom, hover a gear for its tooth count and rate, choose a train to see it alone. Inside lifts the plates away and Taken apart spreads every wheel along its arbor; drag the crank handle to wind it by hand, or press the space bar; the jump buttons take you to the next eclipse; type a year to travel there. Tick crank & chime in the top bar to hear it. Everything you see is computed from the gear table, and everything it claims is checked against the sky.",
+    run: (h) => { h.mood("room"); h.sky(false); h.fragment(0); h.isolate([]); h.xray(false); h.view("iso"); h.play(true, 0.0821918); h.focus(null); },   // leave it turning, as a museum would
   },
 ];
 

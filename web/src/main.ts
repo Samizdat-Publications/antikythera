@@ -249,7 +249,8 @@ const onboarding = new Onboarding({
   setEpoch: (id) => { $<HTMLSelectElement>("#epoch").value = id; $<HTMLSelectElement>("#epoch").dispatchEvent(new Event("change")); },
   fragment: showFragment,
   sky: setSky,
-  reset: () => { viewer.isolate([]); showFragment(0); setSky(false); $<HTMLInputElement>("#xray").checked = false; $<HTMLInputElement>("#apart").checked = false; applyVisibility(); setPlaying(false, 1); viewer.view("iso"); },
+  mood: (m) => viewer.setMood(m),
+  reset: () => { viewer.setMood("room"); viewer.isolate([]); showFragment(0); setSky(false); $<HTMLInputElement>("#xray").checked = false; $<HTMLInputElement>("#apart").checked = false; applyVisibility(); setPlaying(false, 1); viewer.view("iso"); },
 });
 addEventListener("keydown", (e) => {                                   // space turns the crank, unless a field has focus
   const t = e.target as HTMLElement | null;
@@ -258,6 +259,7 @@ addEventListener("keydown", (e) => {                                   // space 
   setPlaying(!playing);
 });
 onboarding.load();
+onboarding.onDone = () => viewer.setMood("room");                    // closing keeps the scene, but the room lights come back up
 $("#tour-btn").addEventListener("click", () => onboarding.start());
 let chart: Chart | undefined;
 

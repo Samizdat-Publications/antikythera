@@ -200,3 +200,12 @@ See README "Attributions" for licences.
   gone; a `.chart-legend` line of swatches under the chart is written by `drawErrorChart`, in the
   column's own voice. The manuscript's Sky trails are pen strokes now: the line width wanders by a
   little (two slow sines on the sample index, plus a slight thickening toward the present).
+- 2026-09-13 (evening) Per-leaf lighting in the walkthrough. `Viewer.setMood("room" | "spot")` tweens
+  a multiplier on the environment, the key and the back key (spot: 0.42 / 1.15 / 0.9, 0.9 s ease-out);
+  `stepLights()` now owns all three intensities every frame as base × mood × beat, so the eclipse
+  beat and the mood compose, and `setTheme` marks the lights unsettled so the mood is re-applied over
+  the new base. Leaves that drop the room: "What the divers found", "Seeing inside the corrosion",
+  "The pin and slot"; the crank, back-dials, welcome and explore leaves bring it back; closing the
+  walkthrough keeps the scene but restores the room (`onDone`), and `reset` does too. The explore
+  leaf now names Taken apart, the crank drag and the crank & chime box (a critique leftover: the
+  sounds were found by accident).

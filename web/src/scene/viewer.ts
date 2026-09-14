@@ -195,6 +195,7 @@ const FinalShader = {
 };
 
 interface RevealItem { o: THREE.Object3D; mats: THREE.Material[]; p0: THREE.Vector3; d: THREE.Vector3 }
+type Mood = { env: number; key: number; back: number };
 
 export interface ViewerOptions {
   canvas: HTMLCanvasElement;
@@ -264,6 +265,9 @@ export class Viewer {
   /** The eclipse beat: the room dims for a moment when a glyph and NASA agree. */
   private beat: number | null = null;
   private lightBase = { key: 2.2, back: 1.9, env: 0.65 };
+  /** The lighting mood: 1 is the room as lit; "spot" brings the room down around the exhibit for a walkthrough leaf. */
+  private mood = { env: 1, key: 1, back: 1 };
+  private moodTween: { from: Mood; to: Mood; start: number } | null = null;
   /** Dragging the crank handle round turns the machine: called with the years moved (signed). */
   onCrank: ((deltaYears: number) => void) | null = null;
   private crankDrag: { last: number; sign: number } | null = null;
@@ -544,6 +548,7 @@ export class Viewer {
     this.setMats.plinthTop.roughness = m ? 0.55 : 0.4;
     this.beat = null;
     this.lightBase = { key: L.key.intensity, back: L.backKey.intensity, env: this.scene.environmentIntensity };
+    this.lightsSettled = false;                                     // re-apply the mood over the new base
     const u = this.finalPass.material.uniforms;
     u.vignette.value = m ? 0.2 : 0.5;
     u.grain.value = m ? 0.02 : 0.035;
@@ -736,16 +741,33 @@ export class Viewer {
 
   /** A glyph on the Saros dial has come round and NASA agrees: the lights dip for a breath and come back. */
   eclipseBeat(): void { this.beat = performance.now(); }
-  private stepBeat(now: number): void {
-    if (this.beat == null) return;
-    const u = (now - this.beat) / 1800;
-    const f = u >= 1 ? 0 : Math.pow(Math.sin(Math.PI * u), 1.4);
-    const L = this.lights, b = this.lightBase;
-    L.key.intensity = b.key * (1 - 0.8 * f);
-    L.backKey.intensity = b.back * (1 - 0.8 * f);
-    this.scene.environmentIntensity = b.env * (1 - 0.6 * f);
-    if (u >= 1) this.beat = null;
+  /** "spot": the room goes down and the exhibit light stays, as a gallery does for a talk; "room": everything as lit. */
+  setMood(name: "room" | "spot"): void {
+    const to = name === "spot" ? { env: 0.42, key: 1.15, back: 0.9 } : { env: 1, key: 1, back: 1 };
+    if (to.env === this.mood.env && to.key === this.mood.key && !this.moodTween) return;
+    this.moodTween = { from: { ...this.mood }, to, start: performance.now() };
   }
+  private stepLights(now: number): void {
+    const tw = this.moodTween;
+    if (tw) {
+      const u = Math.min(1, (now - tw.start) / 900), e = 1 - Math.pow(1 - u, 3);
+      this.mood = { env: tw.from.env + (tw.to.env - tw.from.env) * e, key: tw.from.key + (tw.to.key - tw.from.key) * e, back: tw.from.back + (tw.to.back - tw.from.back) * e };
+      if (u >= 1) this.moodTween = null;
+    }
+    let f = 0;
+    if (this.beat != null) {
+      const u = (now - this.beat) / 1800;
+      f = u >= 1 ? 0 : Math.pow(Math.sin(Math.PI * u), 1.4);
+      if (u >= 1) this.beat = null;
+    }
+    if (!tw && this.beat == null && f === 0 && this.lightsSettled) return;
+    const L = this.lights, b = this.lightBase, m = this.mood;
+    L.key.intensity = b.key * m.key * (1 - 0.8 * f);
+    L.backKey.intensity = b.back * m.back * (1 - 0.8 * f);
+    this.scene.environmentIntensity = b.env * m.env * (1 - 0.6 * f);
+    this.lightsSettled = !tw && this.beat == null;
+  }
+  private lightsSettled = true;
 
   /** Screen angle of the pointer about the crank's projected centre (clockwise positive, as on screen). */
   private crankAngle(e: PointerEvent): number {
@@ -976,7 +998,7 @@ export class Viewer {
     this.stepTween(now);
     this.stepApart(now);
     this.stepReveal(now);
-    this.stepBeat(now);
+    this.stepLights(now);
     // a visitor left alone drifts slowly round the case
     if (!this.tween && !this.reveal && !this.apartTween && !this.controls.autoRotate && now - this.lastInput > 12000 && ["iso", "front", "back", "free"].includes(this.currentView)) this.controls.autoRotate = true;
     this.controls.update();
