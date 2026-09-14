@@ -121,7 +121,7 @@ export class Onboarding {
     this.el.hidden = true;
     this.el.innerHTML = `
       <div class="onboard-card">
-        <div class="onboard-head"><span class="onboard-step"></span><button class="onboard-close" title="close">✕</button></div>
+        <div class="onboard-head"><span class="onboard-step"></span><span class="onboard-mini-title"></span><span class="onboard-head-btns"><button class="onboard-min" title="fold the card away; the narration goes on">–</button><button class="onboard-close" title="close">✕</button></span></div>
         <h3 class="onboard-title"></h3>
         <p class="onboard-body"></p>
         <div class="onboard-foot">
@@ -134,6 +134,8 @@ export class Onboarding {
     (document.getElementById("onboard-slot") ?? document.body).replaceWith(this.el);
     this.el.id = "onboard-slot";
     this.el.querySelector(".onboard-close")!.addEventListener("click", () => this.close());
+    this.el.querySelector(".onboard-min")!.addEventListener("click", () => this.setFolded(!this.el.classList.contains("folded")));
+    try { if (localStorage.getItem("am_tour_folded") === "1") this.setFolded(true); } catch { /* ignore */ }
     this.el.querySelector(".onboard-prev")!.addEventListener("click", () => this.prev());
     this.el.querySelector(".onboard-next")!.addEventListener("click", () => this.next());
     this.el.querySelector<HTMLInputElement>(".onboard-narrate")!.addEventListener("change", (e) => {
@@ -156,6 +158,14 @@ export class Onboarding {
   }
 
   get active(): boolean { return !this.el.hidden; }
+
+  /** Folded: one line (leaf, title, back/next) at the foot of the stage; the narration and the scene carry on. */
+  setFolded(on: boolean): void {
+    this.el.classList.toggle("folded", on);
+    (this.el.querySelector(".onboard-min") as HTMLButtonElement).textContent = on ? "+" : "–";
+    (this.el.querySelector(".onboard-min") as HTMLButtonElement).title = on ? "open the card" : "fold the card away; the narration goes on";
+    try { localStorage.setItem("am_tour_folded", on ? "1" : "0"); } catch { /* ignore */ }
+  }
 
   start(at = 0): void {
     this.el.hidden = false;
@@ -190,6 +200,7 @@ export class Onboarding {
     const num = (n: number) => (ms ? roman(n) : String(n));
     this.el.querySelector(".onboard-step")!.textContent = `Walkthrough · ${num(this.index + 1)} of ${num(this.steps.length)}`;
     this.el.querySelector(".onboard-title")!.textContent = s.title;
+    this.el.querySelector(".onboard-mini-title")!.textContent = s.title;
     this.el.querySelector(".onboard-body")!.textContent = s.body;
     (this.el.querySelector(".onboard-progress i") as HTMLElement).style.width = `${((this.index + 1) / this.steps.length) * 100}%`;
     (this.el.querySelector(".onboard-prev") as HTMLButtonElement).disabled = this.index === 0;

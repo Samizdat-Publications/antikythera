@@ -224,4 +224,32 @@ See README "Attributions" for licences.
   fps, median and worst frame of the last 60 (this machine: 120 fps, 8.4 ms median); the bloom pass is
   skipped when the camera is behind the machine with the plates on and nothing taken apart, since
   every glowing part is on the front (`glowVisible`). Not done: merging static meshes (an export
-  job), the 3D lit moon, the HDRI (needs Stewart's go-ahead to download).
+  job), the 3D lit moon.
+- 2026-09-13 (late) Stewart: go ahead on the HDRI; Table S3 authorised; touch works on a real
+  device; the walkthrough card takes too much of the viewport; the Sky leaf should scroll the whole
+  Sky panel into view. **Lighting phase d**: two Poly Haven HDRIs (CC0, 1k, ~1.7 MB each) in
+  `web/public/hdri/`: `studio_small_09` (a small dark photo studio with softboxes) for the vitrine,
+  `artist_workshop` (big windows, warm wood) for the manuscript, loaded with RGBELoader and turned into
+  the environment with `PMREMGenerator.fromEquirectangular`; the hand-built rooms stand in until the
+  file arrives and stay as the fallback (`?hdri=0` keeps them). Each is rotated so its main source
+  sits front-left (0.6 rad / 2.4 rad) and scaled to the old exposure (0.7 / 1.05). Judged at full
+  size: the vitrine's HDRI lifts the case wood and the plinth out of the black without losing the
+  plate's glow (Stewart had called the vitrine "very dark"); the manuscript's needed 1.05 to match
+  the hand-built brightness. `lightBase.env` follows the HDRI so the beat and moods compose.
+  **Walkthrough card**: wider and lower (760 px, 14.5 px body, 82ch), and foldable: the "–" button
+  folds it to one line at the foot of the stage (leaf, title, back/next) while the narration and the
+  scene go on; remembered in `am_tour_folded`. **Focus**: a whole panel now scrolls to its top
+  (`block: "start"`), a row to the centre, so the Sky leaf shows diagram, legend and strip together.
+  **Parity**: the two versions are the same app with the same leaves and controls; only the frame,
+  caption, hederae and inks differ. Stewart still finds the manuscript easier to see and the vitrine
+  "cooler"; both stay. His "gaps in the geometry" by day: measured, the plates (x ±87, y −170..150)
+  sit 10 mm inside the case (inner faces x ±81, y −171..151, z −49..41), so the boards' lit inner faces
+  frame each dial; in pale oak that frame read as gaps. `Viewer.lineCase()` adds four thin dark boards
+  0.3 mm inside the case (role "case", so Inside, the case box and the overture treat them as boards).
+  **Table S3** (done by an Opus sub-agent, ~140k tokens): `tools/gen_dial_textures.py` carries
+  `OBSERVED_HOURS` (the 15 surviving cells, a copy of eym.ts's table); those cells are cut solid with
+  their real hours (two-event cells as "ΣωρΒ ΗΓ  Ε", the second event without "ωρ" to fit the cell),
+  every other glyph cell keeps its schematic hour in a fainter ink (`INK_FAINT`, 45 % toward the
+  plate, and a shallower cut on the bump). `blender/export_glb.py` now reloads every file image
+  before exporting, so a texture change needs only gen_dial_textures → export_glb → the three
+  gltf-transform steps (no build_all/dials/surface): web/public/models/antikythera.glb is 9.80 MiB.

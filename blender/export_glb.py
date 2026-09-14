@@ -15,6 +15,17 @@ REPO = globals().get("REPO", r"C:\Users\stewa\OneDrive\Documents\Claude\Blender 
 DIST = os.path.join(REPO, "dist")
 os.makedirs(DIST, exist_ok=True)
 
+# pick up any texture regenerated on disk since the images were first loaded
+# (tools/gen_dial_textures.py, tools/gen_surface_maps.py) - Blender caches them otherwise
+reloaded = []
+for img in bpy.data.images:
+    if img.source == "FILE" and img.filepath:
+        try:
+            img.reload()
+            reloaded.append(img.name)
+        except RuntimeError:
+            pass
+
 master = bpy.data.objects["MASTER"]
 master["years"] = 0.0
 master.update_tag()
@@ -87,4 +98,4 @@ out = {
 }
 with open(os.path.join(DIST, "gears.json"), "w", encoding="utf-8") as fh:
     json.dump(out, fh, indent=1)
-result = {"glb": glb, "bytes": os.path.getsize(glb), "nodes": len(nodes)}
+result = {"glb": glb, "bytes": os.path.getsize(glb), "nodes": len(nodes), "reloaded": len(reloaded)}

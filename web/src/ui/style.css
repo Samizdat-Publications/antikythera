@@ -155,15 +155,23 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 .panel.focus { background: oklch(0.235 0.02 66); box-shadow: 0 0 0 22px oklch(0.235 0.02 66); }
 
 /* ---------- walkthrough: a wall label in the lower left of the stage; the exhibit keeps its full height */
-.onboard { position: absolute; left: 22px; bottom: 22px; max-width: 520px; border: 1px solid var(--line-soft); background: oklch(0.19 0.014 62 / 0.96); padding: 12px 18px 0; }
+.onboard { position: absolute; left: 22px; right: 22px; bottom: 22px; max-width: 760px; border: 1px solid var(--line-soft); background: oklch(0.19 0.014 62 / 0.96); padding: 9px 18px 0; }
 .onboard[hidden] { display: none; }
 .onboard-card { position: relative; }
-.onboard-head { display: flex; justify-content: space-between; align-items: center; color: var(--ink-faint); font-size: 13px; font-variant-numeric: tabular-nums; }
-.onboard-close { background: none; border: 0; color: var(--ink-dim); font-size: 15px; }
-.onboard-close:hover { color: var(--accent); }
-.onboard-title { margin: 4px 0 4px; font-family: var(--font-display); font-weight: 400; font-size: 21px; color: var(--accent); letter-spacing: 0.02em; }
-.onboard-body { margin: 0 0 var(--space-md); font-size: 15px; line-height: 1.5; color: var(--ink); max-width: 62ch; }
-.onboard-foot { display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap; padding-bottom: 12px; }
+.onboard-head { display: flex; align-items: center; gap: var(--space-md); color: var(--ink-faint); font-size: 13px; font-variant-numeric: tabular-nums; }
+.onboard-head-btns { margin-left: auto; display: inline-flex; gap: 2px; }
+.onboard-close, .onboard-min { background: none; border: 0; color: var(--ink-dim); font-size: 15px; padding: 0 6px; line-height: 1; }
+.onboard-close:hover, .onboard-min:hover { color: var(--accent); }
+.onboard-mini-title { display: none; font-family: var(--font-display); font-size: 15px; color: var(--accent); letter-spacing: 0.02em; }
+.onboard-title { margin: 2px 0 3px; font-family: var(--font-display); font-weight: 400; font-size: 19px; color: var(--accent); letter-spacing: 0.02em; }
+.onboard-body { margin: 0 0 var(--space-sm); font-size: 14.5px; line-height: 1.45; color: var(--ink); max-width: 82ch; }
+.onboard-foot { display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap; padding-bottom: 9px; }
+/* folded: one line at the foot of the stage */
+.onboard.folded { padding-top: 6px; max-width: 760px; }
+.onboard.folded .onboard-title, .onboard.folded .onboard-body, .onboard.folded .onboard-foot .chk, .onboard.folded .onboard-keys { display: none; }
+.onboard.folded .onboard-mini-title { display: inline; }
+.onboard.folded .onboard-foot { padding: 0 0 6px; margin-top: -22px; justify-content: flex-end; pointer-events: none; }
+.onboard.folded .onboard-foot .btns { margin-right: 58px; pointer-events: auto; }
 .onboard-foot .btns { margin-left: auto; }
 .onboard-keys { color: var(--ink-faint); }
 .onboard-progress { display: block; height: 1px; background: var(--line-soft); margin: 0 -18px; }
@@ -239,7 +247,9 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 [data-theme="manuscript"] .train:hover, [data-theme="manuscript"] .train.focus, [data-theme="manuscript"] .train[aria-pressed="true"] { background: oklch(0.88 0.04 78); }
 [data-theme="manuscript"] .panel.focus { background: oklch(0.88 0.04 78); box-shadow: 0 0 0 22px oklch(0.88 0.04 78); }
 [data-theme="manuscript"] .onboard { background: oklch(0.945 0.027 84 / 0.97); background-image: var(--parchment-fibre); border-color: var(--line); box-shadow: 0 1px 0 oklch(0.7 0.04 70 / 0.35); }
-[data-theme="manuscript"] .onboard-title { font-size: 22px; }
+[data-theme="manuscript"] .onboard-title { font-size: 20px; }
+[data-theme="manuscript"] .onboard-mini-title { font-size: 16px; }
+[data-theme="manuscript"] .onboard-body { font-size: 15px; }
 /* the stage is a plate in the codex: set in from the page inside a double rule, captioned beneath */
 [data-theme="manuscript"] .stage { padding: 18px 22px 0; }
 [data-theme="manuscript"] .plate { outline: 1px solid var(--line); box-shadow: 0 0 0 4px var(--bg), 0 0 0 5px var(--line-soft); }
@@ -250,7 +260,7 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 [data-theme="manuscript"] .onboard { left: 36px; bottom: 60px; box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--line-soft); }
 [data-theme="manuscript"] .loading { bottom: 40px; }
 /* the walkthrough's opening letter is a versal in red ochre, as a rubricator would leave it */
-[data-theme="manuscript"] .onboard-body::first-letter { font-family: var(--font-display); font-size: 3.1em; line-height: 0.78; float: left; color: var(--bronze); padding: 0.1em 0.14em 0 0; }
+[data-theme="manuscript"] .onboard-body::first-letter { font-family: var(--font-display); font-size: 2.6em; line-height: 0.8; float: left; color: var(--bronze); padding: 0.08em 0.12em 0 0; }
 [data-theme="manuscript"] .onboard-step { font-variant-numeric: normal; }
 [data-theme="manuscript"] #moon { background: var(--paper); border: 1px solid var(--line); }
 [data-theme="manuscript"] .cosmos-panel { background: var(--paper); background-image: var(--parchment-fibre); border-color: var(--line); }

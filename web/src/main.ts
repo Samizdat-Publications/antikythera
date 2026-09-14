@@ -276,7 +276,7 @@ const onboarding = new Onboarding({
       panel?.querySelectorAll("details").forEach((d) => { d.open = true; });
       focused = panel ?? el;
       focused.classList.add("focus");
-      el.scrollIntoView({ behavior: "smooth", block: "center" });     // the row itself, not the panel it sits in
+      el.scrollIntoView({ behavior: "smooth", block: el === panel ? "start" : "center" });     // a row to the centre; a whole panel (the Sky) from its top, diagram and strip together
     }
   },
   jumpNextLunarEclipse: () => {

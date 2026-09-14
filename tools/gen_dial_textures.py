@@ -35,6 +35,8 @@ BRONZE = (163, 116, 58)
 BRONZE_DARK = (118, 82, 38)
 INK = (28, 20, 12)              # engraved, wax-filled
 RING_EDGE = (78, 54, 26)
+# reconstructed (not attested) lettering: the same ink blended 45% back toward the plate
+INK_FAINT = tuple(round(a + 0.45 * (b - a)) for a, b in zip(INK, BRONZE))
 
 ZODIAC = ["ΚΡΙΟΣ", "ΤΑΥΡΟΣ", "ΔΙΔΥΜΟΙ", "ΚΑΡΚΙΝΟΣ", "ΛΕΩΝ", "ΠΑΡΘΕΝΟΣ",
           "ΧΗΛΑΙ", "ΣΚΟΡΠΙΟΣ", "ΤΟΞΟΤΗΣ", "ΑΙΓΟΚΕΡΩΣ", "ΥΔΡΟΧΟΟΣ", "ΙΧΘΥΕΣ"]
@@ -46,6 +48,16 @@ GREEK_LETTERS = list("ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ")
 GREEK_NUMERALS = {1: "Α", 2: "Β", 3: "Γ", 4: "Δ", 5: "Ε", 6: "Ϛ", 7: "Ζ", 8: "Η", 9: "Θ", 10: "Ι",
                   11: "ΙΑ", 12: "ΙΒ", 13: "ΙΓ", 14: "ΙΔ", 15: "ΙΕ", 16: "ΙϚ", 17: "ΙΖ", 18: "ΙΗ",
                   19: "ΙΘ", 20: "Κ", 21: "ΚΑ", 22: "ΚΒ", 23: "ΚΓ", 24: "ΚΔ"}
+# Eclipse-glyph hours that actually survive on the Saros dial (Freeth 2014, Table S3):
+# Saros cell number -> hour of day (1..24) of the lunar (Sigma) and/or solar (Eta) event.
+# Keep this in exact step with OBSERVED_HOURS in web/src/astro/eym.ts.
+OBSERVED_HOURS = {
+    20: {"lunar": 18}, 25: {"solar": 6}, 26: {"lunar": 7}, 72: {"solar": 14}, 78: {"solar": 1},
+    79: {"lunar": 10}, 114: {"lunar": 12}, 119: {"solar": 22}, 125: {"lunar": 2, "solar": 3},
+    131: {"lunar": 14, "solar": 21}, 137: {"lunar": 5, "solar": 12}, 172: {"lunar": 18, "solar": 12},
+    178: {"lunar": 21, "solar": 9}, 184: {"lunar": 4, "solar": 1}, 190: {"lunar": 9},
+}
+
 GAMES = [("ΙΣΘΜΙΑ", "ΟΛΥΜΠΙΑ"), ("ΝΕΜΕΑ", "ΝΑΑ"), ("ΙΣΘΜΙΑ", "ΠΥΘΙΑ"), ("ΝΕΜΕΑ", "ΑΛΙΕΙΑ")]
 
 # parapegma: attested lines (Bitsakis & Jones 2016, fragment C) with reconstructed Greek;
@@ -105,8 +117,13 @@ class Dial:
         self.d.ellipse(box, outline=ink, width=w, fill=fill)
         self.db.ellipse(box, outline=40, width=w, fill=200 if fill else None)
 
-    def text(self, x, y, s, mm, angle=0.0, bold=False, ink=INK, anchor="mm"):
-        """Text centred at (x, y) mm, rotated by angle degrees (ccw)."""
+    def text(self, x, y, s, mm, angle=0.0, bold=False, ink=INK, anchor="mm", faint=False):
+        """Text centred at (x, y) mm, rotated by angle degrees (ccw).
+
+        faint=True marks reconstructed lettering: lighter ink and a shallower cut.
+        """
+        if faint and ink is INK:
+            ink = INK_FAINT
         f = self.font(mm, bold)
         bbox = f.getbbox(s)
         w, h = bbox[2] - bbox[0] + 4, bbox[3] - bbox[1] + 4
@@ -117,8 +134,19 @@ class Dial:
         pos = (int(px - tile.width / 2), int(py - tile.height / 2))
         col = Image.new("RGB", tile.size, ink)
         self.img.paste(col, pos, tile)
-        dark = Image.new("L", tile.size, 40)
+        dark = Image.new("L", tile.size, 112 if faint else 40)
         self.bump.paste(dark, pos, tile)
+
+    def text_run(self, x, y, parts, mm, angle=0.0, bold=False):
+        """One line built from [(text, faint), ...] segments, centred at (x, y)."""
+        f = self.font(mm, bold)
+        widths = [f.getlength(s) / self.scale for s, _ in parts]
+        ux, uy = math.cos(math.radians(angle)), math.sin(math.radians(angle))
+        off = -sum(widths) / 2
+        for (s, faint), w in zip(parts, widths):
+            c = off + w / 2
+            self.text(x + ux * c, y + uy * c, s, mm, angle=angle, bold=bold, faint=faint)
+            off += w
 
     def curved_text(self, r, a_center, s, mm, bold=False, ink=INK, inward=False):
         """Letters laid along a circle at radius r, centred on angle a_center (deg ccw)."""
@@ -239,7 +267,9 @@ def spiral_dial(D, r0, pitch, turns, cells, label_fn=None, mm=1.15, glyph_fn=Non
                     D.text(x, y, s, mm, angle=rot)
             if glyph_fn:
                 g = glyph_fn(k)
-                if g:
+                if isinstance(g, list):
+                    D.text_run(x, y, g, mm * 1.05, angle=rot, bold=True)
+                elif g:
                     D.text(x, y, g, mm * 1.05, angle=rot, bold=True)
 
 
@@ -290,16 +320,29 @@ def back_lower(g_xy, i_xy):
     glyphs = {g.month: g for g in glyph_table()}
 
     def glyph(k):
+        """Label for Saros cell k+1. Only the 15 cells in OBSERVED_HOURS carry the hours that
+        survive on the fragments; every other hour is schematic and is cut in the faint ink."""
         g = glyphs.get(k + 1)
         if not g:
             return None
-        parts = []
-        if g.lunar:
-            parts.append("Σ")
-        if g.solar:
-            parts.append("Η")
+        obs = OBSERVED_HOURS.get(k + 1)
+        tail = [("  " + GREEK_LETTERS[k % 24], False)]
+        if obs:
+            out = []
+            if g.lunar and "lunar" in obs:
+                out.append(("Σωρ" + GREEK_NUMERALS[obs["lunar"]], False))
+            elif g.lunar:
+                out.append(("Σ", False))
+            if g.solar and "solar" in obs:
+                # the cell is too narrow for a second "ωρ": the hour letter follows Η directly
+                out.append(((" " if out else "") + "Η"
+                            + ("" if out else "ωρ") + GREEK_NUMERALS[obs["solar"]], False))
+            elif g.solar:
+                out.append(((" " if out else "") + "Η", False))
+            return out + tail
+        head = ("Σ" if g.lunar else "") + ("Η" if g.solar else "")
         hour = 1 + (k * 7) % 12                                # schematic hour letter
-        return "".join(parts) + " ωρ" + GREEK_NUMERALS[hour] + "  " + GREEK_LETTERS[k % 24]
+        return [(head + " ", False), ("ωρ" + GREEK_NUMERALS[hour], True)] + tail
 
     spiral_dial(D, R0, PITCH, 4, 223, glyph_fn=glyph, mm=1.2)
     ix, iy = -(i_xy[0] - gx), i_xy[1] - gy

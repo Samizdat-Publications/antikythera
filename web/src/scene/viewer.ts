@@ -13,6 +13,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
@@ -80,6 +81,17 @@ function studioEnvironment(): THREE.Scene {
 }
 
 export type Theme = "vitrine" | "manuscript";
+
+/**
+ * Real light (lighting phase d): Poly Haven HDRIs, CC0. A small dark photo studio with a few
+ * softboxes for the gallery at night; an artist's workshop with big windows for the room by day.
+ * Each is turned so its main source sits where the hand-built key was (high, front-left), and
+ * scaled to the exposure the hand-built rooms were tuned for. `?hdri=0` keeps the hand-built rooms.
+ */
+const HDRI: Record<Theme, { file: string; rotation: number; intensity: number }> = {
+  vitrine: { file: "./hdri/studio_small_09_1k.hdr", rotation: 0.6, intensity: 0.7 },
+  manuscript: { file: "./hdri/artist_workshop_1k.hdr", rotation: 2.4, intensity: 1.05 },
+};
 
 /** The wall behind the exhibit: a warm pool of light on a dark gallery wall, or a sheet of parchment. */
 function wallTexture(theme: Theme): THREE.Texture {
@@ -252,6 +264,8 @@ export class Viewer {
   private lights!: { key: THREE.SpotLight; fill: THREE.DirectionalLight; rim: THREE.DirectionalLight; frontRake: THREE.DirectionalLight; backKey: THREE.DirectionalLight };
   private pmrem: THREE.PMREMGenerator;
   private envs: Partial<Record<Theme, THREE.Texture>> = {};
+  private hdris: Partial<Record<Theme, THREE.Texture | "loading">> = {};
+  useHdri = new URLSearchParams(location.search).get("hdri") !== "0";
   theme: Theme = "vitrine";
   private bloomBase = 0.55;
   private wood: { mat: THREE.MeshStandardMaterial; base: THREE.Color } | null = null;
@@ -394,6 +408,7 @@ export class Viewer {
       this.scene.add(this.root);
       this.graph = new GearGraph(this.root);
       this.graph.setYears(0);
+      this.lineCase();
       opts.onReady?.(this.graph);
       this.assemble();
       this.view("iso", this.assembling ? 3800 : 2600);              // walk up while the machine comes together
@@ -528,6 +543,8 @@ export class Viewer {
     if (m && !this.envs.manuscript) this.envs.manuscript = this.pmrem.fromScene(studioEnvironment(), 0.02).texture;
     this.scene.environment = m ? this.envs.manuscript! : this.envs.vitrine!;
     this.scene.environmentIntensity = m ? 0.9 : 0.65;
+    this.scene.environmentRotation.set(0, 0, 0);
+    this.applyHdri(name);
     (this.scene.background as THREE.Texture | null)?.dispose?.();
     this.scene.background = wallTexture(name);
     this.renderer.toneMappingExposure = m ? 1.0 : 0.85;
@@ -559,6 +576,57 @@ export class Viewer {
       this.wood.mat.roughness = m ? 0.72 : 0.82;
     }
     this.tunePlate();
+  }
+
+  /**
+   * The inside of the box is dark. The plates sit 10 mm inside the case, so the boards' inner
+   * faces show as a lit frame around each dial; by day, in pale oak, that frame read as gaps in
+   * the geometry. Four thin dark boards line the case (left, right, top, bottom) and follow the
+   * case in every way (Inside, the case box, the overture) by joining its role.
+   */
+  private lineCase(): void {
+    if (!this.graph || !this.root) return;
+    const mat = new THREE.MeshStandardMaterial({ color: 0x2a1f16, roughness: 0.95, metalness: 0, envMapIntensity: 0.3 });
+    const specs: [[number, number, number], [number, number, number], [number, number]][] = [
+      [[-80.7, -10, -4], [0, Math.PI / 2, 0], [90, 322]],
+      [[80.7, -10, -4], [0, -Math.PI / 2, 0], [90, 322]],
+      [[0, 150.7, -4], [Math.PI / 2, 0, 0], [162, 90]],
+      [[0, -170.7, -4], [-Math.PI / 2, 0, 0], [162, 90]],
+    ];
+    const list = this.graph.roles.get("case") ?? [];
+    for (const [pos, rot, [w, h]] of specs) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+      m.position.set(...pos);
+      m.rotation.set(...rot);
+      m.receiveShadow = true;
+      m.name = "case_lining";
+      m.userData.am_role = "case";
+      this.root.add(m);
+      list.push(m);
+    }
+    this.graph.roles.set("case", list);
+  }
+
+  /** Swap in the theme's HDRI once it has loaded (the hand-built room stands in until then). */
+  private applyHdri(name: Theme): void {
+    if (!this.useHdri) return;
+    const spec = HDRI[name], have = this.hdris[name];
+    if (have === "loading") return;
+    if (!have) {
+      this.hdris[name] = "loading";
+      new RGBELoader().load(spec.file, (tex) => {
+        const env = this.pmrem.fromEquirectangular(tex).texture;
+        tex.dispose();
+        this.hdris[name] = env;
+        if (this.theme === name) this.applyHdri(name);
+      }, undefined, () => { this.hdris[name] = undefined; console.info(`[antikythera] ${spec.file} did not load; hand-built room kept`); });
+      return;
+    }
+    this.scene.environment = have;
+    this.scene.environmentRotation.set(0, spec.rotation, 0);
+    this.scene.environmentIntensity = spec.intensity;
+    this.lightBase.env = spec.intensity;
+    this.lightsSettled = false;
   }
 
   /** The plates' tarnish is right under a spot at night and reads as stains on parchment by day: most of it is blended out there. */

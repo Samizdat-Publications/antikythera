@@ -83,18 +83,17 @@ _Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, d
 1. **More motion where the machine moves**: ~~assembly on load~~, ~~drag-the-crank~~,
    ~~taken apart~~, ~~eclipse beat~~, ~~URL state~~, ~~per-leaf lighting~~ DONE. Left: pointer
    trails on the front dial at ten years per second.
-2. **Lighting phase d**: a real HDRI (Poly Haven, CC0) if he wants it; ask before downloading.
-   Also re-render the hero images after any material change (`blender/hero_render.py`, ~3 min).
-3. **Tablet/mobile**: ~~aspect-aware framing~~, ~~the Sky view on narrow screens~~ (the ring sits
-   below the HUD row) DONE. Left: touch for the crank drag is untested on a real device.
+2. ~~Lighting phase d~~ DONE (Poly Haven `studio_small_09` / `artist_workshop`, `?hdri=0` for the
+   hand-built rooms). Still to do: re-render the hero images (`blender/hero_render.py`, ~3 min).
+3. ~~Tablet/mobile~~ DONE (Stewart tried touch on a real device: the crank drag works).
 4. ~~Fragment A alignment~~ DONE by eye (−45°); its position could still be nudged a few mm.
 5. **3D lit moon** in the Moon panel; ~~retrograde strip~~ DONE.
 6. ~~Parapegma highlight~~ DONE (a ledger row); the letters' degree positions on the ring are still
    schematic, and the lines are the attested set with reconstructed Greek.
 7. **Performance**: ~~FPS overlay~~ (`?fps=1`), ~~bloom skipped from behind~~ DONE; merge static
    meshes (export job).
-8. ~~Attested-vs-reconstructed styling in the inspector~~ DONE (italic = reconstructed). Freeth 2014
-   Table S3 hours into the Saros dial texture.
+8. ~~Attested-vs-reconstructed styling in the inspector~~, ~~Freeth 2014 Table S3 hours into the
+   Saros dial texture~~ DONE (solid = surviving, faint = schematic; export_glb.py reloads images).
 9. Critique leftovers: ~~the accuracy chart's stock legend~~ DONE; its 5-day sampling; ~~"crank &
    chime" is discovered by accident~~ (the explore leaf names it now); the mirrored-looking glyphs
    on the Saros spiral are just tangential text read from the wrong side (not a bug).
