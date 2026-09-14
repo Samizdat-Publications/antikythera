@@ -74,6 +74,8 @@ function studioEnvironment(): THREE.Scene {
   panel(new THREE.PlaneGeometry(9, 9), 0xd9c7a8, 1.1, [0, -6, 0]);             // parchment floor bounce
   panel(new THREE.PlaneGeometry(6, 6), 0xf0e6d4, 1.2, [7, 2, -4]);             // the far wall, lit
   panel(new THREE.CircleGeometry(0.4, 32), 0xffffff, 14.0, [-6.4, 4.6, 5.2]);  // glints
+  panel(new THREE.PlaneGeometry(6, 8), 0xe6edf8, 2.4, [-6, 4, -6]);            // a second window behind, so the opened back is not in its own shade
+  panel(new THREE.CircleGeometry(0.4, 32), 0xffffff, 12.0, [-5.6, 4.4, -6.2]);
   return s;
 }
 
@@ -531,7 +533,9 @@ export class Viewer {
     L.fill.intensity = m ? 0.4 : 0.55;
     L.rim.intensity = m ? 0.5 : 1.2;
     L.frontRake.intensity = m ? 0.5 : 0.9;
-    L.backKey.intensity = m ? 1.2 : 1.9;
+    L.backKey.intensity = 1.9;
+    // at night the back key rakes the spirals from the left; by day it comes from behind, or the opened back is lit only at a grazing angle and reads rust
+    L.backKey.position.set(...(m ? [-200, 260, -560] : [-420, 280, -170]) as [number, number, number]);
     this.setMats.floor.color.set(m ? 0xcdbfa2 : 0x241d18);
     this.setMats.floor.roughness = m ? 0.95 : 0.9;
     this.setMats.plinth.color.set(m ? 0x6b5238 : 0x2a2624);        // a scholar's oak table by day, a stone plinth at night

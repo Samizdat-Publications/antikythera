@@ -200,11 +200,13 @@ export class Cosmos {
       // trail, fading into the past
       const n = b.trail.length;
       if (n > 1) {
-        ctx.lineWidth = big ? 1.6 : 1.1;
+        const w0 = big ? 1.6 : 1.1;
         for (let i = 1; i < n; i++) {
           const k = i / (n - 1);
           const [x0, y0] = P(b.trail[i - 1].lon, b.trail[i - 1].rho);
           const [x1, y1] = P(b.trail[i].lon, b.trail[i].rho);
+          // in the manuscript the trail is a pen stroke: the nib's pressure varies a little along the line
+          ctx.lineWidth = ms ? w0 * (0.75 + 0.45 * Math.sin(i * 0.9) * Math.sin(i * 0.37) + 0.35 * k) : w0;
           ctx.strokeStyle = hexToRgba(col, (0.08 + 0.72 * k * k) * alpha);
           ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
         }

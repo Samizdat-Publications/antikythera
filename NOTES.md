@@ -189,5 +189,14 @@ See README "Attributions" for licences.
   view of a 6:5 stage (`resize()` widens the vertical fov, capped at 72°) so a portrait phone is not
   cut off, and below 900 px the top bar stacks (title and date, then the actions). **Inspector**: gears that are `hypothesised`/`derived` are set in italic ink-faint with a
   title, `surviving` upright (30 survive, 38 hypothesised, 1 derived). **Manuscript plinth** is oak
-  (0x6b5238 / 0x7d6144) by day, a scholar's table under the case. To look at: the back view with
-  Inside on reads dull brown in the manuscript (the back key is 1.2 there); consider raising it.
+  (0x6b5238 / 0x7d6144) by day, a scholar's table under the case.
+- 2026-09-13 (evening) The opened back in the manuscript read as rust. Tried in the live scene: AO
+  strength 0.15 (no change), GTAO off (no change), the back key at 2.6 (no change), a second window
+  behind in the studio environment (barely). The cause was the back key's direction: it rakes the
+  spirals from the left for the vitrine's engraving, and on the bare gears from behind that is a
+  grazing angle, so they showed only their albedo through a dim, blurry reflection. By day the back
+  key now comes from behind (−200, 260, −560) at 1.9 and the opened back is gold; the vitrine keeps
+  the rake. The second window behind stays (harmless). Also: the accuracy chart's Chart.js legend is
+  gone; a `.chart-legend` line of swatches under the chart is written by `drawErrorChart`, in the
+  column's own voice. The manuscript's Sky trails are pen strokes now: the line width wanders by a
+  little (two slow sines on the sample index, plus a slight thickening toward the present).

@@ -75,9 +75,8 @@ _Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, d
 ## Backlog, in priority order
 
 0. ~~Manuscript theme~~ DONE. ~~Plate tarnish, ruled frame + caption, rubricated initial~~ DONE.
-   ~~Plinth as a table~~ DONE. Still to taste in the manuscript: the Sky view's trails could be
-   drawn as pen strokes with a little pressure variation; the top bar's buttons are still web
-   buttons; the back view with Inside on reads dull brown (raise the back key by day?).
+   ~~Plinth as a table~~, ~~pen-stroke trails~~, ~~the rusty opened back~~ DONE. Still to taste in
+   the manuscript: the top bar's buttons are still web buttons.
 1. **More motion where the machine moves**: ~~assembly on load~~, ~~drag-the-crank~~,
    ~~taken apart~~, ~~eclipse beat~~, ~~URL state~~ DONE. Left: pointer trails on the front dial at
    ten years per second; per-step lighting changes in the walkthrough.
@@ -93,9 +92,9 @@ _Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, d
    when no glowing part is on screen).
 8. ~~Attested-vs-reconstructed styling in the inspector~~ DONE (italic = reconstructed). Freeth 2014
    Table S3 hours into the Saros dial texture.
-9. Critique leftovers: the accuracy chart's stock legend and 5-day sampling; "crank & chime" is
-   discovered by accident; the mirrored-looking glyphs on the Saros spiral are just tangential
-   text read from the wrong side (not a bug).
+9. Critique leftovers: ~~the accuracy chart's stock legend~~ DONE; its 5-day sampling; "crank &
+   chime" is discovered by accident; the mirrored-looking glyphs on the Saros spiral are just
+   tangential text read from the wrong side (not a bug).
 
 ## How to resume
 

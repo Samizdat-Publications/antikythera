@@ -87,6 +87,13 @@ function palette() {
 export function drawErrorChart(canvas: HTMLCanvasElement, series: ErrorSeries, existing?: Chart): Chart {
   existing?.destroy();
   const DARK = palette();
+  // the legend is drawn in the column's own voice (a line of swatches under the chart), not Chart.js's boxes
+  const legend = canvas.parentElement?.nextElementSibling?.classList.contains("chart-legend") ? canvas.parentElement.nextElementSibling : null;
+  if (legend) {
+    legend.replaceChildren(...[[DARK.moon, "Moon, with the pin-and-slot"], [DARK.moonMean, "Moon, mean motion only"], [DARK.sun, "Sun"]].map(([c, t]) => {
+      const s = document.createElement("span"); const i = document.createElement("i"); i.style.background = c; s.append(i, t); return s;
+    }));
+  }
   const cfg: ChartConfiguration = {
     type: "line",
     data: {
@@ -101,7 +108,7 @@ export function drawErrorChart(canvas: HTMLCanvasElement, series: ErrorSeries, e
       animation: false,
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: DARK.tick, boxWidth: 14, boxHeight: 2, font: { size: 12, family: DARK.font } } }, tooltip: { enabled: true } },
+      plugins: { legend: { display: false }, tooltip: { enabled: true } },
       scales: {
         x: { ticks: { color: DARK.tick, maxTicksLimit: 8, font: { size: 11, family: DARK.font } }, grid: { color: DARK.grid }, title: { display: true, text: "years from the epoch", color: DARK.tick, font: { size: 12, family: DARK.font, style: "italic" } } },
         y: { ticks: { color: DARK.tick, font: { size: 11, family: DARK.font } }, grid: { color: DARK.grid }, title: { display: true, text: "machine minus sky, degrees", color: DARK.tick, font: { size: 12, family: DARK.font, style: "italic" } } },
