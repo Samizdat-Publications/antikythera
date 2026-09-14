@@ -60,6 +60,14 @@ TOUR = [
     ("cosmos", "front",
      "On the front, the 2021 reconstruction adds a cosmos: rings for Mercury, Venus, Mars, Jupiter and Saturn, each driven by its own epicyclic module and marked with a coloured stone. "
      "The period relations come from the machine's own cover inscription — 462 years for Venus, 442 for Saturn — and reproduce the planets' retrograde loops."),
+    ("xray", "front",
+     "In 2005 a twelve-tonne X-ray tomography machine was carried to Athens and scanned the fragments slice by slice. "
+     "Inside the crust were the gears, their teeth countable one by one, and two thousand characters of Greek that no one had read since antiquity. "
+     "Here the reconstruction is laid inside the scan, so the wheels show through the corrosion. Everything that follows was built from those tooth counts."),
+    ("sky", "front",
+     "This is the same machine, drawn as a sky. Earth sits in the middle, and each body is placed where its own pin and slot puts it, trailing the path it has followed. "
+     "The outer planets loop backwards each time the Earth overtakes them, and the loops these gears draw are the very ones Ptolemy drew, because his epicycles and these pins are the same idea. "
+     "The green ticks on the rim are the true sky, so you can see for yourself how close the bronze comes."),
     ("accuracy", "front",
      "How good was it? Against a modern ephemeris the mean Sun drifts a fraction of a degree per century; the Moon, thanks to the pin and slot, stays within about two degrees. "
      "The eclipse glyphs land on real eclipses far more often than chance. Crank the handle, pick a year, and judge for yourself."),

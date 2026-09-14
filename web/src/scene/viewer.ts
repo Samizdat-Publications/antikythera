@@ -695,6 +695,7 @@ export class Viewer {
     for (const o of this.set) o.visible = this.fragmentOpacity < 0.98;
   }
   get fragmentShown(): boolean { return this.fragmentOpacity > 0; }
+  get fragmentAlpha(): number { return this.fragmentOpacity; }
 
   /** Fly the camera to a preset (Blender coordinates). `ms` = 0 snaps. */
   view(name: string, ms = 1400): void {
@@ -805,7 +806,7 @@ export class Viewer {
    */
   isolate(ids: string[]): void {
     if (!this.root || !this.graph) return;
-    for (const [m, mat] of this.ghosted) m.material = mat;
+    for (const [m, mat] of this.ghosted) { m.material = mat; m.castShadow = true; }
     this.ghosted.length = 0;
     const same = this.isolated && ids.length === this.isolatedIds.length && ids.every((x, i) => x === this.isolatedIds[i]);
     if (!ids.length || same) {
@@ -820,7 +821,7 @@ export class Viewer {
     const ghost = (o: THREE.Object3D, rootNode: THREE.Object3D): void => {
       if (o !== rootNode && typeof o.userData.am_id === "string") return;    // another node: its own turn
       const m = o as THREE.Mesh;
-      if (m.isMesh) { this.ghosted.push([m, m.material]); m.material = this.ghostMat; }
+      if (m.isMesh) { this.ghosted.push([m, m.material]); m.material = this.ghostMat; m.castShadow = false; }   // a ghost throws no shadow
       for (const c of o.children) ghost(c, rootNode);
     };
     for (const n of this.graph.nodes.values()) if (!keep.has(n.id)) ghost(n.object, n.object);
@@ -855,6 +856,7 @@ export class Viewer {
         o.traverse((c) => {
           const m = c as THREE.Mesh;
           if (!m.isMesh) return;
+          m.castShadow = !on;                                       // lifted plates fade, and fading plates must not shadow the gears
           const src = Array.isArray(m.material) ? m.material : [m.material];
           const clones = src.map((s) => { const k = s.clone(); k.transparent = true; k.opacity = on ? 1 : 0; return k; });
           m.userData.am_restore = m.material;

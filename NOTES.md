@@ -158,3 +158,20 @@ See README "Attributions" for licences.
   `position.x` for the spiral pins). The overture is now just `setApart(true, false)` then
   `setApart(false)`; `onAssembled` fires after any slide home, and main.ts only runs the
   invitation-or-crank logic the first time (`overtureDone`). The caption says ", taken apart".
+- 2026-09-13 (evening) Stewart, on the walkthrough's planets step: "this scene is broken, it spins
+  around the centre axis and the shadows of the dials in the background make the geometry look weird".
+  Two causes. (1) The step isolated the Mars train and ran at a year per second, and the Mars module
+  rides on b1, which therefore wheeled round once a second. The step now watches the dial itself
+  (plates on, front-close, four months a second: b1 turns in three seconds, Mars's loop every six)
+  and the text says to watch the red stone. (2) Ghosted gears (13 % opacity) and lifting plates
+  still cast full shadows, so the isolated train received the sweeping shadows of parts that were
+  all but invisible; `isolate()` now turns `castShadow` off on every ghost and the reveal turns it off
+  on lifted plates (back on when they close). Stewart also asked for "a view where it shows the
+  original rusted metal they found and then the X-ray view showing the gears inside": two leaves
+  after the welcome, "What the divers found" (Fragment A's CT scan alone, opacity 1, reusing the
+  unused `discovery` narration) and "Seeing inside the corrosion" (the scan at 0.45 over the model
+  with the plates lifted, crank at a month a second; new `xray` clip, 24 s), plus "The sky it tracks"
+  after the planets (the Sky view on the stage, trails at four months a second; new `sky` clip,
+  28 s). New step hooks `fragment(opacity)` and `sky(on)`; `showFragment()` in main.ts drives the
+  Exhibit slider too; the manuscript caption distinguishes the scan alone from the scan over the
+  model. Fourteen leaves now.

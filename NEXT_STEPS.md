@@ -63,6 +63,10 @@ _Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, d
    round; the machine follows the handle, forwards or back, and the motor stops.
 9. **Taken apart** (Exhibit ▾): every wheel out along its arbor and still turning, so all 69 can
    be watched at once; untick and they slide home. The overture is the same state played once.
+10. **Walkthrough fixes and three new leaves** (evening): the planets step no longer spins (it
+    watches the dial at four months a second) and ghosts/lifted plates cast no shadows; new leaves
+    "What the divers found" (Fragment A alone), "Seeing inside the corrosion" (the scan over the
+    gears) and "The sky it tracks" (the Sky view), narrated. Fourteen leaves.
 
 ## Backlog, in priority order
 

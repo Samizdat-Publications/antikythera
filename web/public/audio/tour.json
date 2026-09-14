@@ -6,35 +6,35 @@
    "view": "iso",
    "text": "Welcome. What you are looking at is a working reconstruction of the Antikythera mechanism, the geared astronomical calculator recovered from a shipwreck in 1901. Every one of its sixty-nine gears turns here with the tooth counts the researchers read from the X-ray scans, so the pointers move exactly as the bronze would have. This short walk-through shows you how to read it.",
    "file": "audio/tour_welcome.mp3",
-   "duration": 22.431
+   "duration": null
   },
   {
    "id": "epoch",
    "view": "front",
    "text": "One idea makes everything else on this screen make sense: the machine has no clock inside it. It was set by hand once, on one particular day, and after that it only ever counts turns of the crank. That starting day is the epoch. Nothing on the bronze states it, so scholars had to work it out from the eclipse glyphs on the Saros dial: the pattern of fifty-one glyphs only fits certain starting months. Carman and Evans found the full moon of the twelfth of May, 205 BC; Voulgaris and his colleagues argue for the winter-solstice eclipse of December 178 BC. You can switch between them, and every dial re-sets. Because the machine only knows turns, every date here is written as years since epoch, and its errors grow the further you crank away from it.",
    "file": "audio/tour_epoch.mp3",
-   "duration": 47.322
+   "duration": null
   },
   {
    "id": "zodiac",
    "view": "front",
    "text": "The front dial is the sky. The inner ring is the zodiac, twelve signs of thirty degrees; the outer ring is the Egyptian civil calendar of 365 days, which the owner could slip round by one day every four years. The date pointer reads the calendar; the true-sun pointer, with its little golden ball, reads the zodiac. Around the plate, the parapegma lists the risings and settings of stars, keyed to letters on the dial.",
    "file": "audio/tour_zodiac.mp3",
-   "duration": 27.725
+   "duration": null
   },
   {
    "id": "backdials",
    "view": "back",
    "text": "Turn the machine round. The upper spiral is the Metonic calendar: 235 months in five turns, nineteen years, named in the Corinthian dialect of north-west Greece. Inside it a small dial counts the seventy-six-year Callippic period, and another runs through the four-year cycle of the great games: Olympia, Pythia, Nemea, Isthmia. Both spiral pointers carry a pin that slides outward along the groove as the years pass.",
    "file": "audio/tour_backdials.mp3",
-   "duration": 29.118
+   "duration": null
   },
   {
    "id": "explore",
    "view": "iso",
    "text": "That is the machine. Drag to orbit, scroll to zoom, hover any gear to see its tooth count and rate, and click a train in the list to isolate it. Use X-ray to strip the plates away, jump straight to the next eclipse, and watch the analytics panel to see where twenty-two centuries of gearing agree with the sky, and where they drift. Enjoy the cosmos.",
    "file": "audio/tour_explore.mp3",
-   "duration": 22.291
+   "duration": null
   },
   {
    "id": "discovery",
@@ -84,6 +84,20 @@
    "text": "On the front, the 2021 reconstruction adds a cosmos: rings for Mercury, Venus, Mars, Jupiter and Saturn, each driven by its own epicyclic module and marked with a coloured stone. The period relations come from the machine's own cover inscription \u2014 462 years for Venus, 442 for Saturn \u2014 and reproduce the planets' retrograde loops.",
    "file": "audio/tour_cosmos.mp3",
    "duration": null
+  },
+  {
+   "id": "xray",
+   "view": "front",
+   "text": "In 2005 a twelve-tonne X-ray tomography machine was carried to Athens and scanned the fragments slice by slice. Inside the crust were the gears, their teeth countable one by one, and two thousand characters of Greek that no one had read since antiquity. Here the reconstruction is laid inside the scan, so the wheels show through the corrosion. Everything that follows was built from those tooth counts.",
+   "file": "audio/tour_xray.mp3",
+   "duration": 24.381
+  },
+  {
+   "id": "sky",
+   "view": "front",
+   "text": "This is the same machine, drawn as a sky. Earth sits in the middle, and each body is placed where its own pin and slot puts it, trailing the path it has followed. The outer planets loop backwards each time the Earth overtakes them, and the loops these gears draw are the very ones Ptolemy drew, because his epicycles and these pins are the same idea. The green ticks on the rim are the true sky, so you can see for yourself how close the bronze comes.",
+   "file": "audio/tour_sky.mp3",
+   "duration": 28.189
   },
   {
    "id": "accuracy",

@@ -148,7 +148,7 @@ function caption(): void {
     return;
   }
   if (viewer.fragmentShown) {
-    el.innerHTML = `${no("VIII")}The real Fragment A, from the CT scan, laid over the reconstruction`;
+    el.innerHTML = `${no("VIII")}${viewer.fragmentAlpha >= 0.98 ? "Fragment A, the largest piece the divers brought up, from the CT scan of the original" : "Fragment A from the CT scan, laid over the reconstruction so the wheels show through the corrosion"}`;
     return;
   }
   const v = PLATES[viewer.currentView];
@@ -200,7 +200,9 @@ const onboarding = new Onboarding({
     if (r) setYears((r.jd - epoch.jdn) / TROPICAL_YEAR);
   },
   setEpoch: (id) => { $<HTMLSelectElement>("#epoch").value = id; $<HTMLSelectElement>("#epoch").dispatchEvent(new Event("change")); },
-  reset: () => { viewer.isolate([]); $<HTMLInputElement>("#xray").checked = false; $<HTMLInputElement>("#apart").checked = false; applyVisibility(); setPlaying(false, 1); viewer.view("iso"); },
+  fragment: showFragment,
+  sky: setSky,
+  reset: () => { viewer.isolate([]); showFragment(0); setSky(false); $<HTMLInputElement>("#xray").checked = false; $<HTMLInputElement>("#apart").checked = false; applyVisibility(); setPlaying(false, 1); viewer.view("iso"); },
 });
 addEventListener("keydown", (e) => {                                   // space turns the crank, unless a field has focus
   const t = e.target as HTMLElement | null;
@@ -431,10 +433,13 @@ function fitPhases(): void {
 }
 $("#epoch-btn").addEventListener("click", () => setYears(0));
 $("#xray").addEventListener("change", applyVisibility);
-$<HTMLInputElement>("#fragment").addEventListener("input", (e) => {
-  const a = parseInt((e.target as HTMLInputElement).value, 10) / 100;
+/** The CT scan of Fragment A over the reconstruction; the slider in the Exhibit menu follows. */
+function showFragment(a: number): void {
+  $<HTMLInputElement>("#fragment").value = String(Math.round(a * 100));
+  if (a <= 0) { viewer.setFragmentOpacity(0); applyVisibility(); return; }
   viewer.loadFragment("./models/fragment_a.glb").then(() => { viewer.setFragmentOpacity(a); applyVisibility(); });
-});
+}
+$<HTMLInputElement>("#fragment").addEventListener("input", (e) => showFragment(parseInt((e.target as HTMLInputElement).value, 10) / 100));
 $("#case").addEventListener("change", applyVisibility);
 $("#apart").addEventListener("change", applyVisibility);
 document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) =>

@@ -12,6 +12,10 @@ export interface StepHooks {
   focus(selector: string | null): void;
   jumpNextLunarEclipse(): void;
   setEpoch(id: string): void;
+  /** the CT scan of Fragment A over the reconstruction: 0 = model only, 1 = the corroded original only */
+  fragment(opacity: number): void;
+  /** the Sky view on the stage */
+  sky(on: boolean): void;
   /** put the scene back the way a visitor expects after the tour */
   reset(): void;
 }
@@ -25,13 +29,22 @@ export interface Step {
 }
 
 const LUNAR_TRAIN = ["b2", "c1", "c2", "d1", "d2", "e2", "e5", "k1", "k2", "e6", "e1", "b3", "l1", "l2", "m1", "m3", "e3"];
-const MARS_TRAIN = ["b1", "fix56", "ju64", "ma38", "ma40", "ma71", "ma80a", "ma80b"];
 
 export const STEPS: Step[] = [
   {
     id: "welcome", title: "A machine that models the sky", clip: "welcome",
     body: "This is a working reconstruction of the Antikythera mechanism, the geared astronomical calculator pulled from a Roman-era shipwreck in 1901. All 69 gears turn here with the tooth counts read from the X-ray scans, following the 2021 UCL reconstruction, so every pointer moves exactly as the bronze would have.",
-    run: (h) => { h.isolate([]); h.xray(false); h.view("iso"); h.setYears(0); h.play(false); h.focus(null); },
+    run: (h) => { h.sky(false); h.fragment(0); h.isolate([]); h.xray(false); h.view("iso"); h.setYears(0); h.play(false); h.focus(null); },
+  },
+  {
+    id: "found", title: "What the divers found", clip: "discovery",
+    body: "In 1901 sponge divers working a Roman-era wreck off Antikythera brought up a corroded lump of bronze that split into fragments. This is Fragment A, the largest, from a CT scan of the original: two thousand years of seawater have turned the metal to a green crust, but the four spokes of the main wheel still show through it. Thirty of the gears survive in the fragments; the rest are inferred from those.",
+    run: (h) => { h.sky(false); h.isolate([]); h.xray(false); h.play(false); h.setYears(0); h.fragment(1); h.view("front-close"); h.focus(null); },
+  },
+  {
+    id: "xray", title: "Seeing inside the corrosion", clip: "xray",
+    body: "In 2005 a twelve-tonne X-ray tomography machine was carried to Athens and scanned the fragments slice by slice. Inside the crust were the gears, their teeth countable one by one, and two thousand characters of Greek that no one had read since antiquity. Here the reconstruction is laid inside the scan so the wheels show through the corrosion: everything that follows was built from those tooth counts.",
+    run: (h) => { h.sky(false); h.isolate([]); h.fragment(0.45); h.xray(true); h.play(true, 0.0821918); h.view("front-close"); h.focus(null); },
   },
   {
     id: "crank", title: "One crank, one year", clip: "crank",
@@ -41,7 +54,7 @@ export const STEPS: Step[] = [
   {
     id: "epoch", title: "Why everything is counted from an epoch", clip: "epoch",
     body: "The machine has no clock inside it. It was set by hand once, on one particular day, and after that it only counts turns. That day is the epoch. Nothing on the bronze states it, so scholars inferred it from the eclipse glyphs on the Saros dial: the pattern of 51 glyphs fits only certain starting months. Carman & Evans found the full moon of 12 May 205 BC; Voulgaris argues for 22 Dec 178 BC. Switch between them and every dial re-sets. Because the machine only knows turns, dates here are written as years since epoch, and its errors grow the further you crank from it.",
-    run: (h) => { h.play(false); h.setYears(0); h.view("front"); h.focus("#epoch"); },
+    run: (h) => { h.fragment(0); h.xray(false); h.play(false); h.setYears(0); h.view("front"); h.focus("#epoch"); },
   },
   {
     id: "zodiac", title: "The front dial is the sky", clip: "zodiac",
@@ -70,18 +83,23 @@ export const STEPS: Step[] = [
   },
   {
     id: "cosmos", title: "The planets", clip: "cosmos",
-    body: "The 2021 reconstruction adds a cosmos on the front: rings for Mercury, Venus, Mars, Jupiter and Saturn, each with its own epicyclic module and a coloured stone. The period relations come from the machine's cover inscription: 462 years for Venus, 442 for Saturn. Watch Mars now: its pin-and-slot has the largest offset, and the ring slows, stops and runs backwards through its retrograde loop.",
-    run: (h) => { h.xray(true); h.isolate(MARS_TRAIN); h.view("front-close"); h.play(true, 1); h.focus("#train-mars"); },
+    body: "The 2021 reconstruction adds a cosmos on the front: rings for Mercury, Venus, Mars, Jupiter and Saturn, each with its own epicyclic module and a coloured stone. The period relations come from the machine's cover inscription: 462 years for Venus, 442 for Saturn. Watch the red stone of Mars now, at four months a second: its pin-and-slot has the largest offset, and the ring slows, stops and runs backwards through its retrograde loop.",
+    run: (h) => { h.sky(false); h.isolate([]); h.xray(false); h.view("front-close"); h.play(true, 0.35); h.focus("#train-mars"); },
+  },
+  {
+    id: "sky", title: "The sky it tracks", clip: "sky",
+    body: "The same machine drawn as a sky: Earth in the middle, each body where its own pin-and-slot puts it, trailing the path it has followed. The outer planets loop backwards each time the Earth overtakes them, and the loops these gears draw are the ones Ptolemy drew, because his epicycles and these pins are the same idea. The green ticks on the rim are the true sky, so you can see how close the bronze comes.",
+    run: (h) => { h.isolate([]); h.xray(false); h.sky(true); h.play(true, 0.35); h.focus("#panel-cosmos"); },
   },
   {
     id: "accuracy", title: "How good was it?", clip: "accuracy",
     body: "Against a modern ephemeris the mean Sun drifts a fraction of a degree per century. The Moon, thanks to the pin and slot, stays within about two degrees; what remains is the evection and variation, which the machine does not model. Over three Saros cycles every solar glyph and most lunar glyphs land on real eclipses. The chart and the audit below update for whichever epoch you choose.",
-    run: (h) => { h.isolate([]); h.xray(false); h.play(false); h.view("front"); h.focus("#chart-moon"); },
+    run: (h) => { h.sky(false); h.isolate([]); h.xray(false); h.play(false); h.view("front"); h.focus("#chart-moon"); },
   },
   {
     id: "explore", title: "Explore", clip: "explore",
     body: "Drag to orbit, scroll to zoom, hover a gear for its tooth count and rate, choose a train to see it alone. Inside lifts the plates away; the space bar turns the crank; the jump buttons take you to the next eclipse; type a year to travel there. Everything you see is computed from the gear table, and everything it claims is checked against the sky.",
-    run: (h) => { h.isolate([]); h.xray(false); h.view("iso"); h.play(true, 0.0821918); h.focus(null); },   // leave it turning, as a museum would
+    run: (h) => { h.sky(false); h.fragment(0); h.isolate([]); h.xray(false); h.view("iso"); h.play(true, 0.0821918); h.focus(null); },   // leave it turning, as a museum would
   },
 ];
 
