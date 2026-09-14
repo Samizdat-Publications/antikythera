@@ -39,10 +39,15 @@ export function renderInspector(el: HTMLElement, graph: GearGraph | null, onPick
       r.textContent = t.ratio;
       const g = document.createElement("div");
       g.className = "train-g";
-      g.textContent = t.gears.map((id) => {
+      t.gears.forEach((id, i) => {                                 // the gears that survive in the fragments stand upright; the reconstructed lean
         const n = graph?.get(id);
-        return n?.teeth ? `${id} (${n.teeth})` : id;
-      }).join("  ~  ");
+        const s = document.createElement("span");
+        s.textContent = n?.teeth ? `${id} (${n.teeth})` : id;
+        if (n?.status && n.status !== "surviving") { s.className = "g-hyp"; s.title = `${n.status}: not found in the fragments`; }
+        else if (n?.status) s.title = "survives in the fragments";
+        g.append(s);
+        if (i < t.gears.length - 1) g.append("  ~  ");
+      });
       const n = document.createElement("div");
       n.className = "train-n";
       n.textContent = t.note;

@@ -66,6 +66,7 @@ viewer.onAssembled = () => {
   applyVisibility();
   if (overtureDone) return;                                           // "taken apart" unticked later: the plates close, nothing else
   overtureDone = true;
+  if (readUrl()) return;                                              // a link to a particular state: show that, and nothing else competes
   if (firstVisit()) {
     // no autoplay: the invitation is one label over the exhibit, and narration starts from that click
     $("#begin").hidden = false;
@@ -73,6 +74,41 @@ viewer.onAssembled = () => {
     setTimeout(() => { if (!playing && !onboarding.active) setPlaying(true, 0.0821918); }, 1600);   // a working model is already turning when you walk up
   }
 };
+
+// ---- the address carries the exhibit's state, so a view can be sent as a link
+let urlTimer = 0;
+function writeUrl(): void {
+  if (!overtureDone) return;                                          // nothing is written until the linked state has been read
+  clearTimeout(urlTimer);
+  urlTimer = window.setTimeout(() => {
+    const u = new URL(location.href);
+    const set = (k: string, v: string | null) => (v == null ? u.searchParams.delete(k) : u.searchParams.set(k, v));
+    set("epoch", epoch.id !== EPOCHS[0].id ? epoch.id : null);
+    set("years", Math.abs(years) > 1e-4 ? years.toFixed(4) : null);
+    set("view", viewer.currentView !== "iso" && viewer.currentView !== "free" ? viewer.currentView : null);
+    set("inside", $<HTMLInputElement>("#xray").checked ? "1" : null);
+    set("apart", $<HTMLInputElement>("#apart").checked ? "1" : null);
+    set("sky", stageEl.classList.contains("sky") ? "1" : null);
+    history.replaceState(null, "", u);
+  }, 300);
+}
+/** Apply a linked state after the overture; true if the address carried one. */
+function readUrl(): boolean {
+  const q = new URLSearchParams(location.search);
+  const keys = ["epoch", "years", "view", "inside", "apart", "sky"];
+  if (!keys.some((k) => q.has(k))) return false;
+  const ep = q.get("epoch");
+  if (ep && EPOCHS.some((e) => e.id === ep)) { $<HTMLSelectElement>("#epoch").value = ep; $<HTMLSelectElement>("#epoch").dispatchEvent(new Event("change")); }
+  const y = parseFloat(q.get("years") ?? "");
+  if (Number.isFinite(y)) setYears(y, true);
+  $<HTMLInputElement>("#xray").checked = q.get("inside") === "1";
+  $<HTMLInputElement>("#apart").checked = q.get("apart") === "1";
+  applyVisibility();
+  const v = q.get("view");
+  if (v && v in PLATES) viewer.view(v);
+  if (q.get("sky") === "1") setSky(true);
+  return true;
+}
 $("#begin-btn").addEventListener("click", () => { $("#begin").hidden = true; onboarding.start(); });
 $("#begin-skip").addEventListener("click", () => {
   $("#begin").hidden = true;
@@ -121,6 +157,7 @@ function setSky(on: boolean): void {
   $("#sky-btn").setAttribute("aria-pressed", String(on));
   if (on) document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((x) => x.setAttribute("aria-pressed", "false"));
   caption();
+  writeUrl();
 }
 
 /**
@@ -175,6 +212,16 @@ function setPlaying(on: boolean, spd?: number): void {
   $("#play").setAttribute("aria-pressed", String(playing));
   last = performance.now();
   if (!playing) update(true);
+}
+/** True when the glyph in this Saros cell lands on a real eclipse in NASA's canon (penumbral-only does not count). */
+function glyphHit(s: MechanismState): boolean {
+  const g = GLYPHS.get(s.sarosCell);
+  if (!g || !canon) return false;
+  const SYN = TROPICAL_YEAR / (235 / 19);
+  const fmJd = s.jd - (s.sarosMonthsElapsed % 1) * SYN, nmJd = fmJd + (19 / 38) * SYN;
+  const lun = g.lunar && eclipsesBetween(canon.lunar, fmJd - 1.6, fmJd + 1.6).some((r) => r.type[0] !== "N");
+  const sol = g.solar && eclipsesBetween(canon.solar, nmJd - 1.6, nmJd + 1.6).length > 0;
+  return !!(lun || sol);
 }
 const onboarding = new Onboarding({
   view: (v) => viewer.view(v),
@@ -387,9 +434,14 @@ function update(force = false): void {
   drawMoon($<HTMLCanvasElement>("#moon"), s.elongation, currentTheme() === "manuscript");
   eclipsePanel(s);
   if (s.sarosCell !== lastSarosCell) {
-    if (lastSarosCell >= 0 && GLYPHS.has(s.sarosCell)) tour.chime();
+    // a glyph has come round: the chime, and when NASA agrees the room dims for a breath (not at the speeds where months fly past)
+    if (lastSarosCell >= 0 && GLYPHS.has(s.sarosCell) && (!playing || speed <= 0.1)) {
+      tour.chime();
+      if (glyphHit(s)) viewer.eclipseBeat();
+    }
     lastSarosCell = s.sarosCell;
   }
+  if (!playing) writeUrl();
 }
 
 function applyVisibility(): void {
@@ -404,6 +456,7 @@ function applyVisibility(): void {
   caseBox.disabled = inside;                                          // the case is already off the plinth
   viewer.setAOStrength(inside ? 0.45 : 0.9);
   caption();
+  writeUrl();
 }
 
 yearsInput.addEventListener("input", () => setYears(parseFloat(yearsInput.value), true));
@@ -453,6 +506,7 @@ viewer.onView = (name) => {
   const base = name.split("-")[0];
   document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.view === base)));
   caption();
+  writeUrl();
 };
 document.querySelectorAll<HTMLButtonElement>("[data-jump]").forEach((b) =>
   b.addEventListener("click", () => {

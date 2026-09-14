@@ -67,28 +67,32 @@ _Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, d
     watches the dial at four months a second) and ghosts/lifted plates cast no shadows; new leaves
     "What the divers found" (Fragment A alone), "Seeing inside the corrosion" (the scan over the
     gears) and "The sky it tracks" (the Sky view), narrated. Fourteen leaves.
+11. **Backlog batch** (evening): URL state (`?view=&years=&inside=1&apart=1&sky=1&epoch=`), the
+    eclipse beat (lights dip with the chime when a glyph and NASA agree, at slow speeds or on a
+    jump), phone-width framing (wider fov on narrow stages), reconstructed gears in italic in the
+    train list, an oak table under the case in the manuscript.
 
 ## Backlog, in priority order
 
 0. ~~Manuscript theme~~ DONE. ~~Plate tarnish, ruled frame + caption, rubricated initial~~ DONE.
-   Still to taste in the manuscript: the plinth is a grey stone block (a scholar's table would
-   suit the room better); the Sky view's trails could be drawn as pen strokes with a little
-   pressure variation; the top bar's buttons are still web buttons.
-1. **More motion where the machine moves**: ~~assembly on load~~ DONE, ~~drag-the-crank~~ DONE.
-   Left: pointer trails on the front dial at ten years per second, a dimmed-gallery beat with the
-   chime when a Saros glyph and NASA agree, per-step lighting changes in the walkthrough, URL state
-   (`?view=`, `?years=`). ~~Take it apart from the Exhibit menu~~ DONE (a state, not a replay).
+   ~~Plinth as a table~~ DONE. Still to taste in the manuscript: the Sky view's trails could be
+   drawn as pen strokes with a little pressure variation; the top bar's buttons are still web
+   buttons; the back view with Inside on reads dull brown (raise the back key by day?).
+1. **More motion where the machine moves**: ~~assembly on load~~, ~~drag-the-crank~~,
+   ~~taken apart~~, ~~eclipse beat~~, ~~URL state~~ DONE. Left: pointer trails on the front dial at
+   ten years per second; per-step lighting changes in the walkthrough.
 2. **Lighting phase d**: a real HDRI (Poly Haven, CC0) if he wants it; ask before downloading.
    Also re-render the hero images after any material change (`blender/hero_render.py`, ~3 min).
-3. **Tablet/mobile**: aspect-aware camera framing per preset; the Sky view on narrow screens.
+3. **Tablet/mobile**: ~~aspect-aware framing~~ DONE (fov widens below 6:5). Left: the Sky view and
+   the HUD on narrow screens; touch for the crank drag is untested.
 4. **Fragment A alignment** by eye against b1's four spokes.
 5. **3D lit moon** in the Moon panel; **retrograde strip** (longitude vs time) beside the Sky view.
 6. **Parapegma highlight** when the Sun pointer crosses an index letter; transcribe Bitsakis &
    Jones 2016 for the real lines (currently schematic).
 7. **Performance**: FPS overlay; merge static meshes; the bloom pass re-renders the scene (skip it
    when no glowing part is on screen).
-8. **Attested-vs-reconstructed styling** in the inspector; Freeth 2014 Table S3 hours into the
-   Saros dial texture.
+8. ~~Attested-vs-reconstructed styling in the inspector~~ DONE (italic = reconstructed). Freeth 2014
+   Table S3 hours into the Saros dial texture.
 9. Critique leftovers: the accuracy chart's stock legend and 5-day sampling; "crank & chime" is
    discovered by accident; the mirrored-looking glyphs on the Saros spiral are just tangential
    text read from the wrong side (not a bug).

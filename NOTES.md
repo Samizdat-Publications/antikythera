@@ -175,3 +175,19 @@ See README "Attributions" for licences.
   28 s). New step hooks `fragment(opacity)` and `sky(on)`; `showFragment()` in main.ts drives the
   Exhibit slider too; the manuscript caption distinguishes the scan alone from the scan over the
   model. Fourteen leaves now.
+- 2026-09-13 (evening) Backlog batch. **URL state**: `?epoch=&years=&view=&inside=1&apart=1&sky=1`
+  (with `?theme=`) written by `writeUrl()` (300 ms debounce; while the crank runs nothing is written,
+  the stop writes once) and read by `readUrl()` in `onAssembled` after the overture; a link with state
+  shows that state and neither the invitation nor the auto-crank runs. Gotcha found on the first try:
+  `applyVisibility()` and `update()` write the URL during loading, which wiped the linked params before
+  they were read, so the writer is a no-op until `overtureDone`. **Eclipse beat**: when a Saros glyph
+  cell comes round and NASA's canon agrees (`glyphHit`: a non-penumbral lunar eclipse within ±1.6 d of
+  the cell's full moon, or any solar within ±1.6 d of its new moon), `Viewer.eclipseBeat()` dips the key,
+  the back key and the environment (×0.2, ×0.2, ×0.4 at the trough, sin^1.4 over 1.8 s) and the chime
+  plays; both are gated to speeds of a month a second or slower, or a jump, so ten years a second is
+  not a strobe. `lightBase` is captured at the end of `setTheme`. **Narrow stages** keep the horizontal
+  view of a 6:5 stage (`resize()` widens the vertical fov, capped at 72°) so a portrait phone is not
+  cut off, and below 900 px the top bar stacks (title and date, then the actions). **Inspector**: gears that are `hypothesised`/`derived` are set in italic ink-faint with a
+  title, `surviving` upright (30 survive, 38 hypothesised, 1 derived). **Manuscript plinth** is oak
+  (0x6b5238 / 0x7d6144) by day, a scholar's table under the case. To look at: the back view with
+  Inside on reads dull brown in the manuscript (the back key is 1.2 there); consider raising it.
