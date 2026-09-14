@@ -136,7 +136,7 @@ export function drawMoon(canvas: HTMLCanvasElement, elongationDeg: number, ink =
     const tone = Math.min(1, grey * 1.9) * (EARTHSHINE * 1.5 + (1 - EARTHSHINE * 1.5) * Math.pow(Math.max(0, shade(T.nx[k], T.nz[k], lx, lz) - EARTHSHINE) / (1 - EARTHSHINE), 0.8));
     const dither = ((((i * 7 + j * 13) % 11) / 11) - 0.5) * 0.05;
     const v = tone + dither;
-    const h1 = (i + j) % sp === 0, h2 = (i - j + 4 * sp) % sp === 0;
+    const h1 = (i + j) % sp === 0, h2 = (i - j + 8 * sp) % (2 * sp) === 0;          // the cross-hatch's second family is twice as open, or the night side reads as a mesh
     const dot = (i % (2 * sp) === 0 && j % (2 * sp) === 0) || ((i + sp) % (2 * sp) === 0 && (j + sp) % (2 * sp) === 0);
     const inked = v < 0.11 ? h1 || h2 : v < 0.26 ? h1 : v < 0.4 ? dot : false;
     const o = p * 4, c = inked ? ink0 : parch;
