@@ -22,6 +22,7 @@ import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass.js";
 import { GearGraph } from "../mech/gearGraph";
+import { Trails } from "./trails";
 
 /**
  * A gallery at night, built as geometry so PMREM can turn it into reflections:
@@ -282,6 +283,8 @@ export class Viewer {
   /** The lighting mood: 1 is the room as lit; "spot" brings the room down around the exhibit for a walkthrough leaf. */
   private mood = { env: 1, key: 1, back: 1 };
   private moodTween: { from: Mood; to: Mood; start: number } | null = null;
+  /** The stones' trails on the front dial: a long exposure while the crank runs (`?trails=0` turns them off). */
+  private trails: Trails | null = null;
   /** Dragging the crank handle round turns the machine: called with the years moved (signed). */
   onCrank: ((deltaYears: number) => void) | null = null;
   private crankDrag: { last: number; sign: number } | null = null;
@@ -409,6 +412,10 @@ export class Viewer {
       this.graph = new GearGraph(this.root);
       this.graph.setYears(0);
       this.lineCase();
+      this.trails = new Trails(this.graph, this.root);
+      this.trails.enabled = new URLSearchParams(location.search).get("trails") !== "0";
+      this.scene.add(this.trails.group);
+      for (const [m, g] of this.trails.glowMats) this.glowMats.set(m, g);
       opts.onReady?.(this.graph);
       this.assemble();
       this.view("iso", this.assembling ? 3800 : 2600);              // walk up while the machine comes together
@@ -779,6 +786,7 @@ export class Viewer {
     for (const m of this.fragmentMats) { m.opacity = this.fragmentOpacity; m.depthWrite = this.fragmentOpacity > 0.95; }
     if (this.fragment) this.fragment.visible = this.fragmentOpacity > 0;
     if (this.root) this.root.visible = this.fragmentOpacity < 0.98;
+    if (this.trails) this.trails.group.visible = this.fragmentOpacity < 0.98;
     for (const o of this.set) o.visible = this.fragmentOpacity < 0.98;
   }
   get fragmentShown(): boolean { return this.fragmentOpacity > 0; }
@@ -1074,6 +1082,7 @@ export class Viewer {
     this.stepApart(now);
     this.stepReveal(now);
     this.stepLights(now);
+    this.trails?.step(now, this.theme);
     // a visitor left alone drifts slowly round the case
     if (!this.tween && !this.reveal && !this.apartTween && !this.controls.autoRotate && now - this.lastInput > 12000 && ["iso", "front", "back", "free"].includes(this.currentView)) this.controls.autoRotate = true;
     this.controls.update();

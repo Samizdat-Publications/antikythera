@@ -253,3 +253,44 @@ See README "Attributions" for licences.
   plate, and a shallower cut on the bump). `blender/export_glb.py` now reloads every file image
   before exporting, so a texture change needs only gen_dial_textures → export_glb → the three
   gltf-transform steps (no build_all/dials/surface): web/public/models/antikythera.glb is 9.80 MiB.
+- 2026-09-13 (late night) The rest of the backlog. **Hero renders** re-done (`blender/hero_render.py`,
+  95 s for five views at 256 samples): the world is now the same Poly Haven studio HDRI the web vitrine is lit
+  by, the 2k file in `assets/raw/hdri` (gitignored, CC0) with the 1k copy in `web/public/hdri` as the
+  fallback, kept out of the frame by a Light Path "Is Camera Ray" mix so the camera still sees the dark room.
+  This model stands +Y up inside Blender's Z-up world, so the equirect is turned a quarter turn about X and
+  then about the studio's own zenith by the angle that puts its brightest patch (the mean of 32x64-pixel
+  blocks, a softbox rather than a hot pixel; Blender's equirect has u = 0.5 - atan2(y, x) / 2pi) high and
+  front-left, where the web key is. The three-light rig stays. The pin-and-slot view, seen from inside with
+  the plates stripped, is flooded by the studio and was rendered at `HDRI_STRENGTH=0.5`. **Pointer trails**
+  (`web/src/scene/trails.ts`): a long exposure of the stones. While the crank runs, the Sun ball and the five
+  planet stones each leave a ribbon on their own plane (a flat strip 1.1 mm wide with four-component vertex
+  colours, so the alpha fades and the width tapers toward the tail) holding the last 0.55 s of wall time, so
+  at ten years a second the Sun is a full ring, Saturn a short arc, and Mars doubles back on itself. The
+  samples are taken from the gear graph in sub-steps between frames (no more than 10 deg of the fastest body
+  per sample, at most 32 sub-steps, the graph put back afterwards), so nothing aliases into chords; a jump of
+  more than 1.5 years or a sleeping tab starts the trails again. The Moon's ball sits 6.5 mm from the hub and
+  gets no trail. The ribbon meshes carry `isLine = true` so GTAOPass leaves them out of its depth and normal
+  passes (it hides lines and points there), or they would draw an occlusion band under themselves; in the
+  bloom pass they wear a dimmer copy of their own colour. Cost at ten years a second, front-close, 1.5 dpr:
+  10.2 -> 12.3 ms median; nothing at rest (the trails fade and the meshes go invisible). `?trails=0`. **The
+  Moon panel** (`web/src/ui/moon.ts`) is a lit sphere now: the near side's albedo from NASA's LROC colour
+  mosaic (CGI Moon Kit, public domain, 1k, `web/public/textures/moon_1k.jpg`; north up, lunar east right),
+  shaded per pixel on the 2-D canvas at device resolution with the Lommel-Seeliger law (flat to the limb at
+  full, brightest at the limb at quarter) and 3.5 % earthshine, the light from the machine's elongation
+  (0 new, 90 first quarter lit on the right). The manuscript draws the same tone field as an engraving:
+  cross-hatch below 0.11, a single hatch below 0.26, a stipple on the maria below 0.4, parchment above, with
+  a small ordered dither so the steps do not band. The old discs stand in until the map has loaded, and
+  `litPolygon` (tested) is kept for them. **The accuracy chart** sampled every 5 days, which aliased the
+  Moon's monthly wobble into moire; it now samples daily (about 450 ms for 80 years, computed once per epoch
+  in an idle callback after the first paint) and folds each year into least and most, drawn as three bands
+  (Moon with the pin-and-slot, Moon mean-only, Sun), so the drift and the size of the wobble read at once.
+  Monthly windows were tried first and looked like a saw at 990 windows across 260 px. **The manuscript's
+  top bar** is a running head now: no boxes, the actions in the rubric face parted by hederae, the version in
+  hand underlined in red ochre, and every manuscript checkbox a small square drawn in ink (the OS widget was
+  the last web thing on the page). **Merging static meshes: measured and not done.** The web scene has 142
+  meshes and draws 1053 calls a frame from the front (895 from the back; 1.13 M triangles), seven passes over
+  the same meshes (beauty, GTAO depth and normals, two shadow maps, bloom). Only the six b1 pillars and the
+  front and sub plates share a material, a parent and a reveal direction; the four case boards part in four
+  directions, the nine tubes belong to different arbors and travel with their wheels when taken apart, and
+  everything else is a gear or a pointer. Merging the eight would save about 50 calls, 5 %, for a 10 MB model
+  churn; the frame is fill-bound (GTAO and bloom at full resolution), not call-bound. Left as is.

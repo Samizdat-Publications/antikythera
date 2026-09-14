@@ -38,6 +38,9 @@ const BODIES: BodySpec[] = [
   { id: "saturn", label: "Saturn", glyph: "♄", display: "saturn", device: "sa86a", R: 0.9, span: 1.8, samples: 150, colour: "#8d8894", inkColour: "#3a3532" },
 ];
 
+/** The stones' colours by body, for the trails on the front dial: the vitrine's stone and the manuscript's ink. */
+export const STONE_COLOURS: Record<string, { stone: string; ink: string }> = Object.fromEntries(BODIES.map((b) => [b.id, { stone: b.colour, ink: b.inkColour }]));
+
 const SIGNS = ["♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓"];
 
 interface Sample { years: number; lon: number; rho: number }

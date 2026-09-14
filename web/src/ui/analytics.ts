@@ -20,6 +20,17 @@ export interface ErrorSeries {
   phaseErr: number[];
 }
 
+/** The pointer error folded into windows (a year each): every window's swing, least to most, as a band. */
+export interface ErrorBands {
+  years: number[];        // window centres
+  moonMin: number[];
+  moonMax: number[];
+  meanMin: number[];
+  meanMax: number[];
+  sunMin: number[];
+  sunMax: number[];
+}
+
 function wrap180(d: number): number { return ((d + 180) % 360 + 360) % 360 - 180; }
 
 export function errorSeries(epochJdn: number, calib: Partial<Calibration>, y0 = -50, y1 = 50, stepDays = 7.3): ErrorSeries {
@@ -34,6 +45,35 @@ export function errorSeries(epochJdn: number, calib: Partial<Calibration>, y0 = 
     out.sunErr.push(wrap180(s.sunMean - t.sunLon));
     out.phaseErr.push(wrap180(s.elongation - t.elongation));
   }
+  return out;
+}
+
+/**
+ * Sampled every day (the Moon's error turns over with the anomalistic and synodic months and the
+ * Sun's with the year, so a coarser step aliases them into moire on an 80-year axis), then folded
+ * window by window into least and most. A year per window: eighty bands across the chart, each the
+ * whole swing of that year, so the slow drift and the size of the wobble read at once.
+ */
+export function errorBands(epochJdn: number, calib: Partial<Calibration>, y0 = -40, y1 = 40, windowYears = 1, stepDays = 1): ErrorBands {
+  const out: ErrorBands = { years: [], moonMin: [], moonMax: [], meanMin: [], meanMax: [], sunMin: [], sunMax: [] };
+  const step = stepDays / TROPICAL_YEAR, win = windowYears;
+  const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+  let w0 = y0, n = 0;
+  const flush = () => {
+    if (!n) return;
+    out.years.push(w0 + win / 2);
+    out.moonMin.push(lo[0]); out.moonMax.push(hi[0]); out.meanMin.push(lo[1]); out.meanMax.push(hi[1]); out.sunMin.push(lo[2]); out.sunMax.push(hi[2]);
+    lo.fill(Infinity); hi.fill(-Infinity); n = 0;
+  };
+  for (let y = y0; y <= y1; y += step) {
+    if (y >= w0 + win) { flush(); w0 += win; }
+    const s = mechanismState(y, epochJdn, calib);
+    const t = skyState(s.jd);
+    const e = [wrap180(s.moon - t.moonLon), wrap180(s.moonMean - t.moonLon), wrap180(s.sunMean - t.sunLon)];
+    for (let k = 0; k < 3; k++) { if (e[k] < lo[k]) lo[k] = e[k]; if (e[k] > hi[k]) hi[k] = e[k]; }
+    n++;
+  }
+  flush();
   return out;
 }
 
@@ -84,30 +124,44 @@ function palette() {
     : { grid: "rgba(230, 210, 170, 0.08)", tick: "#a89c86", font: "Alegreya, Georgia, serif", moon: "#e8c27a", moonMean: "rgba(232,194,122,0.35)", sun: "#7fb8a8" };
 }
 
-export function drawErrorChart(canvas: HTMLCanvasElement, series: ErrorSeries, existing?: Chart): Chart {
+/** A colour with its alpha replaced, for the filled bands. */
+function withAlpha(c: string, a: number): string {
+  const m = /^#([0-9a-f]{6})$/i.exec(c);
+  if (m) { const n = parseInt(m[1], 16); return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`; }
+  const inner = /\(([^)]+)\)/.exec(c)?.[1] ?? "0,0,0";
+  return `rgba(${inner.split(",").slice(0, 3).map((x) => x.trim()).join(",")},${a})`;
+}
+
+export function drawErrorChart(canvas: HTMLCanvasElement, bands: ErrorBands, existing?: Chart): Chart {
   existing?.destroy();
   const DARK = palette();
   // the legend is drawn in the column's own voice (a line of swatches under the chart), not Chart.js's boxes
   const legend = canvas.parentElement?.nextElementSibling?.classList.contains("chart-legend") ? canvas.parentElement.nextElementSibling : null;
   if (legend) {
-    legend.replaceChildren(...[[DARK.moon, "Moon, with the pin-and-slot"], [DARK.moonMean, "Moon, mean motion only"], [DARK.sun, "Sun"]].map(([c, t]) => {
-      const s = document.createElement("span"); const i = document.createElement("i"); i.style.background = c; s.append(i, t); return s;
+    const rows: [string, string, boolean][] = [[DARK.moon, "Moon, with the pin-and-slot", true], [DARK.moonMean, "Moon, mean motion only", true], [DARK.sun, "Sun", true]];
+    legend.replaceChildren(...rows.map(([c, t, band]) => {
+      const s = document.createElement("span"); const i = document.createElement("i"); i.style.background = c; if (band) i.classList.add("band"); s.append(i, t); return s;
     }));
   }
+  const band = (label: string, hi: number[], lo: number[], colour: string, edge: number, fillA: number) => [
+    { label: `${label}, most`, data: hi, borderColor: withAlpha(colour, edge), backgroundColor: withAlpha(colour, fillA), borderWidth: 0.8, pointRadius: 0, tension: 0, fill: "+1" as const },
+    { label: `${label}, least`, data: lo, borderColor: withAlpha(colour, edge), borderWidth: 0.8, pointRadius: 0, tension: 0, fill: false as const },
+  ];
   const cfg: ChartConfiguration = {
     type: "line",
     data: {
-      labels: series.years.map((y) => y.toFixed(1)),
+      labels: bands.years.map((y) => y.toFixed(1)),
       datasets: [
-        { label: "Moon, with the pin-and-slot", data: series.moonErr, borderColor: DARK.moon, borderWidth: 1.2, pointRadius: 0, tension: 0 },
-        { label: "Moon, mean motion only", data: series.moonMeanErr, borderColor: DARK.moonMean, borderWidth: 1, pointRadius: 0, tension: 0 },
-        { label: "Sun", data: series.sunErr, borderColor: DARK.sun, borderWidth: 1.2, pointRadius: 0, tension: 0 },
+        ...band("Moon, with the pin-and-slot", bands.moonMax, bands.moonMin, DARK.moon, 0.9, 0.38),
+        ...band("Moon, mean motion only", bands.meanMax, bands.meanMin, DARK.moonMean, 0.5, 0.16),
+        ...band("Sun", bands.sunMax, bands.sunMin, DARK.sun, 0.9, 0.3),
       ],
     },
     options: {
       animation: false,
       responsive: true,
       maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
       plugins: { legend: { display: false }, tooltip: { enabled: true } },
       scales: {
         x: { ticks: { color: DARK.tick, maxTicksLimit: 8, font: { size: 11, family: DARK.font } }, grid: { color: DARK.grid }, title: { display: true, text: "years from the epoch", color: DARK.tick, font: { size: 12, family: DARK.font, style: "italic" } } },

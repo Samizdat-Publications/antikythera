@@ -134,6 +134,7 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 .chart-legend { margin-top: 2px; }
 .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .chart-legend i { width: 16px; height: 2px; border-radius: 0; }
+.chart-legend i.band { height: 8px; opacity: 0.55; }
 .retro-strip { display: block; width: 100%; height: 132px; margin-top: 10px; }
 .cosmos-stage { position: absolute; inset: 0; width: 100%; height: 100%; display: none; background: radial-gradient(ellipse at 50% 45%, oklch(0.2 0.016 62), var(--bg) 70%); }
 .stage.sky .cosmos-stage { display: block; }
@@ -271,6 +272,22 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 [data-theme="manuscript"] .foot .src { color: var(--verdigris); }
 [data-theme="manuscript"] :focus-visible { outline-color: var(--bronze); }
 [data-theme="manuscript"] .theme-switch button[aria-pressed="true"] { color: var(--bronze); }
+
+/* the manuscript's top bar is a running head: no boxes, the actions set in the rubric face and parted by hederae,
+   the version in hand underlined in red ochre, the checkbox a small square drawn in ink */
+[data-theme="manuscript"] .topbar-actions { gap: 0; align-items: baseline; }
+[data-theme="manuscript"] .topbar-actions > :not(:first-child)::before { content: "\2766"; color: var(--line); font-size: 12px; margin: 0 14px; font-family: var(--font-body); vertical-align: 1px; }
+[data-theme="manuscript"] .topbar-actions .mini, [data-theme="manuscript"] .topbar-actions .chk, [data-theme="manuscript"] .theme-switch {
+  border: 0; background: none; padding: 0; font-family: var(--font-display); font-size: 15px; letter-spacing: 0.08em; color: var(--ink-dim); line-height: 1.2; }
+[data-theme="manuscript"] .topbar-actions .mini:hover, [data-theme="manuscript"] .topbar-actions .chk:hover { color: var(--bronze); }
+[data-theme="manuscript"] .topbar-actions .chk { gap: 8px; }
+[data-theme="manuscript"] .theme-switch button { border: 0; background: none; padding: 0; font: inherit; letter-spacing: inherit; color: var(--ink-faint); }
+[data-theme="manuscript"] .theme-switch button + button::before { content: "|"; color: var(--line); margin: 0 9px; font-weight: 400; }
+[data-theme="manuscript"] .theme-switch button:hover { color: var(--bronze); }
+[data-theme="manuscript"] .theme-switch button[aria-pressed="true"] { color: var(--bronze); background: none; text-decoration: underline; text-decoration-color: var(--bronze); text-decoration-thickness: 1px; text-underline-offset: 5px; }
+[data-theme="manuscript"] .chk input[type=checkbox] { appearance: none; -webkit-appearance: none; width: 11px; height: 11px; margin: 0; border: 1px solid var(--ink-dim); background: var(--paper); flex: none; vertical-align: -1px; }
+[data-theme="manuscript"] .chk input[type=checkbox]:checked { background: var(--bronze); border-color: var(--bronze); box-shadow: inset 0 0 0 2px var(--paper); }
+[data-theme="manuscript"] .chk input[type=checkbox]:focus-visible { outline: 2px solid var(--bronze); outline-offset: 2px; }
 
 /* the version switch in the top bar: two exhibits of the same machine */
 .theme-switch { display: inline-flex; gap: 0; border: 1px solid var(--line); border-radius: 3px; overflow: hidden; }

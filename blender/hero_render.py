@@ -2,12 +2,17 @@
 
     python tools/bl.py blender/hero_render.py 1800 [--set VIEWS=hero,front,back,pinslot,iso]
                                                    [--set SAMPLES=256] [--set SIZE=1920x1200]
+                                                   [--set HDRI=0] [--set HDRI_STRENGTH=1.0]
 Writes docs/renders/<view>.jpg. Uses the textured materials from blender/surface.py, a
-three-light gallery rig (warm key from high left, cool fill, warm rim) in a dark room, AgX.
+three-light gallery rig (warm key from high left, cool fill, warm rim) and, since lighting
+phase d, the same Poly Haven studio HDRI the web vitrine is lit by (assets/raw/hdri, 2k, or
+the 1k copy in web/public/hdri) as the world, hidden from the camera behind a dark room. AgX.
 The camera presets mirror web/src/scene/viewer.ts (Blender axes: +Z front, +Y up, mm).
 """
 import os
 import time
+
+import math
 
 import bpy
 from mathutils import Vector
@@ -17,6 +22,10 @@ VIEWS = str(globals().get("VIEWS", "hero,front,back,pinslot,iso")).split(",")
 SAMPLES = int(globals().get("SAMPLES", "256"))
 SIZE = str(globals().get("SIZE", "1920x1200"))
 YEARS = float(globals().get("YEARS", "0.0"))
+USE_HDRI = str(globals().get("HDRI", "1")) not in ("0", "false", "False")
+HDRI_STRENGTH = float(globals().get("HDRI_STRENGTH", "1.0"))
+HDRI_FILES = [os.path.join(REPO, "assets", "raw", "hdri", "studio_small_09_2k.hdr"),
+              os.path.join(REPO, "web", "public", "hdri", "studio_small_09_1k.hdr")]
 OUT = os.path.join(REPO, "docs", "renders")
 os.makedirs(OUT, exist_ok=True)
 
@@ -63,10 +72,58 @@ sc.view_settings.exposure = 0.0
 world = sc.world or bpy.data.worlds.new("World")
 sc.world = world
 world.use_nodes = True
-bg = world.node_tree.nodes.get("Background")
-if bg:
-    bg.inputs[0].default_value = (0.035, 0.026, 0.02, 1)     # a faintly lit warm room
-    bg.inputs[1].default_value = 1.0
+nt = world.node_tree
+nt.nodes.clear()
+out = nt.nodes.new("ShaderNodeOutputWorld")
+dark = nt.nodes.new("ShaderNodeBackground")
+dark.inputs[0].default_value = (0.035, 0.026, 0.02, 1)       # what the camera sees: a faintly lit warm room
+dark.inputs[1].default_value = 1.0
+hdri_path = next((f for f in HDRI_FILES if os.path.exists(f)), None) if USE_HDRI else None
+hdri_info = None
+if hdri_path:
+    # the studio HDRI lights the bronze (the reflections the web vitrine has) but stays out of the frame:
+    # camera rays see the dark room, every other ray sees the studio
+    img = bpy.data.images.get("hero_hdri")
+    if img is None or img.filepath != hdri_path:
+        img = bpy.data.images.load(hdri_path)
+        img.name = "hero_hdri"
+    env = nt.nodes.new("ShaderNodeTexEnvironment")
+    env.image = img
+    envbg = nt.nodes.new("ShaderNodeBackground")
+    envbg.inputs[1].default_value = HDRI_STRENGTH
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    lp = nt.nodes.new("ShaderNodeLightPath")
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    mp = nt.nodes.new("ShaderNodeMapping")
+    mp.vector_type = "POINT"
+    # this model stands with +Y up inside Blender's Z-up world, so the studio's zenith is turned onto +Y
+    # (a quarter turn about X), then turned about the studio's own zenith so its brightest softbox sits
+    # where the web puts the key: high, front-left. Blender's equirect: u = 0.5 - atan2(y, x) / 2pi.
+    import numpy as np
+    w, h = img.size
+    px = np.array(img.pixels[:], dtype=np.float32).reshape(h, w, 4)
+    lum = px[..., 0] * 0.2126 + px[..., 1] * 0.7152 + px[..., 2] * 0.0722
+    bh, bw = max(1, h // 32), max(1, w // 64)                 # a softbox, not a single hot pixel
+    blocks = lum[: (h // bh) * bh, : (w // bw) * bw].reshape(h // bh, bh, w // bw, bw).mean(axis=(1, 3))
+    by, bx = np.unravel_index(int(np.argmax(blocks)), blocks.shape)
+    u = (bx + 0.5) / blocks.shape[1]
+    v = (by + 0.5) / blocks.shape[0]                            # image rows run bottom-up in Blender
+    phi_b = (0.5 - u) * 2 * math.pi
+    want = Vector((-0.6, 0.7, 0.55)).normalized()               # model frame: left, up, front
+    wr = Vector((want.x, -want.z, want.y))                      # after the quarter turn about X
+    gamma = phi_b - math.atan2(wr.y, wr.x)
+    mp.inputs["Rotation"].default_value = (math.pi / 2, 0.0, gamma)
+    nt.links.new(tc.outputs["Generated"], mp.inputs["Vector"])
+    nt.links.new(mp.outputs["Vector"], env.inputs["Vector"])
+    nt.links.new(env.outputs["Color"], envbg.inputs["Color"])
+    nt.links.new(lp.outputs["Is Camera Ray"], mix.inputs["Fac"])
+    nt.links.new(envbg.outputs["Background"], mix.inputs[1])
+    nt.links.new(dark.outputs["Background"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    hdri_info = {"file": os.path.basename(hdri_path), "size": [w, h], "brightest_uv": [round(u, 3), round(v, 3)],
+                 "elevation_deg": round((v - 0.5) * 180, 1), "rotation_z_deg": round(math.degrees(gamma), 1), "strength": HDRI_STRENGTH}
+else:
+    nt.links.new(dark.outputs["Background"], out.inputs["Surface"])
 
 master = bpy.data.objects.get("MASTER")
 if master is not None:
@@ -164,4 +221,4 @@ for o in bpy.data.objects:
 if frag is not None:
     frag.hide_render = frag_hidden
 sc.render.engine = engine0
-result = {"rendered": rendered, "seconds": round(time.time() - t0), "samples": SAMPLES, "size": SIZE}
+result = {"rendered": rendered, "seconds": round(time.time() - t0), "samples": SAMPLES, "size": SIZE, "hdri": hdri_info}

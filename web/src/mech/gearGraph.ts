@@ -42,7 +42,9 @@ export class GearGraph {
   private ordered: GearNode[] = [];
   private offsets = new Map<string, number>();           // display -> radians (Blender sense)
   private phases = new Map<string, number>();            // node -> assembly phase, radians (pin gears of the devices)
-  private years = 0;
+  private _years = 0;
+  /** Turns of the main wheel the machine is set to. */
+  get years(): number { return this._years; }
 
   constructor(root: Object3D) {
     root.traverse((o) => {
@@ -86,7 +88,7 @@ export class GearGraph {
    * the desired angle minus whatever the driving node shows at the epoch.
    */
   setCalibration(desiredDeg: Record<string, number>): void {
-    const saved = this.years;
+    const saved = this._years;
     this.setYears(0);
     for (const [display, deg] of Object.entries(desiredDeg)) {
       const objs = this.pointers.get(display);
@@ -129,7 +131,7 @@ export class GearGraph {
 
   /** Set every node's rotation for the given number of b1 turns. */
   setYears(years: number): void {
-    this.years = years;
+    this._years = years;
     for (const n of this.ordered) {
       const c = n.coupling;
       if (!c) {

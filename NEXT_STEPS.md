@@ -1,6 +1,6 @@
 # Where things stand, and what's next
 
-_Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, drag-the-crank). Read this first in a new session._
+_Updated 2026-09-13, late night (the backlog worked through: trails, the lit Moon, the chart, the renders, the running head). Read this first in a new session._
 
 ## Done and live
 
@@ -75,28 +75,43 @@ _Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, d
     panel; the parapegma row in the front-dial ledger; `?fps=1`; bloom skipped from behind; per-leaf
     lighting; the manuscript's opened back lit from behind; chart legend; pen-stroke trails.
 
+## Done 13 Sep, late night (the whole backlog, NOTES.md has the detail)
+
+13. **Pointer trails** on the front dial (`web/src/scene/trails.ts`): a long exposure of the Sun ball
+    and the five stones while the crank runs, sampled from the gear graph in sub-steps so nothing
+    aliases; `?trails=0`. Costs ~2 ms only at ten years a second.
+14. **The Moon panel is a lit Moon**: NASA's LROC near side, Lommel-Seeliger shading, earthshine; an
+    engraving (hatch, stipple, parchment) in the manuscript.
+15. **The accuracy chart** samples daily and draws yearly least-to-most bands (the 5-day sampling
+    had aliased the monthly wobble into moire); computed once per epoch in idle time.
+16. **Hero renders** re-done with the studio HDRI as the world (hidden from the camera), 95 s.
+17. **The manuscript's top bar** is a running head: rubric face, hederae, the version underlined,
+    ink-square checkboxes everywhere in the manuscript.
+18. **Merging static meshes: measured, not done** (1053 draw calls a frame from 142 meshes over seven
+    passes; only eight meshes are mergeable, ~5 %; the frame is fill-bound). See NOTES.md.
+
 ## Backlog, in priority order
 
-0. ~~Manuscript theme~~ DONE. ~~Plate tarnish, ruled frame + caption, rubricated initial~~ DONE.
-   ~~Plinth as a table~~, ~~pen-stroke trails~~, ~~the rusty opened back~~ DONE. Still to taste in
-   the manuscript: the top bar's buttons are still web buttons.
-1. **More motion where the machine moves**: ~~assembly on load~~, ~~drag-the-crank~~,
-   ~~taken apart~~, ~~eclipse beat~~, ~~URL state~~, ~~per-leaf lighting~~ DONE. Left: pointer
-   trails on the front dial at ten years per second.
-2. ~~Lighting phase d~~ DONE (Poly Haven `studio_small_09` / `artist_workshop`, `?hdri=0` for the
-   hand-built rooms). Still to do: re-render the hero images (`blender/hero_render.py`, ~3 min).
-3. ~~Tablet/mobile~~ DONE (Stewart tried touch on a real device: the crank drag works).
-4. ~~Fragment A alignment~~ DONE by eye (−45°); its position could still be nudged a few mm.
-5. **3D lit moon** in the Moon panel; ~~retrograde strip~~ DONE.
-6. ~~Parapegma highlight~~ DONE (a ledger row); the letters' degree positions on the ring are still
-   schematic, and the lines are the attested set with reconstructed Greek.
-7. **Performance**: ~~FPS overlay~~ (`?fps=1`), ~~bloom skipped from behind~~ DONE; merge static
-   meshes (export job).
-8. ~~Attested-vs-reconstructed styling in the inspector~~, ~~Freeth 2014 Table S3 hours into the
-   Saros dial texture~~ DONE (solid = surviving, faint = schematic; export_glb.py reloads images).
-9. Critique leftovers: ~~the accuracy chart's stock legend~~ DONE; its 5-day sampling; ~~"crank &
-   chime" is discovered by accident~~ (the explore leaf names it now); the mirrored-looking glyphs
-   on the Saros spiral are just tangential text read from the wrong side (not a bug).
+0. ~~Manuscript theme~~, ~~plate, caption, versal~~, ~~table~~, ~~pen trails~~, ~~opened back~~,
+   ~~the top bar as a running head~~ DONE.
+1. ~~More motion where the machine moves~~ DONE, trails included.
+2. ~~Lighting phase d~~ and ~~the hero re-renders~~ DONE.
+3. ~~Tablet/mobile~~ DONE.
+4. ~~Fragment A alignment~~ DONE by eye (−45°); its position could still be nudged a few mm, judged
+   at full size against b1's rim (a taste call for Stewart).
+5. ~~3D lit moon~~, ~~retrograde strip~~ DONE.
+6. ~~Parapegma highlight~~ DONE; the letters' degree positions on the ring are still schematic (the
+   attested positions would need Bitsakis & Jones 2016 Table 3 read into `gen_dial_textures.py` and
+   `LETTER_OFFSETS` in main.ts), and the lines are the attested set with reconstructed Greek.
+7. **Performance**: ~~FPS overlay~~, ~~bloom skipped from behind~~ DONE; ~~merge static meshes~~
+   closed (see 18). If a slow GPU ever matters: the shadow maps at half resolution, or GTAO at half.
+8. ~~Inspector styling~~, ~~Table S3 hours~~ DONE.
+9. Critique leftovers: ~~legend~~, ~~5-day sampling~~, ~~"crank & chime" discovered by accident~~ DONE;
+   the mirrored-looking glyphs on the Saros spiral are tangential text read from the wrong side (not a bug).
+10. New ideas, unranked: the Moon panel could show libration (the real Moon nods ±8°; the machine
+    does not know that, so it would have to be labelled as the sky's, not the machine's); a trail on the
+    Sky view's stage plate at ten years a second to match the dial; the walkthrough's Moon leaf could
+    point at the lit Moon now that it is worth pointing at.
 
 ## How to resume
 

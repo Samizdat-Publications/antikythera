@@ -50,7 +50,8 @@ cd web && npx gltf-transform meshopt public/models/antikythera.glb public/models
 cd web && npm run dev
 ```
 
-Hero renders (Cycles, GPU): `python tools/bl.py blender/hero_render.py 1800` writes `docs/renders/*.jpg`.
+Hero renders (Cycles, GPU): `python tools/bl.py blender/hero_render.py 1800` writes `docs/renders/*.jpg`,
+lit by the same Poly Haven studio HDRI as the web vitrine (`--set HDRI=0` for the three-light rig alone).
 
 Tests: `cd python && python -m pytest`, `cd web && npx vitest run`.
 
@@ -74,6 +75,8 @@ Tests: `cd python && python -m pytest`, `cd web && npx vitest run`.
 * Ephemeris: astronomy-engine (Don Cross, MIT).
 * Layout reference: Thomas Weibel's CC BY reconstruction (thomasweibel.ch).
 * Epochs: Carman & Evans 2014 (12 May 205 BC); Voulgaris, Mouratidis & Vossinakis 2022 (22 Dec 178 BC).
+* The Moon's face in the Moon panel: NASA's CGI Moon Kit (LROC colour mosaic), public domain.
+* Rooms: Poly Haven HDRIs `studio_small_09` and `artist_workshop`, CC0.
 
 The parapegma text and the Saros glyph hours beyond the surviving cells are
 schematic reconstructions; see NOTES.md.

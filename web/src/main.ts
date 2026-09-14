@@ -5,7 +5,7 @@ import { drawMoon } from "./ui/moon";
 import { calibrate, type CalibrationSet } from "./astro/calibration";
 import { loadCanon, nextEclipse, prevEclipse, eclipsesBetween, describeType, skyState, type EclipseRow } from "./astro/truth";
 import { glyphByMonth, OBSERVED_HOURS } from "./astro/eym";
-import { auditSaros, drawErrorChart, errorSeries } from "./ui/analytics";
+import { auditSaros, drawErrorChart, errorBands, type ErrorBands } from "./ui/analytics";
 import { Tour } from "./ui/tour";
 import { Onboarding, firstVisit } from "./ui/onboarding";
 import { renderInspector, TRAINS } from "./ui/inspector";
@@ -301,9 +301,17 @@ onboarding.onDone = () => viewer.setMood("room");                    // closing 
 $("#tour-btn").addEventListener("click", () => onboarding.start());
 let chart: Chart | undefined;
 
+/** The accuracy chart's series: 80 years sampled daily takes a few hundred ms, so it is computed once per epoch when the page is idle. */
+let bands: { epochJdn: number; data: ErrorBands } | null = null;
+const idle = (fn: () => void): void => {
+  const w = window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+  if (w.requestIdleCallback) w.requestIdleCallback(fn, { timeout: 3000 }); else setTimeout(fn, 250);
+};
 function refreshAnalytics(): void {
   const cv = $<HTMLCanvasElement>("#chart-moon");
-  if (cv) chart = drawErrorChart(cv, errorSeries(epoch.jdn, mechCalibration(), -40, 40, 5.0), chart);
+  const draw = () => { if (cv && bands && bands.epochJdn === epoch.jdn) chart = drawErrorChart(cv, bands.data, chart); };
+  if (bands?.epochJdn === epoch.jdn) draw();
+  else { const jdn = epoch.jdn; idle(() => { if (bands?.epochJdn !== jdn) bands = { epochJdn: jdn, data: errorBands(jdn, mechCalibration(), -40, 40) }; draw(); }); }
   if (!canon) return;
   const a = auditSaros(epoch.jdn, calib.sarosMonth0, canon, 669);
   setDl($("#audit-dl"), [
