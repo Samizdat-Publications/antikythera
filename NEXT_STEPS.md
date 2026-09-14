@@ -85,8 +85,8 @@ _Updated 2026-09-13, late afternoon (manuscript pushed: codex plate, overture, d
    trails on the front dial at ten years per second.
 2. **Lighting phase d**: a real HDRI (Poly Haven, CC0) if he wants it; ask before downloading.
    Also re-render the hero images after any material change (`blender/hero_render.py`, ~3 min).
-3. **Tablet/mobile**: ~~aspect-aware framing~~ DONE (fov widens below 6:5). Left: the Sky view and
-   the HUD on narrow screens; touch for the crank drag is untested.
+3. **Tablet/mobile**: ~~aspect-aware framing~~, ~~the Sky view on narrow screens~~ (the ring sits
+   below the HUD row) DONE. Left: touch for the crank drag is untested on a real device.
 4. ~~Fragment A alignment~~ DONE by eye (−45°); its position could still be nudged a few mm.
 5. **3D lit moon** in the Moon panel; ~~retrograde strip~~ DONE.
 6. ~~Parapegma highlight~~ DONE (a ledger row); the letters' degree positions on the ring are still

@@ -158,7 +158,8 @@ export class Cosmos {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     const big = w > 500;
-    const cx = w / 2, cy = h / 2, Rz = Math.min(w, h) / 2 - (big ? 34 : 18);
+    const narrow = big && w < 700;                                             // a phone: the HUD row sits over the top of the stage
+    const cx = w / 2, cy = h / 2 + (narrow ? 26 : 0), Rz = Math.min(w, h - (narrow ? 52 : 0)) / 2 - (big ? 34 : 18);
     const P = (lon: number, rho: number): [number, number] => [cx + rho * Rz * Math.cos(lon * DEG), cy + rho * Rz * Math.sin(lon * DEG)];
     const ms = this.theme === "manuscript";
     const bronze = ms ? "84,60,36" : "201,151,63", vellum = ms ? "58,44,30" : "232,222,204", verdigris = ms ? "52,118,100" : "96,176,158";
