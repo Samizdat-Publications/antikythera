@@ -8,7 +8,7 @@ import { glyphByMonth, OBSERVED_HOURS } from "./astro/eym";
 import { auditSaros, drawErrorChart, errorBands, type ErrorBands } from "./ui/analytics";
 import { Tour } from "./ui/tour";
 import { Onboarding, firstVisit } from "./ui/onboarding";
-import { renderInspector, TRAINS } from "./ui/inspector";
+import { renderInspector, trainFor, trainRowId, TRAINS } from "./ui/inspector";
 import { Cosmos } from "./ui/cosmos";
 import { fitDevicePhases, type PhaseFit } from "./astro/phases";
 import type { Chart } from "chart.js/auto";
@@ -577,6 +577,17 @@ $("#goto").addEventListener("click", () => {
   if (Number.isFinite(y)) setYears((civilToJdn(y, 1, 1) - epoch.jdn) / TROPICAL_YEAR);
 });
 renderInspector($("#inspector"), null, (ids) => viewer.isolate(ids));
+// clicking a gear does what choosing its train in the column does, through the row itself so the two never disagree
+viewer.onSelect = (id) => {
+  const t = trainFor(id);
+  if (!t) return;
+  const row = document.getElementById(trainRowId(t));
+  if (!row) return;
+  const panel = row.closest("details");
+  if (panel) panel.open = true;
+  row.click();
+  if (row.getAttribute("aria-pressed") === "true") row.scrollIntoView({ block: "center", behavior: "smooth" });
+};
 canvas.addEventListener("pointerleave", () => { hover.textContent = ""; });
 viewer.onHover = (id) => {
   hover.replaceChildren();
@@ -591,6 +602,7 @@ viewer.onHover = (id) => {
   }
   if (n?.status) hover.append(el("tag", n.status));
   if (id === "a1") hover.append(el("tag", "drag the handle to wind it"));
+  else if (trainFor(id)) hover.append(el("tag", "click to see its train"));
   hover.append(el("id", id));
 };
 

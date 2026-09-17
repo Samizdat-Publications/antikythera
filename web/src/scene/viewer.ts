@@ -252,6 +252,10 @@ export class Viewer {
   private lastPick = 0;
   hovered: string | null = null;
   onHover: ((id: string | null) => void) | null = null;
+  /** A gear clicked rather than dragged past: the page shows the train it belongs to. */
+  onSelect: ((id: string) => void) | null = null;
+  /** Where a press began and what it was over, so a click can be told from an orbit drag. */
+  private press: { x: number; y: number; id: string } | null = null;
   /** The CT scan of Fragment A (Ashkan Pakzad, CC BY 4.0), loaded on demand. */
   fragment: THREE.Group | null = null;
   private fragmentMats: THREE.MeshStandardMaterial[] = [];
@@ -332,7 +336,7 @@ export class Viewer {
     this.controls = new OrbitControls(this.camera, opts.canvas);
     this.controls.enableDamping = true;
     this.controls.target.set(...t);
-    this.controls.addEventListener("start", () => { this.tween = null; this.controls.autoRotate = false; this.lastInput = performance.now(); this.setView("free"); });
+    this.controls.addEventListener("start", () => { this.tween = null; this.controls.autoRotate = false; this.lastInput = performance.now(); this.press = null; this.setView("free"); });
     this.controls.addEventListener("change", () => { this.pointerDirty = true; });
     this.controls.autoRotateSpeed = 0.35;                         // one turn in ~3 minutes: a visitor drifting round the case
     for (const ev of ["pointerdown", "wheel", "keydown", "touchstart"]) opts.canvas.addEventListener(ev, () => { this.lastInput = performance.now(); this.controls.autoRotate = false; }, { passive: true });
@@ -426,7 +430,7 @@ export class Viewer {
       this.pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
       this.pointerDirty = true;
     });
-    opts.canvas.addEventListener("pointerleave", () => { this.pointer.set(9, 9); this.pointerDirty = true; });
+    opts.canvas.addEventListener("pointerleave", () => { this.pointer.set(9, 9); this.pointerDirty = true; this.press = null; });
     // the crank: take hold of the handle and wind it round; the pointer's angle about the crank's centre is the crank's angle
     opts.canvas.addEventListener("pointerdown", (e) => {
       if (e.button !== 0 || this.hovered !== "a1" || !this.graph) return;
@@ -436,6 +440,11 @@ export class Viewer {
       try { opts.canvas.setPointerCapture(e.pointerId); } catch { /* a synthetic pointer has no capture */ }
       opts.canvas.style.cursor = "grabbing";
       e.preventDefault();
+    });
+    // any other gear: remember where the press began, so a click can be told from a drag when the button comes up
+    opts.canvas.addEventListener("pointerdown", (e) => {
+      const id = this.hovered;
+      this.press = e.button === 0 && id !== null && id !== "a1" ? { x: e.clientX, y: e.clientY, id } : null;
     });
     opts.canvas.addEventListener("pointermove", (e) => {
       const d = this.crankDrag;
@@ -453,8 +462,15 @@ export class Viewer {
       this.controls.enabled = true;
       opts.canvas.style.cursor = this.hovered === "a1" ? "grab" : "";
     };
-    opts.canvas.addEventListener("pointerup", release);
-    opts.canvas.addEventListener("pointercancel", release);
+    opts.canvas.addEventListener("pointerup", (e) => {
+      const cranking = !!this.crankDrag;
+      release();
+      const p = this.press;
+      this.press = null;
+      // a click, not a drag: the pointer went nowhere, the crank is not being wound, and the same gear is still under it
+      if (p && !cranking && Math.hypot(e.clientX - p.x, e.clientY - p.y) < 6 && this.hovered === p.id) this.onSelect?.(p.id);
+    });
+    opts.canvas.addEventListener("pointercancel", () => { this.press = null; release(); });
     this.resize();
     addEventListener("resize", () => this.resize());
     new ResizeObserver(() => this.resize()).observe(opts.canvas.parentElement ?? opts.canvas);

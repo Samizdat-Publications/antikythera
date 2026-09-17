@@ -23,6 +23,16 @@ export const TRAINS: TrainSpec[] = [
   { name: "Saturn", gears: ["fix56", "sa52", "sa61", "sa40", "sa68", "sa86a", "sa86b"], ratio: "56·61/(52·68) = 427/442", note: "442 years read on the front cover inscription; offset 1.50 mm" },
 ];
 
+/** The train a gear belongs to: the first that lists it, which is the one the exhibit shows. */
+export function trainFor(id: string): TrainSpec | undefined {
+  return TRAINS.find((t) => t.gears.includes(id));
+}
+
+/** The id a train's row carries in the column, so the scene and the column always mean the same row. */
+export function trainRowId(t: TrainSpec): string {
+  return "train-" + t.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-$/, "");
+}
+
 export function renderInspector(el: HTMLElement, graph: GearGraph | null, onPick: (ids: string[]) => void): void {
   el.replaceChildren(
     ...TRAINS.map((t) => {
@@ -30,7 +40,7 @@ export function renderInspector(el: HTMLElement, graph: GearGraph | null, onPick
       row.type = "button";
       row.className = "train";
       row.setAttribute("aria-pressed", "false");
-      row.id = "train-" + t.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-$/, "");
+      row.id = trainRowId(t);
       const h = document.createElement("div");
       h.className = "train-h";
       h.textContent = t.name;
