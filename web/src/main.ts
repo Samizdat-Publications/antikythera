@@ -77,21 +77,23 @@ viewer.onAssembled = () => {
 };
 
 // ---- the address carries the exhibit's state, so a view can be sent as a link
+/** The address for the state on screen. The theme param is left as the theme switch wrote it. */
+function stateUrl(): URL {
+  const u = new URL(location.href);
+  const set = (k: string, v: string | null) => (v == null ? u.searchParams.delete(k) : u.searchParams.set(k, v));
+  set("epoch", epoch.id !== EPOCHS[0].id ? epoch.id : null);
+  set("years", Math.abs(years) > 1e-4 ? years.toFixed(4) : null);
+  set("view", viewer.currentView !== "iso" && viewer.currentView !== "free" ? viewer.currentView : null);
+  set("inside", $<HTMLInputElement>("#xray").checked ? "1" : null);
+  set("apart", $<HTMLInputElement>("#apart").checked ? "1" : null);
+  set("sky", stageEl.classList.contains("sky") ? "1" : null);
+  return u;
+}
 let urlTimer = 0;
 function writeUrl(): void {
   if (!overtureDone) return;                                          // nothing is written until the linked state has been read
   clearTimeout(urlTimer);
-  urlTimer = window.setTimeout(() => {
-    const u = new URL(location.href);
-    const set = (k: string, v: string | null) => (v == null ? u.searchParams.delete(k) : u.searchParams.set(k, v));
-    set("epoch", epoch.id !== EPOCHS[0].id ? epoch.id : null);
-    set("years", Math.abs(years) > 1e-4 ? years.toFixed(4) : null);
-    set("view", viewer.currentView !== "iso" && viewer.currentView !== "free" ? viewer.currentView : null);
-    set("inside", $<HTMLInputElement>("#xray").checked ? "1" : null);
-    set("apart", $<HTMLInputElement>("#apart").checked ? "1" : null);
-    set("sky", stageEl.classList.contains("sky") ? "1" : null);
-    history.replaceState(null, "", u);
-  }, 300);
+  urlTimer = window.setTimeout(() => history.replaceState(null, "", stateUrl()), 300);
 }
 /** Apply a linked state after the overture; true if the address carried one. */
 function readUrl(): boolean {
@@ -303,6 +305,20 @@ addEventListener("keydown", (e) => {                                   // space 
 onboarding.load();
 onboarding.onDone = () => viewer.setMood("room");                    // closing keeps the scene, but the room lights come back up
 $("#tour-btn").addEventListener("click", () => onboarding.start());
+// the address for the state on screen, put on the clipboard so a visitor can send what they have set up
+const shareBtn = $<HTMLButtonElement>("#share-btn");
+let shareTimer = 0;
+shareBtn.addEventListener("click", async () => {
+  const url = stateUrl().toString();
+  try {
+    await navigator.clipboard.writeText(url);
+    clearTimeout(shareTimer);
+    shareBtn.textContent = "link copied";
+    shareTimer = window.setTimeout(() => { shareBtn.textContent = "Share"; }, 1600);
+  } catch {
+    window.prompt("copy this link", url);                             // no clipboard: the link is still there to be taken
+  }
+});
 let chart: Chart | undefined;
 
 /** The accuracy chart's series: 80 years sampled daily takes a few hundred ms, so it is computed once per epoch when the page is idle. */
@@ -598,6 +614,12 @@ document.querySelectorAll<HTMLButtonElement>("[data-jump]").forEach((b) =>
 $("#goto").addEventListener("click", () => {
   const y = parseInt($<HTMLInputElement>("#goto-year").value, 10);
   if (Number.isFinite(y)) setYears((civilToJdn(y, 1, 1) - epoch.jdn) / TROPICAL_YEAR);
+});
+// the present day, read in UTC and turned into a Julian Day like every other date here
+$("#today").addEventListener("click", () => {
+  const now = new Date();
+  const jdn = civilToJdn(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate());
+  setYears((jdn - epoch.jdn) / TROPICAL_YEAR);
 });
 renderInspector($("#inspector"), null, (ids) => viewer.isolate(ids));
 // clicking a gear does what choosing its train in the column does, through the row itself so the two never disagree

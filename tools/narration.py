@@ -35,8 +35,10 @@ TOUR = [
      "Inside it a small dial counts the seventy-six-year Callippic period, and another runs through the four-year cycle of the great games: Olympia, Pythia, Nemea, Isthmia. "
      "Both spiral pointers carry a pin that slides outward along the groove as the years pass."),
     ("explore", "iso",
-     "That is the machine. Drag to orbit, scroll to zoom, hover any gear to see its tooth count and rate, and click a train in the list to isolate it. "
-     "Use X-ray to strip the plates away, jump straight to the next eclipse, and watch the analytics panel to see where twenty-two centuries of gearing agree with the sky, and where they drift. Enjoy the cosmos."),
+     "That is the machine. Drag to orbit, scroll to zoom, hover any gear for its tooth count and rate, and click it to see its train alone. "
+     "Inside lifts the plates away; Taken apart spreads every wheel along its arbor. "
+     "Drag the crank handle to wind it by hand, jump to the next eclipse, type a year, or press today and see how far twenty-two centuries have carried the pointers. "
+     "Share copies a link to whatever you have set up, and Save keeps the view as a picture. Enjoy the cosmos."),
     ("discovery", "front",
      "In 1901, sponge divers working a Roman-era shipwreck off the island of Antikythera brought up a corroded lump of bronze. "
      "Inside it were gears, thirty of them survive, cut by hand more than two thousand years ago. "

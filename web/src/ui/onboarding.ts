@@ -65,8 +65,8 @@ export const STEPS: Step[] = [
   },
   {
     id: "moon", title: "The Moon and its phase", clip: "moon",
-    body: "The moon pointer runs through five gears whose counts multiply out to exactly 254/19: in nineteen years the Moon circles the zodiac 254 times, the Metonic relation. The little half-silver ball turns once a lunar month, driven by a differential between the sun and moon pointers, showing the phase. Watch it now at a month per second.",
-    run: (h) => { h.view("front-close"); h.play(true, 0.0821918); h.focus("#moon-dl"); },
+    body: "The moon pointer runs through five gears whose counts multiply out to exactly 254/19: in nineteen years the Moon circles the zodiac 254 times, the Metonic relation. The little half-silver ball turns once a lunar month, driven by a differential between the sun and moon pointers, showing the phase. Watch it now at a month per second. The Moon in the column is lit the way the ball is; its face is the near side as NASA's LROC cameras mapped it.",
+    run: (h) => { h.view("front-close"); h.play(true, 0.0821918); h.focus("#moon"); },
   },
   {
     id: "pinslot", title: "The pin and slot", clip: "pinslot",
@@ -100,7 +100,7 @@ export const STEPS: Step[] = [
   },
   {
     id: "explore", title: "Explore", clip: "explore",
-    body: "Drag to orbit, scroll to zoom, hover a gear for its tooth count and rate, choose a train to see it alone. Inside lifts the plates away and Taken apart spreads every wheel along its arbor; drag the crank handle to wind it by hand, or press the space bar; the jump buttons take you to the next eclipse; type a year to travel there. Tick crank & chime in the top bar to hear it. Everything you see is computed from the gear table, and everything it claims is checked against the sky.",
+    body: "Drag to orbit, scroll to zoom, hover a gear for its tooth count and rate, and click it to see its train alone. Inside lifts the plates away; Taken apart spreads every wheel along its arbor. Drag the crank handle to wind it by hand, or press the space bar; jump to the next eclipse, type a year, or press today and see how far twenty-two centuries have carried the pointers. Share copies a link to whatever you have set up, and save this view keeps it as a picture. Tick crank & chime in the top bar to hear it. Everything you see is computed from the gear table, and everything it claims is checked against the sky.",
     run: (h) => { h.mood("room"); h.sky(false); h.fragment(0); h.isolate([]); h.xray(false); h.view("iso"); h.play(true, 0.0821918); h.focus(null); },   // leave it turning, as a museum would
   },
 ];
