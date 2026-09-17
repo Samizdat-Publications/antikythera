@@ -1,4 +1,4 @@
-# Antikythera — decisions log
+# Antikythera: decisions log
 
 Plan of record: `~/.claude/plans/i-would-like-to-bubbly-boot.md` (approved 2026-09-12).
 

@@ -175,6 +175,9 @@ function currentTheme(): Theme { return document.documentElement.dataset.theme =
 function applyTheme(t: Theme, persist = true): void {
   if (t === "manuscript") document.documentElement.dataset.theme = "manuscript";
   else delete document.documentElement.dataset.theme;
+  // the browser chrome follows the version: parchment by day, lamp-black at night
+  const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (themeColor) themeColor.content = t === "manuscript" ? "#efe6d3" : "#17120e";
   document.querySelectorAll<HTMLButtonElement>(".theme-switch [data-theme]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.theme === t)));
   viewer.setTheme(t);
   cosmos.setTheme(t);
@@ -386,7 +389,7 @@ function eclipsePanel(s: MechanismState): void {
   const fmJd = s.jd - (s.sarosMonthsElapsed % 1) * SYN;          // this cell's full moon (machine time)
   const nmJd = fmJd + (19 / 38) * SYN;                            // its new moon, 19 EYu later
   const mech = g
-    ? `${g.lunar ? "Σ — a lunar eclipse" : ""}${g.lunar && g.solar ? " · " : ""}${g.solar ? "Η — a solar eclipse" : ""}`
+    ? `${g.lunar ? "Σ, a lunar eclipse" : ""}${g.lunar && g.solar ? " · " : ""}${g.solar ? "Η, a solar eclipse" : ""}`
     : "no glyph: the machine expects no eclipse this month";
   parts.push(`<div class="ecl-row"><span class="k">Saros cell ${s.sarosCell}</span><span class="v ${g ? "mech" : "quiet"}">${mech}</span></div>`);
   if (g) {

@@ -1,5 +1,5 @@
 /**
- * Freeth 2014 "Eclipse Year Model" (PLOS ONE 9(7): e103275, CC-BY) — mirrors
+ * Freeth 2014 "Eclipse Year Model" (PLOS ONE 9(7): e103275, CC-BY), mirrors
  * python/mech/eym.py exactly. Generates the 223-cell Saros dial glyph table:
  * 51 glyph cells, 38 lunar (Σ) and 28 solar (Η).
  */

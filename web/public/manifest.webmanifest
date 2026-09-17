@@ -1,0 +1,15 @@
+{
+  "name": "Antikythera Cosmos",
+  "short_name": "Antikythera",
+  "description": "A working 3D reconstruction of the Antikythera mechanism: all 69 gears of the 2021 Freeth model, driven date by date and checked against the real sky.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#17120e",
+  "theme_color": "#17120e",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

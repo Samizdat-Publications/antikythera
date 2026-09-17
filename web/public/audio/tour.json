@@ -39,7 +39,7 @@
   {
    "id": "discovery",
    "view": "front",
-   "text": "In 1901, sponge divers working a Roman-era shipwreck off the island of Antikythera brought up a corroded lump of bronze. Inside it were gears \u2014 thirty of them survive \u2014 cut by hand more than two thousand years ago. This is a working reconstruction of that machine, following the model published by Tony Freeth's team in 2021.",
+   "text": "In 1901, sponge divers working a Roman-era shipwreck off the island of Antikythera brought up a corroded lump of bronze. Inside it were gears, thirty of them survive, cut by hand more than two thousand years ago. This is a working reconstruction of that machine, following the model published by Tony Freeth's team in 2021.",
    "file": "audio/tour_discovery.mp3",
    "duration": null
   },
@@ -53,21 +53,21 @@
   {
    "id": "moon",
    "view": "front",
-   "text": "The moon pointer runs through a train of five gears whose tooth counts \u2014 64, 38, 48, 24, 127 and 32 \u2014 multiply out to exactly 254 over 19. That is the ancient Metonic relation: in 19 years the Moon circles the zodiac 254 times. The little half-silver ball turns once a lunar month, showing the phase.",
+   "text": "The moon pointer runs through a train of five gears whose tooth counts, 64, 38, 48, 24, 127 and 32, multiply out to exactly 254 over 19. That is the ancient Metonic relation: in 19 years the Moon circles the zodiac 254 times. The little half-silver ball turns once a lunar month, showing the phase.",
    "file": "audio/tour_moon.mp3",
    "duration": null
   },
   {
    "id": "pinslot",
    "view": "back",
-   "text": "Hidden on the back is the machine's most astonishing device. Two 50-tooth gears sit face to face on axes offset by just over a millimetre, a pin on one riding in a slot on the other. As they turn, the slotted gear speeds up and slows down, adding a swing of six and a half degrees \u2014 the Moon's own acceleration near perigee. And because the pair rides on a great 223-tooth platform that creeps round once in nine years, the swing follows the slowly turning orbit of the Moon.",
+   "text": "Hidden on the back is the machine's most astonishing device. Two 50-tooth gears sit face to face on axes offset by just over a millimetre, a pin on one riding in a slot on the other. As they turn, the slotted gear speeds up and slows down, adding a swing of six and a half degrees: the Moon's own acceleration near perigee. And because the pair rides on a great 223-tooth platform that creeps round once in nine years, the swing follows the slowly turning orbit of the Moon.",
    "file": "audio/tour_pinslot.mp3",
    "duration": null
   },
   {
    "id": "metonic",
    "view": "back",
-   "text": "The upper back dial is a five-turn spiral of 235 cells \u2014 the months of the nineteen-year Metonic calendar, named in the Corinthian dialect of north-west Greece. A small pin on the pointer slides outward along the spiral, and two subsidiary dials count the seventy-six-year Callippic period and the four-year cycle of the Panhellenic games.",
+   "text": "The upper back dial is a five-turn spiral of 235 cells, the months of the nineteen-year Metonic calendar, named in the Corinthian dialect of north-west Greece. A small pin on the pointer slides outward along the spiral, and two subsidiary dials count the seventy-six-year Callippic period and the four-year cycle of the Panhellenic games.",
    "file": "audio/tour_metonic.mp3",
    "duration": null
   },
@@ -81,7 +81,7 @@
   {
    "id": "cosmos",
    "view": "front",
-   "text": "On the front, the 2021 reconstruction adds a cosmos: rings for Mercury, Venus, Mars, Jupiter and Saturn, each driven by its own epicyclic module and marked with a coloured stone. The period relations come from the machine's own cover inscription \u2014 462 years for Venus, 442 for Saturn \u2014 and reproduce the planets' retrograde loops.",
+   "text": "On the front, the 2021 reconstruction adds a cosmos: rings for Mercury, Venus, Mars, Jupiter and Saturn, each driven by its own epicyclic module and marked with a coloured stone. The period relations come from the machine's own cover inscription, 462 years for Venus, 442 for Saturn, and reproduce the planets' retrograde loops.",
    "file": "audio/tour_cosmos.mp3",
    "duration": null
   },

@@ -39,27 +39,27 @@ TOUR = [
      "Use X-ray to strip the plates away, jump straight to the next eclipse, and watch the analytics panel to see where twenty-two centuries of gearing agree with the sky, and where they drift. Enjoy the cosmos."),
     ("discovery", "front",
      "In 1901, sponge divers working a Roman-era shipwreck off the island of Antikythera brought up a corroded lump of bronze. "
-     "Inside it were gears — thirty of them survive — cut by hand more than two thousand years ago. "
+     "Inside it were gears, thirty of them survive, cut by hand more than two thousand years ago. "
      "This is a working reconstruction of that machine, following the model published by Tony Freeth's team in 2021."),
     ("crank", "crank",
      "Everything begins at the crank on the right-hand side. One turn of the crank drives a 48-tooth crown wheel against the great 223-tooth main wheel. "
      "Four and two-thirds turns of the crank carry the main wheel once around: one year. Every pointer you see is geared off that single rotation."),
     ("moon", "front",
-     "The moon pointer runs through a train of five gears whose tooth counts — 64, 38, 48, 24, 127 and 32 — multiply out to exactly 254 over 19. "
+     "The moon pointer runs through a train of five gears whose tooth counts, 64, 38, 48, 24, 127 and 32, multiply out to exactly 254 over 19. "
      "That is the ancient Metonic relation: in 19 years the Moon circles the zodiac 254 times. The little half-silver ball turns once a lunar month, showing the phase."),
     ("pinslot", "back",
      "Hidden on the back is the machine's most astonishing device. Two 50-tooth gears sit face to face on axes offset by just over a millimetre, a pin on one riding in a slot on the other. "
-     "As they turn, the slotted gear speeds up and slows down, adding a swing of six and a half degrees — the Moon's own acceleration near perigee. "
+     "As they turn, the slotted gear speeds up and slows down, adding a swing of six and a half degrees: the Moon's own acceleration near perigee. "
      "And because the pair rides on a great 223-tooth platform that creeps round once in nine years, the swing follows the slowly turning orbit of the Moon."),
     ("metonic", "back",
-     "The upper back dial is a five-turn spiral of 235 cells — the months of the nineteen-year Metonic calendar, named in the Corinthian dialect of north-west Greece. "
+     "The upper back dial is a five-turn spiral of 235 cells, the months of the nineteen-year Metonic calendar, named in the Corinthian dialect of north-west Greece. "
      "A small pin on the pointer slides outward along the spiral, and two subsidiary dials count the seventy-six-year Callippic period and the four-year cycle of the Panhellenic games."),
     ("saros", "back",
      "The lower spiral is the eclipse predictor. Its 223 cells are the months of a Saros, after which eclipses repeat. "
      "Fifty-one cells carry glyphs: sigma for a lunar eclipse, eta for a solar one, with the hour of day. Because a Saros is a third of a day longer than 6,585 days, the small Exeligmos dial adds zero, eight or sixteen hours to the reading."),
     ("cosmos", "front",
      "On the front, the 2021 reconstruction adds a cosmos: rings for Mercury, Venus, Mars, Jupiter and Saturn, each driven by its own epicyclic module and marked with a coloured stone. "
-     "The period relations come from the machine's own cover inscription — 462 years for Venus, 442 for Saturn — and reproduce the planets' retrograde loops."),
+     "The period relations come from the machine's own cover inscription, 462 years for Venus, 442 for Saturn, and reproduce the planets' retrograde loops."),
     ("xray", "front",
      "In 2005 a twelve-tonne X-ray tomography machine was carried to Athens and scanned the fragments slice by slice. "
      "Inside the crust were the gears, their teeth countable one by one, and two thousand characters of Greek that no one had read since antiquity. "

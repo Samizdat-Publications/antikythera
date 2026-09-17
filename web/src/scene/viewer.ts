@@ -13,7 +13,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
+import { HDRLoader } from "three/examples/jsm/loaders/HDRLoader.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
@@ -621,7 +621,7 @@ export class Viewer {
     if (have === "loading") return;
     if (!have) {
       this.hdris[name] = "loading";
-      new RGBELoader().load(spec.file, (tex) => {
+      new HDRLoader().load(spec.file, (tex) => {
         const env = this.pmrem.fromEquirectangular(tex).texture;
         tex.dispose();
         this.hdris[name] = env;
