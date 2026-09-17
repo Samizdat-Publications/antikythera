@@ -41,26 +41,63 @@ let speed = 1; // years per second
 let last = performance.now();
 let canon: { solar: EclipseRow[]; lunar: EclipseRow[] } | null = null;
 
-const viewer = new Viewer({
-  canvas,
-  url: "./models/antikythera.glb",
-  onProgress: (loaded, total) => {
-    const mb = (n: number) => (n / 1048576).toFixed(1);
-    $("#loading").innerHTML = `loading the mechanism<span class="sub">${total ? `${mb(loaded)} of ${mb(total)} MB` : `${mb(loaded)} MB`} · 69 gears, 17 trains</span>`;
-  },
-  onError: () => {
-    $("#loading").innerHTML = `the mechanism could not be loaded<span class="sub">the model file did not arrive. Check the connection and reload the page.</span>`;
-  },
-  onReady: (g) => {
-    $("#loading").hidden = true;
-    g.setCalibration(calib.pointers);
-    fitPhases();
-    cosmos.attach(g);
-    applyVisibility();
-    update();
-    renderInspector($("#inspector"), g, (ids) => { viewer.isolate(ids); caption(); });
-  },
-});
+/** No WebGL: the label says so and the exhibit stands as the rendered still, over the dead canvases. */
+function showStill(): void {
+  const label = $("#loading");
+  label.hidden = true;
+  const img = document.createElement("img");
+  img.className = "still";
+  img.src = "./still/iso.jpg";
+  img.alt = "The reconstruction in its case, a rendered still";
+  $(".plate").append(img);
+  label.innerHTML = `this browser cannot draw the machine in 3D<span class="sub">here it is as a rendered still; the column and the walkthrough need WebGL</span>`;
+  label.hidden = false;
+}
+// a context lost and not given back within five seconds is lost for good, and the label stops promising
+let lostTimer = 0;
+
+let viewer: Viewer;
+try {
+  // three throws from the renderer when no WebGL context can be had; ?webgl=0 takes the same path on purpose
+  if (new URLSearchParams(location.search).get("webgl") === "0") throw new Error("webgl disabled by ?webgl=0");
+  viewer = new Viewer({
+    canvas,
+    url: "./models/antikythera.glb",
+    onProgress: (loaded, total) => {
+      const mb = (n: number) => (n / 1048576).toFixed(1);
+      $("#loading").innerHTML = `loading the mechanism<span class="sub">${total ? `${mb(loaded)} of ${mb(total)} MB` : `${mb(loaded)} MB`} · 69 gears, 17 trains</span>`;
+    },
+    onError: () => {
+      $("#loading").innerHTML = `the mechanism could not be loaded<span class="sub">the model file did not arrive. Check the connection and reload the page.</span>`;
+    },
+    onReady: (g) => {
+      $("#loading").hidden = true;
+      g.setCalibration(calib.pointers);
+      fitPhases();
+      cosmos.attach(g);
+      applyVisibility();
+      update();
+      renderInspector($("#inspector"), g, (ids) => { viewer.isolate(ids); caption(); });
+    },
+    onContextLost: () => {
+      const label = $("#loading");
+      label.innerHTML = `the graphics driver reset<span class="sub">restoring the machine</span>`;
+      label.hidden = false;
+      clearTimeout(lostTimer);
+      lostTimer = window.setTimeout(() => {
+        label.innerHTML = `the graphics context was lost<span class="sub">reload the page to bring the machine back</span>`;
+      }, 5000);
+    },
+    onContextRestored: () => {
+      clearTimeout(lostTimer);
+      $("#loading").hidden = true;
+      viewer.render();
+    },
+  });
+} catch (err) {
+  showStill();
+  throw err;                                                          // nothing below this line has a machine to work with
+}
 // the overture has finished (the wheels are home): close the plates, then invite or start the crank
 let overtureDone = false;
 viewer.onAssembled = () => {

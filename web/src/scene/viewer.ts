@@ -217,6 +217,10 @@ export interface ViewerOptions {
   onReady?: (graph: GearGraph) => void;
   onProgress?: (loaded: number, total: number) => void;
   onError?: (err: unknown) => void;
+  /** The graphics context was taken away, by a driver reset or a machine waking from sleep. */
+  onContextLost?: () => void;
+  /** The context came back; three.js rebuilds its own state and the page may draw again. */
+  onContextRestored?: () => void;
 }
 
 type Preset = [[number, number, number], [number, number, number]];
@@ -481,6 +485,9 @@ export class Viewer {
       if (p && !cranking && Math.hypot(e.clientX - p.x, e.clientY - p.y) < CLICK_SLOP && this.hovered === p.id) this.onSelect?.(p.id);
     });
     opts.canvas.addEventListener("pointercancel", () => { this.press = null; release(); });
+    // the graphics context can be taken away: a driver reset, a machine waking from sleep. preventDefault leaves the browser free to give it back
+    opts.canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); opts.onContextLost?.(); });
+    opts.canvas.addEventListener("webglcontextrestored", () => opts.onContextRestored?.());
     this.resize();
     addEventListener("resize", () => this.resize());
     new ResizeObserver(() => this.resize()).observe(opts.canvas.parentElement ?? opts.canvas);

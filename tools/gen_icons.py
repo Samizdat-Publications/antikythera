@@ -8,6 +8,7 @@ Writes to web/public:
     icons/icon-512.png           manifest icon, purpose "any"
     icons/icon-512-maskable.png  the same motif inside the central 80 %, so a round mask keeps it whole
     og.jpg                       the 1200x630 share image, cut from docs/renders/hero.jpg
+    still/iso.jpg                the three-quarter render, shown where a browser has no WebGL
 
 The motif is the one web/index.html already carries as an SVG data URI: a bronze ring of
 radius 13/32, stroked 3/32 wide and dashed 2.6 on, 1.5 off, with a filled bronze disc of
@@ -26,6 +27,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PUBLIC = os.path.join(ROOT, "web", "public")
 ICONS = os.path.join(PUBLIC, "icons")
 HERO = os.path.join(ROOT, "docs", "renders", "hero.jpg")
+ISO = os.path.join(ROOT, "docs", "renders", "iso.jpg")
 
 LAMP_BLACK = (0x17, 0x12, 0x0E)
 BRONZE = (0xC9, 0x97, 0x3F)
@@ -43,6 +45,9 @@ ICON_SIZES = (180, 192, 512)
 OG_W, OG_H = 1200, 630
 OG_QUALITY = 88
 OG_FOCUS = 0.42             # the dial sits left of centre in the hero render, so the window hangs off this
+
+STILL_LONG = 1600           # long side of the fallback still, in pixels
+STILL_QUALITY = 85
 
 
 def motif(size: int, inset: float = 1.0) -> Image.Image:
@@ -89,6 +94,19 @@ def share_image() -> str:
     return path
 
 
+def still_image() -> str:
+    """The three-quarter render at 1600 px on the long side, for a browser without WebGL."""
+    with Image.open(ISO) as src:
+        im = src.convert("RGB")
+    scale = STILL_LONG / max(im.width, im.height)
+    if scale < 1:
+        im = im.resize((round(im.width * scale), round(im.height * scale)), Image.Resampling.LANCZOS)
+    path = os.path.join(PUBLIC, "still", "iso.jpg")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    im.save(path, "JPEG", quality=STILL_QUALITY, progressive=True)
+    return path
+
+
 def main() -> None:
     os.makedirs(ICONS, exist_ok=True)
     written = [os.path.join(ICONS, "icon-%d.png" % s) for s in ICON_SIZES]
@@ -98,6 +116,7 @@ def main() -> None:
     motif(512, inset=0.8).save(maskable)
     written.append(maskable)
     written.append(share_image())
+    written.append(still_image())
     for path in written:
         with Image.open(path) as im:
             print(os.path.relpath(path, ROOT).replace(os.sep, "/"),
