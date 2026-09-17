@@ -16,12 +16,10 @@ HDRLoader, version 1.0, no em dashes anywhere); Task 2 click a gear to see its t
 Task 3 save this view (a 2x PNG from the Exhibit menu); Task 4 today and Share, the Moon and Explore
 leaves, the explore clip re-narrated; Task 5 context loss handled and a rendered still for browsers
 without WebGL (`?webgl=0` to test); Task 6 service worker (offline, `web/public/sw.js`) and quality
-tiers (`?quality=low|medium|high`), in fix round 1 with the scoped re-review dispatched at the pause.
+tiers (`?quality=low|medium|high`), complete after one fix round.
 
 Next, in order:
-1. Read the ledger's last lines. If Task 6's re-review verdict is not there, run it again
-   (`review-package docs/plans/2026-09-17-final.md 5d595e1 c208d47`, then the re-review prompt) and
-   mark Task 6 complete.
+1. Read the ledger's last lines (Task 6 is complete; the base for Task 7 is recorded there).
 2. Task 7: the parapegma as Bitsakis and Jones 2016 read it (brief `task-7-brief.md`; the research
    digest `research-parapegma.md` is beside it). It re-exports the GLB with Blender headless.
 3. Task 8: the manuscript running head at narrow widths, the scrim under the no-WebGL label, the
