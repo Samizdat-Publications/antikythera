@@ -10,6 +10,7 @@ import { Tour } from "./ui/tour";
 import { Onboarding, firstVisit } from "./ui/onboarding";
 import { renderInspector, trainFor, trainRowId, TRAINS } from "./ui/inspector";
 import { Cosmos } from "./ui/cosmos";
+import { downloadBlob, snapshotName } from "./ui/snapshot";
 import { fitDevicePhases, type PhaseFit } from "./astro/phases";
 import type { Chart } from "chart.js/auto";
 
@@ -549,6 +550,32 @@ function showFragment(a: number): void {
 $<HTMLInputElement>("#fragment").addEventListener("input", (e) => showFragment(parseInt((e.target as HTMLInputElement).value, 10) / 100));
 $("#case").addEventListener("change", applyVisibility);
 $("#apart").addEventListener("change", applyVisibility);
+// the stage as a picture: the Sky view is its own 2-D canvas, already drawn at the screen's resolution;
+// the machine is drawn again at twice it
+const saveBtn = $<HTMLButtonElement>("#save-view");
+let saveFailedTimer = 0;
+saveBtn.addEventListener("click", async () => {
+  if (saveBtn.disabled) return;
+  clearTimeout(saveFailedTimer);
+  saveBtn.disabled = true;
+  saveBtn.textContent = "saving";
+  const sky = stageEl.classList.contains("sky");
+  try {
+    const blob = sky
+      ? await new Promise<Blob>((resolve, reject) =>
+          $<HTMLCanvasElement>("#cosmos-stage").toBlob((b) => (b ? resolve(b) : reject(new Error("the sky could not be turned into a picture"))), "image/png"),
+        )
+      : await viewer.snapshot();
+    const view = sky ? "sky" : viewer.fragmentShown && viewer.fragmentAlpha >= 0.98 ? "fragment-a" : viewer.currentView;
+    downloadBlob(blob, snapshotName(view, formatJd(epoch.jdn + years * TROPICAL_YEAR)));
+    saveBtn.textContent = "save this view";
+  } catch {
+    saveBtn.textContent = "could not save";
+    saveFailedTimer = window.setTimeout(() => { saveBtn.textContent = "save this view"; }, 2000);
+  } finally {
+    saveBtn.disabled = false;
+  }
+});
 document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) =>
   b.addEventListener("click", () => { setSky(false); viewer.view(b.dataset.view as string); }),
 );

@@ -758,6 +758,36 @@ export class Viewer {
     this.finalPass?.material.uniforms.resolution.value.set(w * pr, h * pr);
   }
 
+  private snapshotting = false;
+
+  /**
+   * One frame of the stage as a PNG, drawn at `scale` times the screen's resolution.
+   * The drawing buffer is not preserved, so the canvas is read in the same task it is drawn in.
+   */
+  async snapshot(scale = 2): Promise<Blob> {
+    const ratio = this.renderer.getPixelRatio();
+    const raised = Math.min(3, ratio * scale);
+    let blob: Blob | null = null;
+    try {
+      this.snapshotting = true;
+      this.renderer.setPixelRatio(raised);
+      // the composers keep the pixel ratio they were built with, so the raised one has to be handed to them
+      this.composer.setPixelRatio(raised);
+      this.bloomComposer.setPixelRatio(raised);
+      this.resize();
+      this.render();
+      blob = await new Promise<Blob | null>((resolve) => this.opts.canvas.toBlob(resolve, "image/png"));
+    } finally {
+      this.renderer.setPixelRatio(ratio);
+      this.composer.setPixelRatio(ratio);
+      this.bloomComposer.setPixelRatio(ratio);
+      this.resize();
+      this.snapshotting = false;
+    }
+    if (!blob) throw new Error("the stage could not be turned into a picture");
+    return blob;
+  }
+
   setYears(years: number): void {
     this.graph?.setYears(years);
   }
@@ -1108,8 +1138,9 @@ export class Viewer {
   private lastFrame = 0;
   render(): void {
     const now = performance.now();
-    if (this.lastFrame) { const dt = now - this.lastFrame; this.autoQuality(dt); this.recent.push(dt); if (this.recent.length > 60) this.recent.shift(); }
-    this.lastFrame = now;
+    // a snapshot frame is drawn at twice the size, so its time says nothing about how fast the machine runs
+    if (this.lastFrame && !this.snapshotting) { const dt = now - this.lastFrame; this.autoQuality(dt); this.recent.push(dt); if (this.recent.length > 60) this.recent.shift(); }
+    this.lastFrame = this.snapshotting ? 0 : now;
     this.stepTween(now);
     this.stepApart(now);
     this.stepReveal(now);
