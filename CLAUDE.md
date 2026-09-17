@@ -1,4 +1,4 @@
-# Antikythera Cosmos — project instructions
+# Antikythera Cosmos : project instructions
 
 A working 3D reconstruction of the Antikythera mechanism (Freeth et al. 2021
 "Cosmos" model, 69 gears) built parametrically in Blender 5.1, exported to glTF,
