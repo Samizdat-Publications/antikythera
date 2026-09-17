@@ -389,7 +389,7 @@ function eclipsePanel(s: MechanismState): void {
   const fmJd = s.jd - (s.sarosMonthsElapsed % 1) * SYN;          // this cell's full moon (machine time)
   const nmJd = fmJd + (19 / 38) * SYN;                            // its new moon, 19 EYu later
   const mech = g
-    ? `${g.lunar ? "Σ, a lunar eclipse" : ""}${g.lunar && g.solar ? " · " : ""}${g.solar ? "Η, a solar eclipse" : ""}`
+    ? `${g.lunar ? "Σ: a lunar eclipse" : ""}${g.lunar && g.solar ? " · " : ""}${g.solar ? "Η: a solar eclipse" : ""}`
     : "no glyph: the machine expects no eclipse this month";
   parts.push(`<div class="ecl-row"><span class="k">Saros cell ${s.sarosCell}</span><span class="v ${g ? "mech" : "quiet"}">${mech}</span></div>`);
   if (g) {

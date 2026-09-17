@@ -38,8 +38,11 @@ DASH_ON = 2.6 / 32
 DASH_OFF = 1.5 / 32
 DISC_R = 4 / 32
 
+ICON_SIZES = (180, 192, 512)
+
 OG_W, OG_H = 1200, 630
 OG_QUALITY = 88
+OG_FOCUS = 0.42             # the dial sits left of centre in the hero render, so the window hangs off this
 
 
 def motif(size: int, inset: float = 1.0) -> Image.Image:
@@ -77,7 +80,9 @@ def share_image() -> str:
     scale = max(OG_W / im.width, OG_H / im.height)
     w, h = round(im.width * scale), round(im.height * scale)
     im = im.resize((w, h), Image.Resampling.LANCZOS)
-    left, top = (w - OG_W) // 2, (h - OG_H) // 2
+    # centred on the dial across, on the middle down, and never off the edge of the render
+    left = min(max(round(OG_FOCUS * w - OG_W / 2), 0), w - OG_W)
+    top = (h - OG_H) // 2
     im = im.crop((left, top, left + OG_W, top + OG_H))
     path = os.path.join(PUBLIC, "og.jpg")
     im.save(path, "JPEG", quality=OG_QUALITY, progressive=True)
@@ -86,8 +91,8 @@ def share_image() -> str:
 
 def main() -> None:
     os.makedirs(ICONS, exist_ok=True)
-    written = [os.path.join(ICONS, "icon-%d.png" % s) for s in (180, 192, 512)]
-    for size, path in zip((180, 192, 512), written):
+    written = [os.path.join(ICONS, "icon-%d.png" % s) for s in ICON_SIZES]
+    for size, path in zip(ICON_SIZES, written):
         motif(size).save(path)
     maskable = os.path.join(ICONS, "icon-512-maskable.png")
     motif(512, inset=0.8).save(maskable)
