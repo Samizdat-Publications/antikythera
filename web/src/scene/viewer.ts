@@ -232,6 +232,7 @@ const PRESETS: Record<string, Preset> = {
 };
 const BLOOM_NAMES = /^(sun_ball|stone_|moon_ball)/;
 const CRANK_TURNS_PER_YEAR = 223 / 48;                 // the crown wheel against the main wheel
+const CLICK_SLOP = 6;                                  // CSS pixels a press may travel and still be a click, not a drag
 
 export class Viewer {
   readonly renderer: THREE.WebGLRenderer;
@@ -429,8 +430,16 @@ export class Viewer {
       const r = opts.canvas.getBoundingClientRect();
       this.pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
       this.pointerDirty = true;
+      const p = this.press;                                          // once it has travelled it is a drag, even if it wanders back
+      if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) >= CLICK_SLOP) this.press = null;
     });
     opts.canvas.addEventListener("pointerleave", () => { this.pointer.set(9, 9); this.pointerDirty = true; this.press = null; });
+    // a touch tap comes with no pointermove before it: lay the ray on the tap and pick at once, so the crank and the press below have a gear to work with
+    opts.canvas.addEventListener("pointerdown", (e) => {
+      const r = opts.canvas.getBoundingClientRect();
+      this.pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      this.pickNow();
+    });
     // the crank: take hold of the handle and wind it round; the pointer's angle about the crank's centre is the crank's angle
     opts.canvas.addEventListener("pointerdown", (e) => {
       if (e.button !== 0 || this.hovered !== "a1" || !this.graph) return;
@@ -468,7 +477,7 @@ export class Viewer {
       const p = this.press;
       this.press = null;
       // a click, not a drag: the pointer went nowhere, the crank is not being wound, and the same gear is still under it
-      if (p && !cranking && Math.hypot(e.clientX - p.x, e.clientY - p.y) < 6 && this.hovered === p.id) this.onSelect?.(p.id);
+      if (p && !cranking && Math.hypot(e.clientX - p.x, e.clientY - p.y) < CLICK_SLOP && this.hovered === p.id) this.onSelect?.(p.id);
     });
     opts.canvas.addEventListener("pointercancel", () => { this.press = null; release(); });
     this.resize();
@@ -901,6 +910,13 @@ export class Viewer {
     this.camera.position.copy(target).addScaledVector(dir, r);
     this.controls.target.copy(target);
     if (u >= 1) this.tween = null;
+  }
+
+  /** Pick this instant, throttle and all, for a press that cannot wait for the next frame. */
+  private pickNow(): void {
+    this.pointerDirty = true;
+    this.lastPick = 0;
+    this.pick(performance.now());
   }
 
   private pick(now: number): void {
