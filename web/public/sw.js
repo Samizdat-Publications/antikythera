@@ -38,15 +38,19 @@ self.addEventListener("fetch", (event) => {
 });
 
 // the page itself: the network first, so a new build is picked up the moment it is deployed, and
-// the page that last loaded when there is no network to ask
+// the page that last loaded when there is no network to ask. The query is dropped from the key
+// because the exhibit writes its whole state into it, so a visitor who set a date, or followed a
+// shared address, would otherwise ask the shelf for a page nobody had ever loaded.
 async function pageFirst(event) {
   const cache = await caches.open(CACHE);
+  const url = new URL(event.request.url);
+  const key = new Request(url.origin + url.pathname);
   try {
     const res = await fetch(event.request);
-    store(event, cache, event.request, res);
+    store(event, cache, key, res);
     return res;
   } catch (err) {
-    const shelved = await cache.match(event.request);
+    const shelved = await cache.match(key);
     if (shelved) return shelved;
     throw err;
   }
