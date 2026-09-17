@@ -1,6 +1,43 @@
 # Where things stand, and what's next
 
-_Updated 2026-09-13, late night (the backlog worked through: trails, the lit Moon, the chart, the renders, the running head). Read this first in a new session._
+_Updated 2026-09-17, evening: the version 1.0 finishing run is half way through and PAUSED at the
+usage limit. Read this section first in a new session; the rest of the file is the state before it._
+
+## RESUME HERE (the finishing run of 2026-09-17)
+
+The work is on branch **`v1`** (not merged into main, not pushed, not deployed). It runs as a
+subagent-driven-development loop (superpowers skill): plan `docs/plans/2026-09-17-final.md`, ledger
+`.superpowers/sdd/2026-09-17-final/progress.md` (git-ignored; the authoritative state, read it first),
+briefs and reports beside it. Fable 5.1 coordinated, Opus subagents implemented and reviewed, the
+controller verified each task in the browser pane.
+
+Done and reviewed on `v1`: Task 1 launch metadata (description, Open Graph, manifest, icons, og.jpg,
+HDRLoader, version 1.0, no em dashes anywhere); Task 2 click a gear to see its train (touch taps too);
+Task 3 save this view (a 2x PNG from the Exhibit menu); Task 4 today and Share, the Moon and Explore
+leaves, the explore clip re-narrated; Task 5 context loss handled and a rendered still for browsers
+without WebGL (`?webgl=0` to test); Task 6 service worker (offline, `web/public/sw.js`) and quality
+tiers (`?quality=low|medium|high`), in fix round 1 with the scoped re-review dispatched at the pause.
+
+Next, in order:
+1. Read the ledger's last lines. If Task 6's re-review verdict is not there, run it again
+   (`review-package docs/plans/2026-09-17-final.md 5d595e1 c208d47`, then the re-review prompt) and
+   mark Task 6 complete.
+2. Task 7: the parapegma as Bitsakis and Jones 2016 read it (brief `task-7-brief.md`; the research
+   digest `research-parapegma.md` is beside it). It re-exports the GLB with Blender headless.
+3. Task 8: the manuscript running head at narrow widths, the scrim under the no-WebGL label, the
+   loading label kept through a context restore (brief `task-8-brief.md`).
+4. Final whole-branch review (Opus) over `git merge-base main v1`..HEAD, one fix wave, one re-review.
+5. Merge `v1` into `main` (fast-forward), `cd web && npm run build`, `npx wrangler deploy --assets web/dist`,
+   push. Then the docs pass: a NOTES.md entry for 2026-09-17 (the decisions in the ledger's `Ruling:`
+   lines), this file rewritten as a maintenance guide for lower-effort sessions, README features and
+   the Bitsakis and Jones attribution, and the deploy rule: whenever the GLB or the textures change,
+   bump `CACHE` in `web/public/sw.js`.
+6. Report to Stewart with the list of rulings (every `Ruling:` line in the ledger).
+
+Browser-pane gotchas found this session: with the pane hidden, requestAnimationFrame and timers are
+throttled, so drive `window.__viewer.render()` from `javascript_tool` in loops under 30 iterations;
+pin the camera (`__viewer.view("front")`, `controls.autoRotate = false`) before clicking by
+coordinate; the pane's drag tool reports "page navigated" because the app rewrites the address.
 
 ## Done and live
 
