@@ -238,6 +238,9 @@ const PRESETS: Record<string, Preset> = {
 const BLOOM_NAMES = /^(sun_ball|stone_|moon_ball)/;
 const CRANK_TURNS_PER_YEAR = 223 / 48;                 // the crown wheel against the main wheel
 const CLICK_SLOP = 6;                                  // CSS pixels a press may travel and still be a click, not a drag
+// what each quality tier costs the picture, for the console line that announces it
+const TIERS = ["everything on", "bloom and depth of field off", "ambient occlusion off as well, half-size shadows, one pixel per pixel"];
+const FORCED_TIERS: Record<string, 0 | 1 | 2 | undefined> = { high: 0, medium: 1, low: 2 };
 
 export class Viewer {
   readonly renderer: THREE.WebGLRenderer;
@@ -313,10 +316,13 @@ export class Viewer {
   private swapped: [THREE.Mesh, THREE.Material | THREE.Material[]][] = [];
   private savedBackground: THREE.Texture | THREE.Color | null = null;
 
-  /** Quality switches; `auto` drops the expensive passes on a slow GPU. */
+  /** Quality switches; the tiers below turn them off, in order, on a slow GPU. */
   quality = { bloom: true, dof: true, gtao: true };
+  private qualityTier: 0 | 1 | 2 = 0;
+  private basePixelRatio = Math.min(devicePixelRatio, 2);   // the tier 0 resolution, kept so a tier can give it back
+  private qualityForced = false;
   private frameTimes: number[] = [];
-  private autoQualityDone = false;
+  private qualityRounds = 0;
 
   // camera tween
   private tween: { p0: THREE.Vector3; p1: THREE.Vector3; t0: THREE.Vector3; t1: THREE.Vector3; start: number; ms: number } | null = null;
@@ -325,7 +331,7 @@ export class Viewer {
 
   constructor(private opts: ViewerOptions) {
     this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    this.renderer.setPixelRatio(this.basePixelRatio);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 0.85;
     this.renderer.shadowMap.enabled = true;
@@ -412,6 +418,14 @@ export class Viewer {
     this.finalPass.material.uniforms.bloomTexture.value = this.bloomComposer.renderTarget2.texture;
     this.composer.addPass(this.finalPass);
     this.composer.addPass(new OutputPass());
+
+    // `?quality=high`, `medium` or `low` pins a tier for testing and stands the automatic guard down
+    const forced = FORCED_TIERS[new URLSearchParams(location.search).get("quality") ?? ""];
+    if (forced !== undefined) {
+      this.qualityForced = true;
+      this.setQualityTier(forced);
+      console.info(`[antikythera] quality tier ${forced} asked for: ${TIERS[forced]}; the automatic guard stands down`);
+    }
 
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
@@ -1119,19 +1133,48 @@ export class Viewer {
     for (const [m, mat] of this.swapped) m.material = mat;
   }
 
+  /**
+   * The three tiers the exhibit runs at. Tier 0 is the machine as it was designed; tier 1 gives up
+   * the cinematic passes; tier 2 gives up ambient occlusion too, halves both shadow maps and draws
+   * one pixel per pixel, which is what an old laptop can hold a frame rate at.
+   */
+  setQualityTier(tier: 0 | 1 | 2): void {
+    this.qualityTier = tier;
+    this.quality.bloom = tier === 0;
+    this.quality.dof = tier === 0;
+    this.quality.gtao = tier < 2;
+    const shadowSize = tier === 2 ? 1024 : 2048;
+    for (const light of [this.lights.key, this.lights.backKey]) {
+      if (light.shadow.mapSize.width === shadowSize) continue;
+      light.shadow.mapSize.set(shadowSize, shadowSize);
+      light.shadow.map?.dispose();                       // thrown away so the renderer builds it again at the new size
+      light.shadow.map = null;
+    }
+    const ratio = tier === 2 ? 1 : this.basePixelRatio;
+    this.renderer.setPixelRatio(ratio);
+    // the composers keep the pixel ratio they were built with, so the new one has to be handed to them
+    this.composer.setPixelRatio(ratio);
+    this.bloomComposer.setPixelRatio(ratio);
+    this.resize();
+  }
+
+  /**
+   * The automatic guard: 90 frames are timed, their median picks a tier, and a second round of 90
+   * confirms it on the picture the first round chose. A round may only go down a tier, never back
+   * up, so the exhibit settles once and stays settled.
+   */
   private autoQuality(dt: number): void {
-    if (this.autoQualityDone) return;
+    if (this.qualityForced || this.qualityRounds >= 2 || this.qualityTier === 2) return;
     this.frameTimes.push(dt);
     if (this.frameTimes.length < 90) return;
-    this.autoQualityDone = true;
     const sorted = [...this.frameTimes].sort((a, b) => a - b);
     const median = sorted[sorted.length >> 1];
-    if (median > 26) {                                   // well under 40 fps: drop the cinematic passes
-      this.quality.bloom = false;
-      this.quality.dof = false;
-      if (median > 45) this.quality.gtao = false;
-      console.info(`[antikythera] slow GPU (median ${median.toFixed(0)} ms); bloom/depth of field off`);
-    }
+    this.frameTimes.length = 0;
+    this.qualityRounds++;
+    const wanted = median > 45 ? 2 : median > 26 ? 1 : 0;   // well under 40 fps, then under 22
+    if (wanted <= this.qualityTier) return;
+    this.setQualityTier(wanted);
+    console.info(`[antikythera] slow GPU (median ${median.toFixed(0)} ms); quality tier ${wanted}: ${TIERS[wanted]}`);
   }
 
   /** Frame-time statistics for the `?fps=1` overlay: median and worst of the last second. */

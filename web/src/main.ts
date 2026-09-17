@@ -705,3 +705,10 @@ function loop(now: number): void {
 }
 update();
 requestAnimationFrame(loop);
+
+// the exhibit off the network: a service worker keeps the model, the textures and the sky data, so
+// a second visit, or a kiosk with nothing to dial out to, opens what it opened before. Nothing of
+// it shows in the room; a browser that will not have one simply goes to the network every time.
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  addEventListener("load", () => { navigator.serviceWorker.register("./sw.js").catch(() => { /* no worker, no harm */ }); });
+}
