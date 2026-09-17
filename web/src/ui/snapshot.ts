@@ -1,4 +1,14 @@
-/** Saving the stage as a picture: handing the file to the browser, and the name it takes. */
+/** Saving the stage as a picture: reading a canvas, handing the file to the browser, and the name it takes. */
+
+/**
+ * A canvas as a picture. The bitmap is copied in the task this is called in, which is what lets a
+ * caller that raised its resolution put the screen's own back at once, without waiting for the file.
+ */
+export function canvasToBlob(canvas: HTMLCanvasElement, type = "image/png"): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("the stage could not be turned into a picture"))), type);
+  });
+}
 
 /** Offer the blob as a download, then let the object URL go. */
 export function downloadBlob(blob: Blob, filename: string): void {

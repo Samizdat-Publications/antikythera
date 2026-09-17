@@ -10,7 +10,7 @@ import { Tour } from "./ui/tour";
 import { Onboarding, firstVisit } from "./ui/onboarding";
 import { renderInspector, trainFor, trainRowId, TRAINS } from "./ui/inspector";
 import { Cosmos } from "./ui/cosmos";
-import { downloadBlob, snapshotName } from "./ui/snapshot";
+import { canvasToBlob, downloadBlob, snapshotName } from "./ui/snapshot";
 import { fitDevicePhases, type PhaseFit } from "./astro/phases";
 import type { Chart } from "chart.js/auto";
 
@@ -561,11 +561,7 @@ saveBtn.addEventListener("click", async () => {
   saveBtn.textContent = "saving";
   const sky = stageEl.classList.contains("sky");
   try {
-    const blob = sky
-      ? await new Promise<Blob>((resolve, reject) =>
-          $<HTMLCanvasElement>("#cosmos-stage").toBlob((b) => (b ? resolve(b) : reject(new Error("the sky could not be turned into a picture"))), "image/png"),
-        )
-      : await viewer.snapshot();
+    const blob = sky ? await canvasToBlob($<HTMLCanvasElement>("#cosmos-stage")) : await viewer.snapshot();
     const view = sky ? "sky" : viewer.fragmentShown && viewer.fragmentAlpha >= 0.98 ? "fragment-a" : viewer.currentView;
     downloadBlob(blob, snapshotName(view, formatJd(epoch.jdn + years * TROPICAL_YEAR)));
     saveBtn.textContent = "save this view";

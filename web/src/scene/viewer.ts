@@ -23,6 +23,7 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass.js";
 import { GearGraph } from "../mech/gearGraph";
 import { Trails } from "./trails";
+import { canvasToBlob } from "../ui/snapshot";
 
 /**
  * A gallery at night, built as geometry so PMREM can turn it into reflections:
@@ -767,7 +768,6 @@ export class Viewer {
   async snapshot(scale = 2): Promise<Blob> {
     const ratio = this.renderer.getPixelRatio();
     const raised = Math.min(3, ratio * scale);
-    let blob: Blob | null = null;
     try {
       this.snapshotting = true;
       this.renderer.setPixelRatio(raised);
@@ -776,7 +776,8 @@ export class Viewer {
       this.bloomComposer.setPixelRatio(raised);
       this.resize();
       this.render();
-      blob = await new Promise<Blob | null>((resolve) => this.opts.canvas.toBlob(resolve, "image/png"));
+      // the bitmap is copied in this task, so the restore below runs before the file is encoded
+      return canvasToBlob(this.opts.canvas);
     } finally {
       this.renderer.setPixelRatio(ratio);
       this.composer.setPixelRatio(ratio);
@@ -784,8 +785,6 @@ export class Viewer {
       this.resize();
       this.snapshotting = false;
     }
-    if (!blob) throw new Error("the stage could not be turned into a picture");
-    return blob;
   }
 
   setYears(years: number): void {
