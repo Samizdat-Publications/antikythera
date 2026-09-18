@@ -198,9 +198,6 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
   #date-sub { display: none; }
   .onboard { left: 12px; right: 12px; bottom: 12px; max-width: none; }
   .onboard-body { font-size: 14.5px; }
-  [data-theme="manuscript"] .stage { padding: 10px 12px 0; }
-  [data-theme="manuscript"] .stage-hud { left: 22px; top: 20px; }
-  [data-theme="manuscript"] .onboard { left: 20px; right: 20px; bottom: 44px; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 
@@ -313,4 +310,8 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
   [data-theme="manuscript"] .brand-title { font-size: 17px; letter-spacing: 0.14em; }
   [data-theme="manuscript"] #date-main { font-size: 19px; }
   [data-theme="manuscript"] .topbar-actions { row-gap: 4px; }
+  /* moved down from the block above, where the running-head rules outranked them on source order */
+  [data-theme="manuscript"] .stage { padding: 10px 12px 0; }
+  [data-theme="manuscript"] .stage-hud { left: 22px; top: 20px; }
+  [data-theme="manuscript"] .onboard { left: 20px; right: 20px; bottom: 44px; }
 }
