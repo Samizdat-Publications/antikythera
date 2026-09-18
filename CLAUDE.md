@@ -24,6 +24,9 @@ blender/build_all.py     gears + drivers; blender/dials.py plates/dials/pointers
 blender/export_glb.py    -> dist/antikythera.glb + dist/gears.json; blender/fragment.py CT scan
 web/                     Vite + TypeScript + three.js dashboard (`npm run dev` on port 5177,
                          `npm run build`, `npx vitest run`)
+docs/index.html          the project page: hand-written, no build, served by GitHub Pages from
+                         `docs/` (preview: the `antikythera-docs` launch entry, port 5178)
+docs/screens/            screenshots of the running exhibit, used by the page and the README
 ```
 
 ## Rebuild order (Blender open with the Lab MCP add-on enabled)

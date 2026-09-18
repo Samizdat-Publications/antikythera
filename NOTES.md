@@ -364,3 +364,27 @@ See README "Attributions" for licences.
   turned the crank at a year a second (crank, back dials) or four months a second (planets, sky) now runs at a
   month a second, the speed the Moon leaf already used; the planets leaf's text says so. Free exploration keeps
   a year a second as the default.
+- 2026-09-18 **Version 1.0 called, and the project page written.** The last of the finishing run's
+  deferred minors were cleared, so the backlog in NEXT_STEPS.md is now only taste calls and things
+  deliberately left: `trainsFor` names every train a shared wheel turns in (the fixed 56 under the
+  Sun and the three outer planets used to call itself True Sun, and the 64 named for Jupiter called
+  itself Mars), the parapegma's 0.6 deg window is measured round the circle so 359.8 deg stands on
+  iota, a context restored mid-download puts the progress line back instead of leaving the reset
+  notice up, `tools/narration.py` carries over the durations of clips it does not regenerate, and a
+  test in `web/src/ui/theme.test.ts` holds the two browser-chrome hexes together across index.html,
+  the manifest and main.ts (they cannot be the OKLCH tokens: the colour is read before any
+  stylesheet is in hand). Two earlier items were already done in the finishing run and are struck:
+  the Share button carries `aria-live="polite"` and its label changes, and the "twice the screen"
+  comments were corrected. **The three-quarter view was framed too tight**: at fov 38 the iso preset
+  stood 561 mm out and the case filled the frame exactly, so the top corner and the plinth were
+  shaved off at every stage wider than 6:5. The preset is now 1.18x further out, [354, -260, 496].
+  Caught by screenshotting the app at 1600x1000 for the README, which is an argument for taking the
+  pictures. **The project page** is `docs/index.html`, served by GitHub Pages from the `docs` folder
+  (with `.nojekyll`): the exhibit's own palette and type, the hero render, the eight screenshots in
+  `docs/screens/`, the ledger of counts, how it is built, how the numbers are checked, and the
+  sources. One CSS trap worth remembering: `.hero { padding: 40px 0 8px }` reset `.wrap`'s side
+  gutter to zero through the shorthand, so the hero ran to the edge on a phone; it is written as
+  `padding-top`/`padding-bottom` now. The screenshots were taken with Playwright against the dev
+  server, pinning the camera first (`__viewer.view(name, 0)`, `controls.autoRotate = false`,
+  `lastInput = performance.now()`) because the idle orbit starts after twelve seconds and had
+  wandered the camera inside the case in the first attempts.

@@ -1,11 +1,15 @@
 # Where things stand, and how to keep it
 
-_Updated 2026-09-17, night. Version 1.0 is finished and deployed. Read this first in a new session;
-NOTES.md has the decisions, newest entry last; CLAUDE.md has the rebuild order and the deploy command._
+_Updated 2026-09-18. Version 1.0 is finished, deployed and written up. Read this first in a new
+session; NOTES.md has the decisions, newest entry last; CLAUDE.md has the rebuild order and the
+deploy command._
 
 ## Version 1.0, done and live
 
-https://antikythera.stewartgregerson.workers.dev
+The exhibit: https://antikythera.stewartgregerson.workers.dev
+The project page: https://samizdat-publications.github.io/antikythera/ (GitHub Pages, served from
+`docs/` on `main`; it needs Pages switched on in the repository settings, and a private repository
+needs a paid plan for that. `docs/index.html` is the page, `docs/screens/` the screenshots.)
 
 - A working 69-gear reconstruction (Freeth et al. 2021) built from one gear table in Blender, exported
   to glTF and driven date by date in three.js; every rate an exact fraction, tested in Python and TS.
@@ -18,6 +22,9 @@ https://antikythera.stewartgregerson.workers.dev
   today and Share, context-loss recovery and a still for browsers without WebGL, quality tiers, the
   parapegma letters where Bitsakis and Jones 2016 read them, the manuscript's running head at every
   width. The decisions are in NOTES.md under 2026-09-17.
+- 2026-09-18: the deferred minors cleared, the three-quarter view pulled back so the case is not
+  shaved off at wide aspects, the README rewritten around eight screenshots of the running exhibit,
+  and the project page written. The decisions are in NOTES.md under 2026-09-18.
 
 ## Maintenance guide (for sessions at any effort level)
 
@@ -30,6 +37,13 @@ the manuscript rules must come after the vitrine ones in the file (a media query
 **Check and build.** `cd web && npx tsc --noEmit && npx vitest run && npx vite build`; Python:
 `cd python && python -m pytest`. Dev server: the `antikythera-web` entry in `.claude/launch.json`
 (port 5177). Browser-pane gotchas are at the end of NOTES.md's 2026-09-17 entry.
+
+**Change the project page or its screenshots.** `docs/index.html` is hand-written and stands alone:
+no build, no framework, the vitrine's own OKLCH tokens copied into its `:root`. Preview it with the
+`antikythera-docs` entry in `.claude/launch.json` (port 5178). New screenshots: run the dev server,
+pin the camera (`__viewer.view(name, 0)`, `controls.autoRotate = false`, `lastInput =
+performance.now()`) or the idle orbit will have wandered off, capture at 1600x1000, and save as JPEG
+at quality 84 into `docs/screens/`. Keep the README's captions and the page's in step.
 
 **Deploy.** `cd web && npm run build && cd .. && npx wrangler deploy --assets web/dist`, then push.
 If the GLB or any texture changed, bump `CACHE` in `web/public/sw.js` first.
@@ -53,20 +67,19 @@ Lab MCP add-on), then `python -m pytest` and the web tests, then bump `CACHE`.
 
 ## Backlog (small, unranked; none blocks anything)
 
-- Deferred minors from the finishing run's reviews (each one line of work): the Share confirmation
-  has no aria-live announcement; `tools/narration.py` nulls the durations of clips it does not
-  regenerate; three comments still say a saved picture is "twice" the screen (main.ts, viewer.ts);
-  `tools/gen_icons.py`'s docstrings still say "centre-cropped"; the theme colours are hex literals in
-  three places rather than the OKLCH tokens; a stale "context lost" label can outlive a restore that
-  happens during the download until the next progress tick; `trainFor` names True Sun for fix56 and
-  Mars for ju64 (shared gears).
-- The one attested parapegma numeral (11) in PP1 col. i is not drawn because the paper cannot place
-  its line; the 0.6 deg "on the letter" window does not wrap past 360.
+The finishing run's deferred minors are all cleared (2026-09-18). What is left is either a limit of
+the sources or something deliberately out of scope:
+
+- The one attested parapegma numeral (11) in PP1 col. i is not drawn, because the paper cannot place
+  its line. Nothing to fix until someone publishes a placement.
 - Fragment A's position could still be nudged a few mm by eye at full size (a taste call).
 - Libration in the Moon panel (it would be the sky's, not the machine's, and would need saying so);
   a long-exposure trail on the Sky stage at ten years a second.
 - If a slow GPU ever matters more: the two-round quality guard could be given a third round, or the
   service worker could precache the model on install for kiosks.
+- If the repository ever goes public, the project page and the README are ready for it; check that
+  `docs/plans/` and `docs/research/` read the way you want them read in the open, since Pages serves
+  the whole `docs` folder.
 
 ## Taste calls Stewart may want to reverse
 
