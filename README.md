@@ -80,5 +80,6 @@ Tests: `cd python && python -m pytest`, `cd web && npx vitest run`.
 * The Moon's face in the Moon panel: NASA's CGI Moon Kit (LROC colour mosaic), public domain.
 * Rooms: Poly Haven HDRIs `studio_small_09` and `artist_workshop`, CC0.
 
-The parapegma text and the Saros glyph hours beyond the surviving cells are
-schematic reconstructions; see NOTES.md.
+The parapegma's Greek wording and the Saros glyph hours beyond the surviving cells
+are schematic reconstructions; the index letters stand where Bitsakis and Jones 2016
+place them (see NOTES.md).

@@ -51,11 +51,14 @@ function showStill(): void {
   img.src = "./still/iso.jpg";
   img.alt = "The reconstruction in its case, a rendered still";
   $(".plate").append(img);
+  label.classList.add("over-still");
   label.innerHTML = `this browser cannot draw the machine in 3D<span class="sub">here it is as a rendered still; the column and the walkthrough need WebGL</span>`;
   label.hidden = false;
 }
 // a context lost and not given back within five seconds is lost for good, and the label stops promising
 let lostTimer = 0;
+// the model is here: until it is, the label is still reporting the download and must not be hidden
+let modelReady = false;
 
 let viewer: Viewer;
 try {
@@ -72,6 +75,7 @@ try {
       $("#loading").innerHTML = `the mechanism could not be loaded<span class="sub">the model file did not arrive. Check the connection and reload the page.</span>`;
     },
     onReady: (g) => {
+      modelReady = true;
       $("#loading").hidden = true;
       g.setCalibration(calib.pointers);
       fitPhases();
@@ -91,7 +95,8 @@ try {
     },
     onContextRestored: () => {
       clearTimeout(lostTimer);
-      $("#loading").hidden = true;
+      // mid-load the label is the progress line: leave it up so the next onProgress lands somewhere visible
+      if (modelReady) $("#loading").hidden = true;
       viewer.render();
     },
   });
