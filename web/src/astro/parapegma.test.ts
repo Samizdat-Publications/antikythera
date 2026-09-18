@@ -13,6 +13,10 @@ describe("the parapegma index letters", () => {
     expect(parapegmaAt(190.2).letter).toBe("Β");
     expect(parapegmaAt(190.2).ahead).toBe(0);
   });
+  it("says when the asterism in the line was restored rather than read", () => {
+    expect(parapegmaAt(190.2).nameRestored).toBe(true);        // Β, where the Haedi are the editors'
+    expect(parapegmaAt(180).nameRestored).toBe(false);         // Α, the Claws read on the bronze
+  });
   it("reads the vernal equinox as Ι, restored by the editors", () => {
     expect(parapegmaAt(0).letter).toBe("Ι");
     expect(parapegmaAt(0).status).toBe("restored");

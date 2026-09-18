@@ -7,7 +7,8 @@ Writes to web/public:
     icons/icon-192.png           manifest icon, purpose "any"
     icons/icon-512.png           manifest icon, purpose "any"
     icons/icon-512-maskable.png  the same motif inside the central 80 %, so a round mask keeps it whole
-    og.jpg                       the 1200x630 share image, cut from docs/renders/hero.jpg
+    og.jpg                       the 1200x630 share image, a window on docs/renders/hero.jpg
+                                 centred vertically and hung horizontally on OG_FOCUS
     still/iso.jpg                the three-quarter render, shown where a browser has no WebGL
 
 The motif is the one web/index.html already carries as an SVG data URI: a bronze ring of
@@ -79,7 +80,8 @@ def motif(size: int, inset: float = 1.0) -> Image.Image:
 
 
 def share_image() -> str:
-    """The hero render scaled until its short side fills the 1200x630 window, then centre-cropped."""
+    """The hero render scaled until its short side fills the 1200x630 window, then cropped to it:
+    the window is centred vertically and hung horizontally on OG_FOCUS, where the dial stands."""
     with Image.open(HERO) as src:
         im = src.convert("RGB")
     scale = max(OG_W / im.width, OG_H / im.height)

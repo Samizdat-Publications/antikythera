@@ -1187,7 +1187,8 @@ export class Viewer {
   private lastFrame = 0;
   render(): void {
     const now = performance.now();
-    // a snapshot frame is drawn at twice the size, so its time says nothing about how fast the machine runs
+    // a snapshot frame is drawn larger than the screen (up to three times the device pixel ratio),
+    // so its time says nothing about how fast the machine runs
     if (this.lastFrame && !this.snapshotting) { const dt = now - this.lastFrame; this.autoQuality(dt); this.recent.push(dt); if (this.recent.length > 60) this.recent.shift(); }
     this.lastFrame = this.snapshotting ? 0 : now;
     this.stepTween(now);

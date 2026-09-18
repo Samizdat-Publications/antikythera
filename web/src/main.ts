@@ -124,6 +124,9 @@ viewer.onAssembled = () => {
 function stateUrl(): URL {
   const u = new URL(location.href);
   const set = (k: string, v: string | null) => (v == null ? u.searchParams.delete(k) : u.searchParams.set(k, v));
+  // the debug switches are this visitor's, not the link's: a shared address must not pin whoever
+  // opens it to a low quality, a frame counter or the still shown in place of the machine
+  for (const k of ["webgl", "quality", "fps", "trails", "hdri"]) u.searchParams.delete(k);
   set("epoch", epoch.id !== EPOCHS[0].id ? epoch.id : null);
   set("years", Math.abs(years) > 1e-4 ? years.toFixed(4) : null);
   set("view", viewer.currentView !== "iso" && viewer.currentView !== "free" ? viewer.currentView : null);
@@ -473,7 +476,7 @@ function update(force = false): void {
   yearsVal.textContent = years.toFixed(4);
   const pp = parapegmaAt(s.sunMean);
   const ppRow = pp.ahead === 0
-    ? `${pp.letter} · ${pp.event}${pp.status === "restored" ? " (restored)" : ""}`
+    ? `${pp.letter} · ${pp.event}${pp.status === "restored" ? " (restored)" : ""}${pp.nameRestored ? " (name restored)" : ""}`
     : `${pp.letter} in ${pp.ahead.toFixed(1)}°: ${pp.event}`;
   setDl($("#front-dl"), [
     ["Sun (mean)", `${fmt(s.sunMean, 1)}° · ${s.zodiacSign.split(" ")[0]} ${fmt(s.zodiacDeg, 1)}°`],
@@ -579,7 +582,7 @@ $<HTMLInputElement>("#fragment").addEventListener("input", (e) => showFragment(p
 $("#case").addEventListener("change", applyVisibility);
 $("#apart").addEventListener("change", applyVisibility);
 // the stage as a picture: the Sky view is its own 2-D canvas, already drawn at the screen's resolution;
-// the machine is drawn again at twice it
+// the machine is drawn again larger than the screen (up to three times the device pixel ratio)
 const saveBtn = $<HTMLButtonElement>("#save-view");
 let saveFailedTimer = 0;
 saveBtn.addEventListener("click", async () => {
