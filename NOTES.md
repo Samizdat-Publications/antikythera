@@ -401,3 +401,36 @@ See README "Attributions" for licences.
   contain` so the page behind does not move). `--onboard-bottom` carries the offset the narrow and
   manuscript blocks already set, so each keeps its own. Folded mode is untouched, and nothing
   changes on a window tall enough to have shown the whole card before.
+- 2026-09-18 Stewart, on the Games dial at walkthrough leaf 9: "the dial on the right seems flipped,
+  it's rotating around the pointy end." He was right, and it was four pointers, not one. **What the
+  optimiser did:** `gltf-transform optimize` packs mesh positions into a quantized range and makes up
+  for it with a transform on the node carrying the mesh, so the mesh comes out centred on its own
+  origin and the node moves to where that centre belongs. A node with children cannot take the
+  compensation and is given a child to carry it instead. The Metonic and Saros pointers have follower
+  pins, the planet rings have stones, the Moon has its disc: those kept their pivots on the arbor. The
+  date, Games, Callippic and Exeligmos pointers have no children, so their own translations were
+  overwritten: `ptr_date` sat 33.6 mm off b1's axis, the three small ones 4 mm off theirs. The machine
+  writes each pointer's assembly offset onto exactly those nodes, so the offset swung the pointer
+  bodily round the arbor instead of turning it on the arbor: the body lay at bearing φ while pointing
+  along φ+θ. At this epoch the Games and Callippic offsets are both a half turn (the epoch falls in
+  games year 3 and Callippic quarter 2), which put the tip 1.8 mm the wrong side of the arbor and the
+  blunt hub out at the 9.5 mm rim, exactly as Stewart described. Exeligmos escaped notice only because
+  its offset is zero at this epoch; at another epoch it would have gone the same way.
+  **The mend** is `web/src/mech/pivots.ts`, called on the loaded scene before `GearGraph` reads
+  `am_pointer`: each displaced pointer is hung under a new pivot on the arbor, keeps its offset as its
+  own translation, and the pivot inherits `am_pointer`, which is Blender's arrangement restored. Done
+  at load rather than in the export because the optimiser will do it again to any pointer that loses
+  its last child. Five tests in `pivots.test.ts` hold the geometry, including that the total angle up
+  the chain is unchanged. **Nothing the exhibit reports was ever wrong**: `reading()` sums rotation.z
+  up the chain and that sum was already right. Checked by reading all ten displays at 3 years from the
+  deployed build and the mended one: identical to four decimals. Only the drawing was wrong.
+- 2026-09-18 Stewart, on the case: "the wooden box is like a two way mirror, on the outside it's
+  textured but from the inside it looks like there's no wall there." The boards are solid and
+  double-sided, so nothing was missing; what he was seeing was `lineCase`'s lining. The boards' inner
+  faces take the box unwrap's narrow 9 mm strip of u across their 90 mm of depth, so the grain smears
+  into vertical streaks, and the lining was added (2026-09-13) to cover that with a dark panel. Flat,
+  untextured and near-black in the vitrine, the panel read as a hole. The lining is now the wood's own
+  material cloned and taken to half its light, with the plane's UVs scaled to the boards' own 120 mm
+  to the UV unit, so the grain runs on at the right size and follows the theme through `tuneLining`.
+  The deeper fix, giving the case boards a proper box unwrap in `box_bm`, would want a Blender rebuild
+  and is in NEXT_STEPS.

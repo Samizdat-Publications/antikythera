@@ -25,6 +25,12 @@ needs a paid plan for that. `docs/index.html` is the page, `docs/screens/` the s
 - 2026-09-18: the deferred minors cleared, the three-quarter view pulled back so the case is not
   shaved off at wide aspects, the README rewritten around eight screenshots of the running exhibit,
   and the project page written. The decisions are in NOTES.md under 2026-09-18.
+- 2026-09-18, after release: four pointers (date, Games, Callippic, Exeligmos) were being drawn about
+  a pivot off their arbor, because `gltf-transform optimize` folds a mesh's centre into the node's own
+  translation when that node has no children. `web/src/mech/pivots.ts` puts the pivot back at load.
+  Watch for it: a pointer that loses its last child will be hit the same way, and the tell is a
+  pointer that reads backwards or seems to turn about its point. The case lining is wood now, not a
+  flat dark panel.
 
 ## Maintenance guide (for sessions at any effort level)
 
@@ -77,6 +83,10 @@ the sources or something deliberately out of scope:
   a long-exposure trail on the Sky stage at ten years a second.
 - If a slow GPU ever matters more: the two-round quality guard could be given a third round, or the
   service worker could precache the model on install for kiosks.
+- The case boards' inner faces take the box unwrap's 9 mm strip of u across 90 mm of depth, so the
+  grain smears; `lineCase` covers them with wood at the right scale, but a proper box unwrap in
+  `box_bm` (blender/dials.py) would fix both faces and let the lining go. Wants a Blender rebuild,
+  the three gltf-transform steps and a `CACHE` bump.
 - If the repository ever goes public, the project page and the README are ready for it; check that
   `docs/plans/` and `docs/research/` read the way you want them read in the open, since Pages serves
   the whole `docs` folder.
