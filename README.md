@@ -73,6 +73,8 @@ Tests: `cd python && python -m pytest`, `cd web && npx vitest run`.
 * Eclipse ground truth: "Eclipse Predictions by Fred Espenak and Jean Meeus
   (NASA's GSFC)", Five Millennium Canon of Solar and Lunar Eclipses.
 * Ephemeris: astronomy-engine (Don Cross, MIT).
+* Parapegma and front dial inscriptions: Bitsakis and Jones, "The Front Dial and Parapegma
+  Inscriptions", Almagest 7.1 (2016), CC BY-NC 4.0.
 * Layout reference: Thomas Weibel's CC BY reconstruction (thomasweibel.ch).
 * Epochs: Carman & Evans 2014 (12 May 205 BC); Voulgaris, Mouratidis & Vossinakis 2022 (22 Dec 178 BC).
 * The Moon's face in the Moon panel: NASA's CGI Moon Kit (LROC colour mosaic), public domain.

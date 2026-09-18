@@ -5,6 +5,7 @@ import { drawMoon } from "./ui/moon";
 import { calibrate, type CalibrationSet } from "./astro/calibration";
 import { loadCanon, nextEclipse, prevEclipse, eclipsesBetween, describeType, skyState, type EclipseRow } from "./astro/truth";
 import { glyphByMonth, OBSERVED_HOURS } from "./astro/eym";
+import { parapegmaAt } from "./astro/parapegma";
 import { auditSaros, drawErrorChart, errorBands, type ErrorBands } from "./ui/analytics";
 import { Tour } from "./ui/tour";
 import { Onboarding, firstVisit } from "./ui/onboarding";
@@ -162,42 +163,6 @@ loadCanon().then((c) => { canon = c; update(); refreshAnalytics(); });
 const cosmos = new Cosmos([$<HTMLCanvasElement>("#cosmos"), $<HTMLCanvasElement>("#cosmos-stage")]);
 const retro = $<HTMLCanvasElement>("#retro");
 
-/**
- * The parapegma: the star-calendar lines on the plates above and below the front dial, keyed to
- * index letters on the zodiac ring. The lines are the attested ones (Bitsakis & Jones 2016, Fragment
- * C); the letters' positions on the ring are schematic, at 2.2° and 17.2° into each sign, as drawn.
- */
-const PARAPEGMA: [string, string, string][] = [
-  ["Α", "ΙΣΗΜΕΡΙΑ ΕΑΡΙΝΗ", "spring equinox"], ["Β", "ΠΛΕΙΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΣΠΕΡΙΑΙ", "the Pleiades set in the evening"],
-  ["Γ", "ΥΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΣΠΕΡΙΑΙ", "the Hyades set in the evening"], ["Δ", "ΚΡΙΟΣ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", "Aries begins to rise"],
-  ["Ε", "ΤΑΥΡΟΣ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", "Taurus begins to rise"], ["Ζ", "ΛΥΡΑ ΕΠΙΤΕΛΛΕΙ ΕΣΠΕΡΙΑ", "Lyra rises in the evening"],
-  ["Η", "ΠΛΕΙΑΣ ΕΠΙΤΕΛΛΕΙ ΕΩΙΑ", "the Pleiades rise at dawn"], ["Θ", "ΥΑΣ ΕΠΙΤΕΛΛΕΙ ΕΩΙΑ", "the Hyades rise at dawn"],
-  ["Ι", "ΔΙΔΥΜΟΙ ΑΡΧΟΝΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", "Gemini begins to rise"], ["Κ", "ΑΕΤΟΣ ΕΠΙΤΕΛΛΕΙ ΕΣΠΕΡΙΟΣ", "Aquila rises in the evening"],
-  ["Λ", "ΑΡΚΤΟΥΡΟΣ ΔΥΝΕΙ ΕΩΙΟΣ", "Arcturus sets at dawn"], ["Μ", "ΤΡΟΠΑΙ ΘΕΡΙΝΑΙ", "summer solstice"],
-  ["Ν", "ΚΥΩΝ ΕΠΙΤΕΛΛΕΙ ΕΩΙΟΣ", "Sirius rises at dawn"], ["Ξ", "ΛΕΩΝ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", "Leo begins to rise"],
-  ["Ο", "ΑΕΤΟΣ ΔΥΝΕΙ ΕΩΙΟΣ", "Aquila sets at dawn"], ["Π", "ΑΡΚΤΟΥΡΟΣ ΕΠΙΤΕΛΛΕΙ ΕΩΙΟΣ", "Arcturus rises at dawn"],
-  ["Ρ", "ΙΣΗΜΕΡΙΑ ΦΘΙΝΟΠΩΡΙΝΗ", "autumn equinox"], ["Σ", "ΠΛΕΙΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΩΙΑΙ", "the Pleiades set at dawn"],
-  ["Τ", "ΥΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΩΙΑΙ", "the Hyades set at dawn"], ["Υ", "ΩΡΙΩΝ ΔΥΝΕΙ ΕΩΙΟΣ", "Orion sets at dawn"],
-  ["Φ", "ΤΡΟΠΑΙ ΧΕΙΜΕΡΙΝΑΙ", "winter solstice"], ["Χ", "ΛΥΡΑ ΔΥΝΕΙ ΕΩΙΑ", "Lyra sets at dawn"],
-  ["Ψ", "ΑΡΚΤΟΥΡΟΣ ΔΥΝΕΙ ΕΣΠΕΡΙΟΣ", "Arcturus sets in the evening"], ["Ω", "ΙΧΘΥΕΣ ΑΡΧΟΝΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", "Pisces begins to rise"],
-];
-const LETTER_OFFSETS = [2.2, 17.2];
-/** What the Sun pointer is passing on the parapegma: the letter under it (within ±0.6°) or the next one ahead. */
-function parapegmaRow(sunMean: number): [string, string] {
-  const r = ((sunMean % 360) + 360) % 360;
-  const sign = Math.floor(r / 30), d = r - sign * 30;
-  for (let k = 0; k < 2; k++) {
-    if (Math.abs(d - LETTER_OFFSETS[k]) <= 0.6) {
-      const [letter, greek, english] = PARAPEGMA[(2 * sign + k) % 24];
-      return ["parapegma", `${letter} · ${greek} · ${english}`];
-    }
-  }
-  let ahead = d < LETTER_OFFSETS[0] ? LETTER_OFFSETS[0] - d : d < LETTER_OFFSETS[1] ? LETTER_OFFSETS[1] - d : 30 - d + LETTER_OFFSETS[0];
-  const idx = d < LETTER_OFFSETS[0] ? 2 * sign : d < LETTER_OFFSETS[1] ? 2 * sign + 1 : 2 * sign + 2;
-  ahead = Math.round(ahead * 10) / 10;
-  const [letter, , english] = PARAPEGMA[idx % 24];
-  return ["parapegma", `${letter} in ${ahead}°: ${english}`];
-}
 function buildLegend(): void {
   $("#cosmos-legend").replaceChildren(...cosmos.list.map((b) => {
     const btn = document.createElement("button");
@@ -405,6 +370,7 @@ const GLOSS: Record<string, string> = {
   "anomaly": "the pin-and-slot correction: the Moon runs fast near perigee and slow near apogee, up to about 6.5 degrees",
   "Julian Day": "the astronomers' day count, one number for any date, so that BC dates need no calendar arithmetic",
   "Phase": "how much of the Moon's face is lit, shown by the half-silver ball on the front dial",
+  "parapegma": "the star calendar on the plates above and below the dial: risings and settings of stars, each keyed by a letter to a degree of the zodiac (Bitsakis and Jones 2016)",
 };
 
 function setDl(el: HTMLElement, rows: [string, string][]): void {
@@ -500,17 +466,21 @@ function update(force = false): void {
   $("#date-sub").textContent = `${years >= 0 ? "" : "−"}${Math.abs(years).toFixed(2)} years since the epoch`;
   caption();
   yearsVal.textContent = years.toFixed(4);
+  const pp = parapegmaAt(s.sunMean);
+  const ppRow = pp.ahead === 0
+    ? `${pp.letter} · ${pp.event}${pp.status === "restored" ? " (restored)" : ""}`
+    : `${pp.letter} in ${pp.ahead.toFixed(1)}°: ${pp.event}`;
   setDl($("#front-dl"), [
     ["Sun (mean)", `${fmt(s.sunMean, 1)}° · ${s.zodiacSign.split(" ")[0]} ${fmt(s.zodiacDeg, 1)}°`],
     ["Moon", `${fmt(s.moon, 1)}°`],
     ["  anomaly", `${signed(s.moonAnomaly)}°`],
     ["Dragon hand", `${fmt(s.nodes, 1)}° (asc. node)`],
     ["Egyptian date", `${s.egyptianMonth} ${s.egyptianDayOfMonth}`],
-    parapegmaRow(s.sunMean),
+    ["parapegma", ppRow],
     ...planetRows(),
   ]);
   const pdt = [...$("#front-dl").querySelectorAll("dt")].find((x) => x.textContent === "parapegma");
-  pdt?.nextElementSibling?.classList.toggle("on-letter", /·/.test(pdt.nextElementSibling.textContent ?? ""));   // the row lights while the pointer is on a letter
+  pdt?.nextElementSibling?.classList.toggle("on-letter", pp.ahead === 0);   // the row lights while the pointer is on a letter
   setDl($("#moon-dl"), [
     ["Phase", s.phaseName],
     ["Elongation", `${fmt(s.elongation, 1)}°`],

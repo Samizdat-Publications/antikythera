@@ -47,7 +47,7 @@ CORINTH = ["ΦΟΙΝΙΚΑΙΟΣ", "ΚΡΑΝΕΙΟΣ", "ΛΑΝΟΤΡΟΠΙΟΣ",
 GREEK_LETTERS = list("ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ")
 GREEK_NUMERALS = {1: "Α", 2: "Β", 3: "Γ", 4: "Δ", 5: "Ε", 6: "Ϛ", 7: "Ζ", 8: "Η", 9: "Θ", 10: "Ι",
                   11: "ΙΑ", 12: "ΙΒ", 13: "ΙΓ", 14: "ΙΔ", 15: "ΙΕ", 16: "ΙϚ", 17: "ΙΖ", 18: "ΙΗ",
-                  19: "ΙΘ", 20: "Κ", 21: "ΚΑ", 22: "ΚΒ", 23: "ΚΓ", 24: "ΚΔ"}
+                  19: "ΙΘ", 20: "Κ", 21: "ΚΑ", 22: "ΚΒ", 23: "ΚΓ", 24: "ΚΔ", 25: "ΚΕ"}
 # Eclipse-glyph hours that actually survive on the Saros dial (Freeth 2014, Table S3):
 # Saros cell number -> hour of day (1..24) of the lunar (Sigma) and/or solar (Eta) event.
 # Keep this in exact step with OBSERVED_HOURS in web/src/astro/eym.ts.
@@ -60,19 +60,99 @@ OBSERVED_HOURS = {
 
 GAMES = [("ΙΣΘΜΙΑ", "ΟΛΥΜΠΙΑ"), ("ΝΕΜΕΑ", "ΝΑΑ"), ("ΙΣΘΜΙΑ", "ΠΥΘΙΑ"), ("ΝΕΜΕΑ", "ΑΛΙΕΙΑ")]
 
-# parapegma: attested lines (Bitsakis & Jones 2016, fragment C) with reconstructed Greek;
-# degree positions are schematic (see NOTES.md)
-PARAPEGMA_UPPER = [
-    ("Α", "ΙΣΗΜΕΡΙΑ ΕΑΡΙΝΗ"), ("Β", "ΠΛΕΙΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΣΠΕΡΙΑΙ"), ("Γ", "ΥΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΣΠΕΡΙΑΙ"),
-    ("Δ", "ΚΡΙΟΣ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ"), ("Ε", "ΤΑΥΡΟΣ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ"), ("Ζ", "ΛΥΡΑ ΕΠΙΤΕΛΛΕΙ ΕΣΠΕΡΙΑ"),
-    ("Η", "ΠΛΕΙΑΣ ΕΠΙΤΕΛΛΕΙ ΕΩΙΑ"), ("Θ", "ΥΑΣ ΕΠΙΤΕΛΛΕΙ ΕΩΙΑ"), ("Ι", "ΔΙΔΥΜΟΙ ΑΡΧΟΝΤΑΙ ΕΠΙΤΕΛΛΕΙΝ"),
-    ("Κ", "ΑΕΤΟΣ ΕΠΙΤΕΛΛΕΙ ΕΣΠΕΡΙΟΣ"), ("Λ", "ΑΡΚΤΟΥΡΟΣ ΔΥΝΕΙ ΕΩΙΟΣ"), ("Μ", "ΤΡΟΠΑΙ ΘΕΡΙΝΑΙ"),
+# ------------------------------------------------------------------- parapegma
+# Bitsakis and Jones, "The Front Dial and Parapegma Inscriptions", Almagest 7.1 (2016).
+# Two alphabetic sequences, one per plate, in four columns of one season each running clockwise
+# round the dial: PP1, above the dial, carries col. i (Capricorn to Pisces, Α to Θ) and col. ii
+# (Aries to Gemini, Ι to Σ); PP2, below, carries col. iii (Libra to Sagittarius, Α to Λ) and
+# col. iv (Cancer to Virgo, Μ to Ω). The same letter therefore stands in two of the columns.
+#
+# The index letters on the zodiac scale: plate, column, letter, sign (Aries 0), graduation,
+# status. A letter is cut immediately clockwise of its graduation mark, and the sign boundary is
+# graduation 1, so the degree into the sign is the graduation less one. Status: `scale` read on
+# the bronze of Fragment C, `numeral` from the number written after the parapegma line,
+# `restored` by the editors, `lost` for a letter whose place is gone, which is not drawn.
+# Keep this in exact step with PARAPEGMA in web/src/astro/parapegma.ts, which carries the same
+# table with each line's event in English.
+PARAPEGMA_LETTERS = [
+    ("PP1", 1, "Α", 9, 1, "restored"),
+    ("PP1", 1, "Β", None, None, "lost"), ("PP1", 1, "Γ", None, None, "lost"),
+    ("PP1", 1, "Δ", None, None, "lost"), ("PP1", 1, "Ε", None, None, "lost"),
+    ("PP1", 1, "Ζ", None, None, "lost"), ("PP1", 1, "Η", None, None, "lost"),
+    ("PP1", 1, "Θ", None, None, "lost"),
+    ("PP1", 2, "Ι", 0, 1, "restored"), ("PP1", 2, "Κ", 0, None, "lost"),
+    ("PP1", 2, "Λ", 0, 21, "numeral"), ("PP1", 2, "Μ", 1, 1, "numeral"),
+    ("PP1", 2, "Ν", 1, 11, "numeral"), ("PP1", 2, "Ξ", 1, 17, "numeral"),
+    ("PP1", 2, "Ο", 1, 25, "numeral"), ("PP1", 2, "Π", 2, 1, "restored"),
+    ("PP1", 2, "Ρ", 2, None, "lost"), ("PP1", 2, "Σ", 2, 10, "numeral"),
+    ("PP2", 3, "Α", 6, 1, "scale"), ("PP2", 3, "Β", 6, 11, "scale"),
+    ("PP2", 3, "Γ", 6, 14, "scale"), ("PP2", 3, "Δ", 6, 16, "scale"),
+    ("PP2", 3, "Ε", 7, 1, "scale"), ("PP2", 3, "Ζ", 7, 4, "scale"),
+    ("PP2", 3, "Η", 7, 17, "scale"), ("PP2", 3, "Θ", 7, 22, "scale"),
+    ("PP2", 3, "Ι", 8, 1, "scale"), ("PP2", 3, "Κ", 8, 3, "scale"),
+    ("PP2", 3, "Λ", 8, 7, "scale"),
+    ("PP2", 4, "Μ", 3, 1, "restored"), ("PP2", 4, "Ν", 3, None, "lost"),
+    ("PP2", 4, "Ξ", 3, None, "lost"), ("PP2", 4, "Ο", 3, None, "lost"),
+    ("PP2", 4, "Π", 4, 1, "restored"), ("PP2", 4, "Ρ", None, None, "lost"),
+    ("PP2", 4, "Σ", None, None, "lost"), ("PP2", 4, "Τ", None, None, "lost"),
+    ("PP2", 4, "Υ", None, None, "lost"), ("PP2", 4, "Φ", None, None, "lost"),
+    ("PP2", 4, "Χ", None, None, "lost"), ("PP2", 4, "Ψ", 5, 19, "scale"),
+    ("PP2", 4, "Ω", 5, 21, "scale"),
 ]
-PARAPEGMA_LOWER = [
-    ("Ν", "ΚΥΩΝ ΕΠΙΤΕΛΛΕΙ ΕΩΙΟΣ"), ("Ξ", "ΛΕΩΝ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ"), ("Ο", "ΑΕΤΟΣ ΔΥΝΕΙ ΕΩΙΟΣ"),
-    ("Π", "ΑΡΚΤΟΥΡΟΣ ΕΠΙΤΕΛΛΕΙ ΕΩΙΟΣ"), ("Ρ", "ΙΣΗΜΕΡΙΑ ΦΘΙΝΟΠΩΡΙΝΗ"), ("Σ", "ΠΛΕΙΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΩΙΑΙ"),
-    ("Τ", "ΥΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΩΙΑΙ"), ("Υ", "ΩΡΙΩΝ ΔΥΝΕΙ ΕΩΙΟΣ"), ("Φ", "ΤΡΟΠΑΙ ΧΕΙΜΕΡΙΝΑΙ"),
-    ("Χ", "ΛΥΡΑ ΔΥΝΕΙ ΕΩΙΑ"), ("Ψ", "ΑΡΚΤΟΥΡΟΣ ΔΥΝΕΙ ΕΣΠΕΡΙΟΣ"), ("Ω", "ΙΧΘΥΕΣ ΑΡΧΟΝΤΑΙ ΕΠΙΤΕΛΛΕΙΝ"),
+
+
+def num(n, restored=False):
+    """A day/degree numeral in Greek, in brackets where the editors supply it."""
+    return "[%s]" % GREEK_NUMERALS[n] if restored else GREEK_NUMERALS[n]
+
+
+# The four columns as they are read out: index letter, the line, the day/degree numeral.
+# The events are those of the publication; the Greek wording is a reconstruction throughout, in
+# the vocabulary this file already uses, since the surviving text is too broken to copy. Square
+# brackets keep the editors' convention: what they mark is restored, and is cut in the faint
+# ink. A line whose text is wholly lost is written with no text at all and is drawn as the
+# letter followed by a short rule, with its numeral where the dial or the inscription gives one.
+PP1_COL_I = [
+    ("[Α]", "[ΑΙΓΟΚΕΡΩΣ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ]", ""),
+    ("", "[ΤΡΟΠΑΙ ΧΕΙΜΕΡΙΝΑΙ]", num(1, True)),
+    ("[Β]", "", ""), ("[Γ]", "", ""), ("[Δ]", "", ""), ("[Ε]", "", ""),
+    ("[Ζ]", "", ""), ("[Η]", "", ""), ("[Θ]", "", ""),
+]
+PP1_COL_II = [
+    ("[Ι]", "[ΚΡΙΟΣ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ]", ""),
+    ("", "[ΙΣΗΜΕΡΙΑ ΕΑΡΙΝΗ]", num(1, True)),
+    ("[Κ]", "[ΠΛΕΙΑΔΕΣ ΔΥΝΟΥΣΙΝ] ΕΣΠΕΡΙΑΙ", ""),
+    ("Λ", "ΥΑΔΕΣ ΔΥΝΟΥΣΙΝ ΕΣΠΕΡΙΑΙ", num(21)),
+    ("Μ", "ΤΑΥΡΟΣ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", num(1)),
+    ("[Ν]", "ΛΥΡΑ ΕΠΙΤΕΛΛΕΙ ΕΣΠΕΡΙΑ", num(11)),
+    ("Ξ", "ΠΛΕΙΑΣ ΕΠΙΤΕΛΛΕΙ ΕΩΙΑ", num(17)),
+    ("Ο", "ΥΑΣ ΕΠΙΤΕΛΛΕΙ ΕΩΙΑ", num(25)),
+    ("Π", "ΔΙΔΥΜΟΙ ΑΡΧΟΝΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", num(1, True)),
+    ("Ρ", "ΑΕΤΟΣ ΕΠΙΤΕΛΛΕΙ ΕΣΠΕΡΙΟΣ", ""),
+    ("Σ", "ΑΡΚΤΟΥΡΟΣ ΔΥΝΕΙ ΕΩΙΟΣ", num(10)),
+]
+PP2_COL_III = [
+    ("[Α]", "ΧΗΛΑΙ ΑΡΧΟΝΤΑΙ ΕΠΙΤΕΛΛΕΙΝ", ""),
+    ("", "ΙΣΗΜΕΡΙΑ ΦΘΙΝΟΠΩΡΙΝΗ", num(1)),
+    ("[Β]", "[ΕΡΙΦΟΙ] ΕΠΙΤΕΛΛΟΥΣΙΝ ΕΣΠΕΡΙΟΙ", num(11)),
+    ("[Γ]", "[ΠΛΕΙΑΣ] ΕΠΙΤΕΛΛΕΙ ΕΣΠΕΡΙΑ", num(14)),
+    ("[Δ]", "[ΣΤΕΦΑΝΟΣ] ΕΠΙΤΕΛΛΕΙ [ΕΩΙΟΣ]", num(16)),
+    ("[Ε]", "[ΣΚΟΡΠΙΟΣ ΑΡΧΕΤΑΙ] ΕΠΙΤΕΛΛΕΙΝ", num(1)),
+    ("Ζ", "", num(4, True)), ("Η", "", num(17, True)), ("Θ", "", num(22, True)),
+    ("Ι", "[ΤΟΞΟΤΗΣ ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ]", num(1, True)),
+    ("Κ", "", num(3, True)), ("Λ", "", num(7, True)),
+]
+PP2_COL_IV = [
+    ("Μ", "ΚΑΡΚΙΝΟΣ [ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ]", ""),
+    ("", "[ΤΡΟΠΑΙ ΘΕΡΙΝΑΙ]", num(1, True)),
+    ("Ν", "ΩΡΙΩΝ [ΕΠΙΤΕΛΛΕΙ ΕΩΙΟΣ]", ""),
+    ("Ξ", "ΚΥΩΝ [ΕΠΙΤΕΛΛΕΙ ΕΩΙΟΣ]", ""),
+    ("Ο", "ΑΕΤΟΣ [ΔΥΝΕΙ ΕΩΙΟΣ]", ""),
+    ("Π", "ΛΕΩΝ [ΑΡΧΕΤΑΙ ΕΠΙΤΕΛΛΕΙΝ]", num(1, True)),
+    ("[Ρ]", "", ""), ("[Σ]", "", ""), ("[Τ]", "", ""),
+    ("[Υ]", "", ""), ("[Φ]", "", ""), ("[Χ]", "", ""),
+    ("[Ψ]", "[ΑΙΞ ΕΠΙΤΕΛΛΕΙ ΕΣΠΕΡΙΑ]", num(19, True)),
+    ("[Ω]", "[ΑΡΚΤΟΥΡΟΣ ΕΠΙΤΕΛΛΕΙ ΕΩΙΟΣ]", num(21, True)),
 ]
 
 
@@ -209,11 +289,15 @@ def front_dial(zodiac_r=(55.0, 66.5), cal_r=(67.5, 79.5), calendar_holes=365, ze
         D.line(ri * math.cos(math.radians(a0)), ri * math.sin(math.radians(a0)),
                ro * math.cos(math.radians(a0)), ro * math.sin(math.radians(a0)), 0.22)
         D.curved_text(ri + 6.3, a0 - 15, name, 2.6, bold=True)
-        # parapegma index letters at the boundary and mid-sign (schematic)
-        D.text((ri + 9.2) * math.cos(math.radians(a0 - 2.2)), (ri + 9.2) * math.sin(math.radians(a0 - 2.2)),
-               GREEK_LETTERS[(2 * i) % 24], 1.4, angle=a0 - 92.2)
-        D.text((ri + 9.2) * math.cos(math.radians(a0 - 17.2)), (ri + 9.2) * math.sin(math.radians(a0 - 17.2)),
-               GREEK_LETTERS[(2 * i + 1) % 24], 1.4, angle=a0 - 107.2)
+    # parapegma index letters, each one immediately clockwise of its graduation mark: read on
+    # the bronze in the full ink, resting on a numeral or on the editors' restoration in the
+    # faint ink, and a letter whose place is lost not drawn at all.
+    for _plate, _column, letter, sign, grad, status in PARAPEGMA_LETTERS:
+        if grad is None:
+            continue
+        a = zero_deg - 30 * sign - (grad - 1) - 0.55
+        D.text((ri + 9.2) * math.cos(math.radians(a)), (ri + 9.2) * math.sin(math.radians(a)),
+               letter, 1.4, angle=a - 90, faint=status != "scale")
     # Egyptian calendar ring: 365 days, 12 x 30 + 5 epagomenal, clockwise
     deg_per_day = 360.0 / calendar_holes
     for k in range(calendar_holes):
@@ -358,13 +442,43 @@ def back_lower(g_xy, i_xy):
     return D.finish()
 
 
-def parapegma(name, lines, w=150.0, h=44.0):
+def segments(s):
+    """Split a line on the editors' brackets, so that what they restore comes back faint."""
+    parts, faint = [], False
+    for chunk in s.replace("[", "]").split("]"):
+        if chunk:
+            parts.append((chunk, faint))
+        faint = not faint
+    return parts
+
+
+def parapegma(name, left, right, w=150.0, h=44.0):
+    """One plate: its two columns side by side, each line letter, text, day/degree numeral."""
     D = Dial(name, max(w, h), px=2048)
-    y = h / 2 - 5.0
-    for letter, txt in lines:
-        D.text(-w / 2 + 6, y, letter, 2.6, bold=True)
-        D.text(-w / 2 + 12, y, txt, 2.4, anchor="lm")
-        y -= 3.6
+    margin, gap, mm, step = 5.0, 5.0, 2.1, 2.9
+    col_w = (w - 2 * margin - gap) / 2                         # about 70 mm to a column
+
+    def put(x, y, s, size, bold=False, faint=False):
+        """A string set from x, since the Dial's own text is centred on its point."""
+        s_mm = D.font(size, bold).getlength(s) / D.scale
+        D.text(x + s_mm / 2, y, s, size, bold=bold, faint=faint)
+
+    for c, lines in enumerate((left, right)):
+        x0 = -w / 2 + margin + c * (col_w + gap)
+        y = (len(lines) - 1) * step / 2                        # the column sits centred on the plate
+        for letter, txt, numeral in lines:
+            if letter:
+                put(x0, y, letter.strip("[]"), 2.2, bold=True, faint=letter.startswith("["))
+            if txt:
+                parts = segments(txt)
+                run = sum(D.font(mm).getlength(s) for s, _ in parts) / D.scale
+                D.text_run(x0 + 4.5 + run / 2, y, parts, mm)
+            else:
+                run = 14.0
+                D.line(x0 + 4.5, y, x0 + 4.5 + run, y, 0.12, ink=INK_FAINT)   # the line is lost
+            if numeral:                                        # the day or degree, after its line
+                put(x0 + 7.0 + run, y, numeral.strip("[]"), mm, faint=numeral.startswith("["))
+            y -= step
     return D.finish(patina=True)
 
 
@@ -374,8 +488,8 @@ def main():
     meta = [front_dial(),
             back_upper((L["n"].x, L["n"].y), (L["o"].x, L["o"].y), (L["cal"].x, L["cal"].y)),
             back_lower((L["g"].x, L["g"].y), (L["i"].x, L["i"].y)),
-            parapegma("parapegma_upper", PARAPEGMA_UPPER),
-            parapegma("parapegma_lower", PARAPEGMA_LOWER)]
+            parapegma("parapegma_upper", PP1_COL_I, PP1_COL_II),
+            parapegma("parapegma_lower", PP2_COL_III, PP2_COL_IV)]
     with open(os.path.join(OUT, "dials.json"), "w", encoding="utf-8") as fh:
         json.dump({"dials": meta, "spirals": {"metonic": {"r0": 36.0, "pitch": 5.4, "turns": 5, "cells": 235},
                                                 "saros": {"r0": 36.0, "pitch": 6.6, "turns": 4, "cells": 223}}}, fh, indent=1)
