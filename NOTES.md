@@ -27,9 +27,10 @@ See README "Attributions" for licences.
 - 2026-09-12 Pointer calibration: at years = 0 every gear sits at zero and each pointer carries an
   assembly offset equal to the real sky at the epoch (astronomy-engine); the lunar pin is assumed at
   apogee at the epoch (the reason Carman & Evans / Freeth 2014 picked that full moon).
-- 2026-09-12 Schematic (not attested) content: parapegma line positions and most Greek phrasing, Saros
-  glyph hours outside the 15 surviving cells (Freeth 2014 Table S3), index-letter assignment, the Games
-  dial 4th year (Halieia), Callippic dial existence.
+- 2026-09-12 Schematic (not attested) content: most of the parapegma's Greek phrasing, Saros glyph
+  hours outside the 15 surviving cells (Freeth 2014 Table S3), the Games dial 4th year (Halieia),
+  Callippic dial existence. (The parapegma index letters and their positions were schematic until
+  2026-09-17; they now follow Bitsakis and Jones 2016, see that entry.)
 - 2026-09-12 Deployed: https://antikythera.stewartgregerson.workers.dev (Cloudflare Workers static assets,
   `npx wrangler deploy --assets web/dist` after `npm run build`). Source: private repo
   github.com/Samizdat-Publications/antikythera. The Claude Design mockup round was skipped in favour of
@@ -294,3 +295,67 @@ See README "Attributions" for licences.
   directions, the nine tubes belong to different arbors and travel with their wheels when taken apart, and
   everything else is a gear or a pointer. Merging the eight would save about 50 calls, 5 %, for a 10 MB model
   churn; the frame is fill-bound (GTAO and bloom at full resolution), not call-bound. Left as is.
+
+- 2026-09-17 **Version 1.0, the finishing run.** Fable 5.1 coordinated Opus subagents through the
+  superpowers subagent-driven-development loop (plan `docs/plans/2026-09-17-final.md`; one implementer at
+  a time, a task review after each, a scoped re-review after each fix round, a whole-branch review at
+  the end), all on branch `v1`, merged into main at the close. What landed, and the decisions taken:
+  **Launch metadata**: description, Open Graph and Twitter cards, `web/public/manifest.webmanifest`,
+  icons and the share image drawn by `tools/gen_icons.py` from the favicon motif and the hero render
+  (the crop rule `OG_FOCUS` only bites on a source wider than 1200 px after scaling; the 1920x1200 hero
+  has no horizontal slack); `theme-color` follows the version (lamp-black `#17120e`, parchment `#efe6d3`,
+  hex literals in index.html, main.ts and the manifest, not tied to the OKLCH tokens in style.css);
+  three's deprecated `RGBELoader` swapped for `HDRLoader`; the last em dashes removed everywhere (the
+  narration transcripts too; the audio is unchanged). **Click a gear**: `Viewer.onSelect` fires on a
+  press that moved under 6 CSS px (`CLICK_SLOP`) and released over the same gear; the pick now runs
+  synchronously on pointerdown (`pickNow`) so a touch tap, and the crank on touch, have a hovered id;
+  main.ts routes the selection through the inspector row's own click so the column and the scene
+  never disagree; `trainFor` names the first train listing a gear (fix56 reads as True Sun, ju64 as
+  Mars). **Save this view**: `Viewer.snapshot()` raises the pixel ratio to min(3, 2x), which must also
+  be handed to both EffectComposers (they cache the ratio at construction), renders once, issues
+  `toBlob` synchronously and restores in the same task; the button's title says "larger than the
+  screen" because at dpr 2 the cap makes it 1.5x, not 2x; the Sky view saves its own 2-D canvas.
+  **today and Share**: today is `civilToJdn` of the UTC date (2026-09-17 = JDN 2461301, 2230.36 years
+  after the epoch; the Sun then reads 2.7 deg off and the Moon 117 deg, the Metonic cycle's two hours
+  per nineteen years made visible); `stateUrl()` is the one builder of the address and Share copies
+  it (prompt fallback when the clipboard is unavailable); the explore clip was re-narrated (`tour_explore`,
+  31.7 s). Gotcha: `tools/narration.py` writes `duration: null` for clips it does not regenerate; the
+  app never reads `duration`, so the two values were put back by hand and the script left alone.
+  **Resilience**: `webglcontextlost` shows a label and the machine draws again on restore (three
+  rebuilds its own state; one `render()` is enough, verified with `WEBGL_lose_context`); a browser
+  without WebGL (`?webgl=0` to test) shows `web/public/still/iso.jpg` under a scrim, and the module
+  stops, so the column and the version switch are inert there. **Offline**: `web/public/sw.js`
+  (registered only in production builds) keeps the page network-first with an offline fallback stored
+  under the path alone (the app's state lives in the query string), Vite's hashed bundles cache-first,
+  and models, HDRIs, textures, data, icons and the still stale-while-revalidate; `/audio/` is never
+  intercepted (Range requests). Deploy rule: bump `CACHE` in sw.js whenever the GLB or a texture
+  changes, or a fresh bundle can meet the previous model for one visit; old hashed bundles accumulate
+  until the name is bumped. **Quality tiers**: `Viewer.setQualityTier(0|1|2)` (1 drops bloom and DoF,
+  2 also GTAO, 1024 shadow maps and one pixel per pixel, the cap handed to the composers too); the
+  guard measures 90 frames, may escalate once more after another 90, and stands down under
+  `?quality=high|medium|low`. **The parapegma as Bitsakis and Jones 2016 read it** (Almagest 7.1,
+  open access at NYU's archive; the digest that drove the change is the research note in the plan's
+  workspace): two alphabetic sequences, one per plate, four columns of a season each running clockwise;
+  a letter stands immediately clockwise of a graduation mark and graduation 1 is the sign boundary, so
+  the degree into the sign is the graduation less one; 13 letters read on the bronze of Fragment C
+  (Virgo 19 and 21, Libra 1, 11, 14, 16, Scorpio 1, 4, 17, 22, Sagittarius 1, 3, 7), 6 from the numerals
+  after the parapegma lines (Aries 21, Taurus 1, 11, 17, 25, Gemini 10; the paper's Greek reads KA for
+  Aries lambda where its English says 24, KA was taken), 5 restored at sign boundaries (Capricorn alpha,
+  Aries iota, Gemini pi, Cancer mu, Leo pi), 18 lost and not drawn; solid ink for the 13, faint for the
+  11, in `web/src/astro/parapegma.ts` (with `parapegmaAt`, tested) and the same table in
+  `tools/gen_dial_textures.py`; the plates carry the four columns with the editors' brackets for
+  restored names and a rule for lost lines, the Greek phrasing still reconstructed; the model was
+  re-exported headless (`blender.exe -b build/antikythera.blend --python blender/export_glb.py`,
+  exit 0, GLB 9.80 to 9.85 MiB) since Blender's socket was not open. Left as it was: the one attested
+  numeral (11) in PP1 col. i is not drawn because the paper cannot say which line carries it; the
+  0.6 deg "on the letter" window does not wrap past 360. **Narrow widths**: the manuscript running
+  head overran the title between 900 and 1200 px once Share joined it, and the title ran under the
+  date on a phone; the fixes live in two media blocks appended at the end of style.css because the
+  existing blocks precede the manuscript section and a media query adds no specificity, which also
+  explained three manuscript phone rules that had been dead since the manuscript was built (moved).
+  Browser-pane testing gotchas: with the pane hidden, requestAnimationFrame and timers are
+  throttled, so drive `window.__viewer.render()` from `javascript_tool` in loops under 30 iterations;
+  pin the camera first (`__viewer.view("front")`, `controls.autoRotate = false`) or the idle orbit
+  moves the target between screenshot and click; the pane's drag tool reports "page navigated"
+  because the app rewrites the address with replaceState; synthetic PointerEvents with a made-up
+  pointerId make OrbitControls throw a harmless NotFoundError.

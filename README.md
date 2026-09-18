@@ -19,6 +19,21 @@ panel; only the room, the page and the inks differ.
 |---|---|
 | The front dial: zodiac and Egyptian calendar rings, the Sun, Moon and five planets | The back: Metonic and Saros spirals with the Games and Exeligmos sub-dials |
 
+## What a visitor can do
+
+* Turn the crank at a day, a month, a year or ten years a second, drag the handle to wind it by hand,
+  or press the space bar; jump to the next eclipse, type a year, or press **today** and see how far
+  twenty-two centuries have carried the pointers (the Sun a few degrees, the Moon over a hundred: the
+  Metonic cycle's two hours per nineteen years).
+* Hover a gear for its tooth count and rate; click it to see its train alone. **Inside** lifts the
+  plates away; **Taken apart** spreads all 69 wheels along their arbors, still turning; the Fragment A
+  slider crossfades to the CT scan of the real bronze.
+* **Sky** draws the machine's own cosmos, each body where its pin-and-slot puts it, with the retrograde
+  loops and the true sky beside them; the Moon panel is lit from where the machine's Sun pointer stands.
+* A narrated fourteen-leaf walkthrough; **Share** copies a link to whatever is set up; **save this view**
+  keeps the stage as a picture; the exhibit installs as an app and opens offline once visited.
+* Every number says where it came from: NASA's eclipse canon, astronomy-engine, and the papers.
+
 ## Layout
 
 ```
