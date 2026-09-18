@@ -584,7 +584,7 @@ $<HTMLInputElement>("#fragment").addEventListener("input", (e) => showFragment(p
 $("#case").addEventListener("change", applyVisibility);
 $("#apart").addEventListener("change", applyVisibility);
 // the stage as a picture: the Sky view is its own 2-D canvas, already drawn at the screen's resolution;
-// the machine is drawn again larger than the screen (up to three times the device pixel ratio)
+// the machine is drawn again larger than the screen (the pixel ratio raised to at most 3)
 const saveBtn = $<HTMLButtonElement>("#save-view");
 let saveFailedTimer = 0;
 saveBtn.addEventListener("click", async () => {
