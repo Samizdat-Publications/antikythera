@@ -120,13 +120,15 @@ viewer.onAssembled = () => {
 };
 
 // ---- the address carries the exhibit's state, so a view can be sent as a link
-/** The address for the state on screen. The theme param is left as the theme switch wrote it. */
-function stateUrl(): URL {
+/**
+ * The address for the state on screen. The theme param is left as the theme switch wrote it.
+ * `forSharing` drops the debug switches, which belong to the visitor who typed them and not to
+ * the link: a tester keeps `?quality=low` across a reload, and nobody is handed it in a share.
+ */
+function stateUrl(forSharing = false): URL {
   const u = new URL(location.href);
   const set = (k: string, v: string | null) => (v == null ? u.searchParams.delete(k) : u.searchParams.set(k, v));
-  // the debug switches are this visitor's, not the link's: a shared address must not pin whoever
-  // opens it to a low quality, a frame counter or the still shown in place of the machine
-  for (const k of ["webgl", "quality", "fps", "trails", "hdri"]) u.searchParams.delete(k);
+  if (forSharing) for (const k of ["webgl", "quality", "fps", "trails", "hdri"]) u.searchParams.delete(k);
   set("epoch", epoch.id !== EPOCHS[0].id ? epoch.id : null);
   set("years", Math.abs(years) > 1e-4 ? years.toFixed(4) : null);
   set("view", viewer.currentView !== "iso" && viewer.currentView !== "free" ? viewer.currentView : null);
@@ -319,7 +321,7 @@ $("#tour-btn").addEventListener("click", () => onboarding.start());
 const shareBtn = $<HTMLButtonElement>("#share-btn");
 let shareTimer = 0;
 shareBtn.addEventListener("click", async () => {
-  const url = stateUrl().toString();
+  const url = stateUrl(true).toString();
   try {
     await navigator.clipboard.writeText(url);
     clearTimeout(shareTimer);
