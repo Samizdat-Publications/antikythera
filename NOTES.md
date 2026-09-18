@@ -334,8 +334,9 @@ See README "Attributions" for licences.
   2 also GTAO, 1024 shadow maps and one pixel per pixel, the cap handed to the composers too); the
   guard measures 90 frames, may escalate once more after another 90, and stands down under
   `?quality=high|medium|low`. **The parapegma as Bitsakis and Jones 2016 read it** (Almagest 7.1,
-  open access at NYU's archive; the digest that drove the change is the research note in the plan's
-  workspace): two alphabetic sequences, one per plate, four columns of a season each running clockwise;
+  open access at NYU's archive; the verified digest that drove the change is
+  `docs/research/parapegma-bitsakis-jones-2016.md`, and the run's ledger with every ruling is
+  `docs/plans/2026-09-17-final-ledger.md`): two alphabetic sequences, one per plate, four columns of a season each running clockwise;
   a letter stands immediately clockwise of a graduation mark and graduation 1 is the sign boundary, so
   the degree into the sign is the graduation less one; 13 letters read on the bronze of Fragment C
   (Virgo 19 and 21, Libra 1, 11, 14, 16, Scorpio 1, 4, 17, 22, Sagittarius 1, 3, 7), 6 from the numerals
