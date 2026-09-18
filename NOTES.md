@@ -360,3 +360,7 @@ See README "Attributions" for licences.
   moves the target between screenshot and click; the pane's drag tool reports "page navigated"
   because the app rewrites the address with replaceState; synthetic PointerEvents with a made-up
   pointerId make OrbitControls throw a harmless NotFoundError.
+- 2026-09-18 Stewart: the walkthrough ran too fast to make sense of the Moon's phases or the Sky chart. Every leaf that
+  turned the crank at a year a second (crank, back dials) or four months a second (planets, sky) now runs at a
+  month a second, the speed the Moon leaf already used; the planets leaf's text says so. Free exploration keeps
+  a year a second as the default.

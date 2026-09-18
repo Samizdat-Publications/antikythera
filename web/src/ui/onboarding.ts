@@ -51,7 +51,7 @@ export const STEPS: Step[] = [
   {
     id: "crank", title: "One crank, one year", clip: "crank",
     body: "Everything starts at the crank on the right. It turns a 48-tooth crown wheel against the 223-tooth main wheel: four and two-thirds turns of the crank move the main wheel once round, which is one year. Every other pointer is geared off that single rotation.",
-    run: (h) => { h.mood("room"); h.fragment(0); h.xray(false); h.view("crank"); h.play(true, 1); h.focus("#panel-crank"); },
+    run: (h) => { h.mood("room"); h.fragment(0); h.xray(false); h.view("crank"); h.play(true, 0.0821918); h.focus("#panel-crank"); },
   },
   {
     id: "epoch", title: "Why everything is counted from an epoch", clip: "epoch",
@@ -76,7 +76,7 @@ export const STEPS: Step[] = [
   {
     id: "backdials", title: "The calendars on the back", clip: "backdials",
     body: "The upper spiral is the Metonic calendar: 235 months in five turns, nineteen years, named in the Corinthian dialect of north-west Greece. Inside it one small dial counts the 76-year Callippic period and another the four-year cycle of the games: Olympia, Pythia, Nemea, Isthmia. Both spiral pointers carry a pin that slides outward along the groove as the years pass.",
-    run: (h) => { h.mood("room"); h.isolate([]); h.xray(false); h.view("back-upper"); h.play(true, 1); h.focus("#back-dl"); },
+    run: (h) => { h.mood("room"); h.isolate([]); h.xray(false); h.view("back-upper"); h.play(true, 0.0821918); h.focus("#back-dl"); },
   },
   {
     id: "saros", title: "Predicting eclipses", clip: "saros",
@@ -85,13 +85,13 @@ export const STEPS: Step[] = [
   },
   {
     id: "cosmos", title: "The planets", clip: "cosmos",
-    body: "The 2021 reconstruction adds a cosmos on the front: rings for Mercury, Venus, Mars, Jupiter and Saturn, each with its own epicyclic module and a coloured stone. The period relations come from the machine's cover inscription: 462 years for Venus, 442 for Saturn. Watch the red stone of Mars now, at four months a second: its pin-and-slot has the largest offset, and the ring slows, stops and runs backwards through its retrograde loop.",
-    run: (h) => { h.sky(false); h.isolate([]); h.xray(false); h.view("front-close"); h.play(true, 0.35); h.focus("#train-mars"); },
+    body: "The 2021 reconstruction adds a cosmos on the front: rings for Mercury, Venus, Mars, Jupiter and Saturn, each with its own epicyclic module and a coloured stone. The period relations come from the machine's cover inscription: 462 years for Venus, 442 for Saturn. Watch the red stone of Mars now, at a month a second: its pin-and-slot has the largest offset, and the ring slows, stops and runs backwards through its retrograde loop.",
+    run: (h) => { h.sky(false); h.isolate([]); h.xray(false); h.view("front-close"); h.play(true, 0.0821918); h.focus("#train-mars"); },
   },
   {
     id: "sky", title: "The sky it tracks", clip: "sky",
     body: "The same machine drawn as a sky: Earth in the middle, each body where its own pin-and-slot puts it, trailing the path it has followed. The outer planets loop backwards each time the Earth overtakes them, and the loops these gears draw are the ones Ptolemy drew, because his epicycles and these pins are the same idea. The green ticks on the rim are the true sky, so you can see how close the bronze comes.",
-    run: (h) => { h.isolate([]); h.xray(false); h.sky(true); h.play(true, 0.35); h.focus("#panel-cosmos"); },
+    run: (h) => { h.isolate([]); h.xray(false); h.sky(true); h.play(true, 0.0821918); h.focus("#panel-cosmos"); },
   },
   {
     id: "accuracy", title: "How good was it?", clip: "accuracy",
