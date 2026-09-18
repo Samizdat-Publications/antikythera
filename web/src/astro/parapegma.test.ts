@@ -27,10 +27,13 @@ describe("the parapegma index letters", () => {
     expect(a.event).toBe("Leo begins to rise");
     expect(a.ahead).toBe(20);
   });
-  it("runs on round the end of the circle", () => {
-    const a = parapegmaAt(359.8);
-    expect(a.letter).toBe("Ι");
-    expect(a.ahead).toBe(0.2);
+  it("keeps the window round the end of the circle, where Ι stands at 0°", () => {
+    const on = parapegmaAt(359.8);                 // a fifth of a degree short of Aries, still under Ι
+    expect(on.letter).toBe("Ι");
+    expect(on.ahead).toBe(0);
+    const before = parapegmaAt(359);               // a degree short, and now running up to it
+    expect(before.letter).toBe("Ι");
+    expect(before.ahead).toBe(1);
   });
   it("counts the positions the publication gives", () => {
     expect(PARAPEGMA.filter((e) => entryLongitude(e) !== null).length).toBe(24);

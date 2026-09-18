@@ -231,7 +231,9 @@ const PRESETS: Record<string, Preset> = {
   "back-upper": [[20, 40, -260], [0, 58, -40]],
   "back-lower": [[20, -110, -260], [0, -81, -40]],
   "pinslot": [[75, -70, -150], [28, -32, -25]],
-  "iso": [[300, -220, 420], [0, 0, 0]],
+  // 1.18x further out than the composition alone wants: at fov 38 the case filled the frame exactly,
+  // so the top corner and the plinth were shaved off at every stage wider than 6:5
+  "iso": [[354, -260, 496], [0, 0, 0]],
   "crank": [[520, 0, 80], [60, 0, 0]],
   "top": [[0, 560, 1], [0, 0, 0]],
 };

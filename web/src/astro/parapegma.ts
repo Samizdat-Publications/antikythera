@@ -98,13 +98,14 @@ export function entryLongitude(e: ParapegmaEntry): number | null {
 /**
  * What the Sun pointer is passing: the letter under it, within 0.6° either side, or else the
  * next letter clockwise, with the distance to it in degrees. Letters whose place is lost are
- * not on the ring and are never returned. The window does not reach across the end of the
- * circle, so a Sun a fraction short of Aries reads as running up to Ι rather than standing on it.
+ * not on the ring and are never returned. The window is measured round the circle, so a Sun a
+ * fraction short of Aries stands on Ι exactly as one a fraction past it does.
  */
 export function parapegmaAt(sunLon: number): { letter: string; event: string; status: string; nameRestored: boolean; ahead: number } {
   const lon = ((sunLon % 360) + 360) % 360;
   const placed = PARAPEGMA.filter((e) => entryLongitude(e) !== null);
-  const under = placed.find((e) => Math.abs((entryLongitude(e) as number) - lon) <= 0.6);
+  const arc = (a: number, b: number) => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; };
+  const under = placed.find((e) => arc(entryLongitude(e) as number, lon) <= 0.6);
   if (under) return { letter: under.letter, event: under.event, status: under.status, nameRestored: under.nameRestored === true, ahead: 0 };
   let next = placed[0], gap = 360;
   for (const e of placed) {

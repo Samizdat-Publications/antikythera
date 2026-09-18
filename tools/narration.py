@@ -110,6 +110,14 @@ def pick_voice():
 def main():
     voice = pick_voice()
     print("voice:", voice["name"])
+    # the durations of clips already on disk are not re-measured: they are carried over from the
+    # manifest of the last run, so regenerating one leaf does not null the other thirteen
+    known = {}
+    try:
+        with open(os.path.join(OUT, "tour.json"), encoding="utf-8") as fh:
+            known = {c["id"]: c.get("duration") for c in json.load(fh)["clips"]}
+    except (OSError, ValueError, KeyError):
+        pass
     manifest = {"voice": voice["name"], "clips": []}
     for key, view, text in TOUR:
         mp3 = os.path.join(OUT, f"tour_{key}.mp3")
@@ -122,7 +130,7 @@ def main():
             al = res["alignment"]
             dur = al["character_end_times_seconds"][-1]
         else:
-            dur = None
+            dur = known.get(key)
         manifest["clips"].append({"id": key, "view": view, "text": text, "file": f"audio/tour_{key}.mp3", "duration": dur})
         print("clip", key, dur)
     for key, (prompt, dur, loop) in SFX.items():

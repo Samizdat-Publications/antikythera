@@ -9,7 +9,7 @@ import { parapegmaAt } from "./astro/parapegma";
 import { auditSaros, drawErrorChart, errorBands, type ErrorBands } from "./ui/analytics";
 import { Tour } from "./ui/tour";
 import { Onboarding, firstVisit } from "./ui/onboarding";
-import { renderInspector, trainFor, trainRowId, TRAINS } from "./ui/inspector";
+import { renderInspector, trainFor, trainsFor, trainRowId, TRAINS } from "./ui/inspector";
 import { Cosmos } from "./ui/cosmos";
 import { canvasToBlob, downloadBlob, snapshotName } from "./ui/snapshot";
 import { fitDevicePhases, type PhaseFit } from "./astro/phases";
@@ -59,6 +59,9 @@ function showStill(): void {
 let lostTimer = 0;
 // the model is here: until it is, the label is still reporting the download and must not be hidden
 let modelReady = false;
+// the last line the download wrote, so a context restored mid-download puts the progress back at once
+// rather than leaving "the graphics driver reset" up until the next chunk arrives
+let progressLine = `loading the mechanism<span class="sub">69 gears, 17 trains</span>`;
 
 let viewer: Viewer;
 try {
@@ -69,7 +72,8 @@ try {
     url: "./models/antikythera.glb",
     onProgress: (loaded, total) => {
       const mb = (n: number) => (n / 1048576).toFixed(1);
-      $("#loading").innerHTML = `loading the mechanism<span class="sub">${total ? `${mb(loaded)} of ${mb(total)} MB` : `${mb(loaded)} MB`} · 69 gears, 17 trains</span>`;
+      progressLine = `loading the mechanism<span class="sub">${total ? `${mb(loaded)} of ${mb(total)} MB` : `${mb(loaded)} MB`} · 69 gears, 17 trains</span>`;
+      $("#loading").innerHTML = progressLine;
     },
     onError: () => {
       $("#loading").innerHTML = `the mechanism could not be loaded<span class="sub">the model file did not arrive. Check the connection and reload the page.</span>`;
@@ -95,8 +99,10 @@ try {
     },
     onContextRestored: () => {
       clearTimeout(lostTimer);
-      // mid-load the label is the progress line: leave it up so the next onProgress lands somewhere visible
+      // mid-load the label goes back to the progress line it was showing, so the reset notice does not
+      // outlive the reset while the rest of the model comes down
       if (modelReady) $("#loading").hidden = true;
+      else $("#loading").innerHTML = progressLine;
       viewer.render();
     },
   });
@@ -664,7 +670,11 @@ viewer.onHover = (id) => {
   }
   if (n?.status) hover.append(el("tag", n.status));
   if (id === "a1") hover.append(el("tag", "drag the handle to wind it"));
-  else if (trainFor(id)) hover.append(el("tag", "click to see its train"));
+  else {
+    const ts = trainsFor(id);                                          // a shared wheel says so, and names the train the click will light
+    if (ts.length > 1) hover.append(el("tag", `shared by ${ts.map((t) => t.name).join(", ")} · click for ${ts[0].name}`));
+    else if (ts.length === 1) hover.append(el("tag", "click to see its train"));
+  }
   hover.append(el("id", id));
 };
 

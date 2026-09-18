@@ -28,6 +28,16 @@ export function trainFor(id: string): TrainSpec | undefined {
   return TRAINS.find((t) => t.gears.includes(id));
 }
 
+/**
+ * Every train a gear turns in. Several wheels are shared: the fixed 56 that the Sun and the three
+ * outer planets all run off, the 64 named for Jupiter that also drives Mars, the fixed 51 under both
+ * inner planets. Clicking one of those still shows the first train, so the room says out loud that
+ * the wheel belongs to more than the train it is about to light up.
+ */
+export function trainsFor(id: string): TrainSpec[] {
+  return TRAINS.filter((t) => t.gears.includes(id));
+}
+
 /** The id a train's row carries in the column, so the scene and the column always mean the same row. */
 export function trainRowId(t: TrainSpec): string {
   return "train-" + t.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-$/, "");
