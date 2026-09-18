@@ -51,7 +51,8 @@ the model stale-while-revalidate; the bump clears the old copy on every visitor'
 URL switches: `?theme=manuscript`, `?view=&years=&epoch=&inside=1&apart=1&sky=1` (Share writes them),
 `?fps=1`, `?quality=low|medium|high`, `?trails=0`, `?hdri=0`, `?webgl=0` (the no-WebGL still).
 → https://antikythera.stewartgregerson.workers.dev (Cloudflare Workers static assets).
-Source: github.com/Samizdat-Publications/antikythera (private).
+Source: github.com/Samizdat-Publications/antikythera (public since 2026-09-18).
+Project page: https://samizdat-publications.github.io/antikythera/ (Pages, from `main` and `/docs`).
 
 ## Conventions that must not drift
 
