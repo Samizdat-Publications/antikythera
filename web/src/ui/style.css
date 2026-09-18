@@ -160,16 +160,24 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 .panel.focus { background: oklch(0.235 0.02 66); box-shadow: 0 0 0 22px oklch(0.235 0.02 66); }
 
 /* ---------- walkthrough: a wall label in the lower left of the stage; the exhibit keeps its full height */
-.onboard { position: absolute; left: 22px; right: 22px; bottom: 22px; max-width: 760px; border: 1px solid var(--line-soft); background: oklch(0.19 0.014 62 / 0.96); padding: 9px 18px 0; }
+/* The card never grows past the stage: on a short window it would otherwise run up behind the top
+   bar with its title and half its text cut off, and nothing to scroll. Capped here, the head, the
+   foot and the progress rule stay put and the prose scrolls inside. `--onboard-bottom` is how far
+   the card stands off the foot of the stage, and the narrow and manuscript blocks below reset it. */
+.onboard { position: absolute; left: 22px; right: 22px; bottom: 22px; max-width: 760px; border: 1px solid var(--line-soft); background: oklch(0.19 0.014 62 / 0.96); padding: 9px 18px 0;
+  --onboard-bottom: 22px; max-height: calc(100% - var(--onboard-bottom) - 16px); display: flex; }
 .onboard[hidden] { display: none; }
-.onboard-card { position: relative; }
+.onboard-card { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
 .onboard-head { display: flex; align-items: center; gap: var(--space-md); color: var(--ink-faint); font-size: 13px; font-variant-numeric: tabular-nums; }
 .onboard-head-btns { margin-left: auto; display: inline-flex; gap: 2px; }
 .onboard-close, .onboard-min { background: none; border: 0; color: var(--ink-dim); font-size: 15px; padding: 0 6px; line-height: 1; }
 .onboard-close:hover, .onboard-min:hover { color: var(--accent); }
 .onboard-mini-title { display: none; font-family: var(--font-display); font-size: 15px; color: var(--accent); letter-spacing: 0.02em; }
 .onboard-title { margin: 2px 0 3px; font-family: var(--font-display); font-weight: 400; font-size: 19px; color: var(--accent); letter-spacing: 0.02em; }
-.onboard-body { margin: 0 0 var(--space-sm); font-size: 14.5px; line-height: 1.45; color: var(--ink); max-width: 82ch; }
+.onboard-body { margin: 0 0 var(--space-sm); font-size: 14.5px; line-height: 1.45; color: var(--ink); max-width: 82ch;
+  /* the prose is what gives when the card is capped; a thin rule of a scrollbar, and the gutter kept
+     whether or not it is needed so the text does not shift between one leaf and the next */
+  overflow-y: auto; min-height: 0; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line) transparent; scrollbar-gutter: stable; }
 .onboard-foot { display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap; padding-bottom: 9px; }
 /* folded: one line at the foot of the stage */
 .onboard.folded { padding-top: 6px; max-width: 760px; }
@@ -196,7 +204,7 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
   .chk, .theme-switch button { white-space: nowrap; }
   #date-main { font-size: 19px; }
   #date-sub { display: none; }
-  .onboard { left: 12px; right: 12px; bottom: 12px; max-width: none; }
+  .onboard { left: 12px; right: 12px; bottom: 12px; max-width: none; --onboard-bottom: 12px; }
   .onboard-body { font-size: 14.5px; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
@@ -259,7 +267,7 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 [data-theme="manuscript"] .plate-caption .plate-no { font-style: normal; font-family: var(--font-display); color: var(--bronze); letter-spacing: 0.1em; margin-right: 8px; }
 [data-theme="manuscript"] .plate-caption .plate-no::after { content: "·"; margin-left: 8px; color: var(--ink-faint); }
 [data-theme="manuscript"] .stage-hud { left: 36px; top: 30px; }
-[data-theme="manuscript"] .onboard { left: 36px; bottom: 60px; box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--line-soft); }
+[data-theme="manuscript"] .onboard { left: 36px; bottom: 60px; --onboard-bottom: 60px; box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--line-soft); }
 [data-theme="manuscript"] .loading { bottom: 40px; }
 /* the walkthrough's opening letter is a versal in red ochre, as a rubricator would leave it */
 [data-theme="manuscript"] .onboard-body::first-letter { font-family: var(--font-display); font-size: 2.6em; line-height: 0.8; float: left; color: var(--bronze); padding: 0.08em 0.12em 0 0; }
@@ -313,5 +321,5 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
   /* moved down from the block above, where the running-head rules outranked them on source order */
   [data-theme="manuscript"] .stage { padding: 10px 12px 0; }
   [data-theme="manuscript"] .stage-hud { left: 22px; top: 20px; }
-  [data-theme="manuscript"] .onboard { left: 20px; right: 20px; bottom: 44px; }
+  [data-theme="manuscript"] .onboard { left: 20px; right: 20px; bottom: 44px; --onboard-bottom: 44px; }
 }

@@ -388,3 +388,16 @@ See README "Attributions" for licences.
   server, pinning the camera first (`__viewer.view(name, 0)`, `controls.autoRotate = false`,
   `lastInput = performance.now()`) because the idle orbit starts after twelve seconds and had
   wandered the camera inside the case in the first attempts.
+- 2026-09-18 Stewart: the walkthrough could not be moved on because the leaf's text ran off the
+  screen with nothing to scroll. The card is `position: absolute; bottom: 22px` in the stage with no
+  cap on its height, so on a short window it grew upward, up behind the top bar, and the stage's
+  clipping took the title and the first lines with it. Reproduced by walking all fourteen leaves at
+  a set of sizes: fine at 1366x768 and 1280x620, but at 844x390 (a phone on its side, and about what
+  a short window or a browser pane gives) twelve of the fourteen were cut, the Explore leaf by 81 px,
+  and in the manuscript at that size every one of them. The card now caps at the stage,
+  `max-height: calc(100% - var(--onboard-bottom) - 16px)`, and is a flex column so the head, the
+  foot and the progress rule hold their places while `.onboard-body` scrolls (thin scrollbar,
+  `scrollbar-gutter: stable` so the prose does not shift between leaves, `overscroll-behavior:
+  contain` so the page behind does not move). `--onboard-bottom` carries the offset the narrow and
+  manuscript blocks already set, so each keeps its own. Folded mode is untouched, and nothing
+  changes on a window tall enough to have shown the whole card before.
