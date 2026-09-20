@@ -143,6 +143,10 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 .cosmos-stage { position: absolute; inset: 0; width: 100%; height: 100%; display: none; background: radial-gradient(ellipse at 50% 45%, oklch(0.2 0.016 62), var(--bg) 70%); }
 .stage.sky .cosmos-stage { display: block; }
 .stage.sky #stage { visibility: hidden; }
+.chk.expose { display: none; }                          /* the exposure belongs to the sky, not to the machine */
+.stage.sky .chk.expose { display: inline-flex; }
+.stage.sky .chk.inside { display: none; }               /* nothing to open: the machine is not on the stage */
+.chk.expose:has(input:checked) { color: var(--accent); border-color: var(--bronze-2); }
 
 /* chart */
 .chart-wrap { position: relative; height: 180px; margin: var(--space-xs) 0 var(--space-sm); }

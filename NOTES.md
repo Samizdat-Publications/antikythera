@@ -462,3 +462,51 @@ See README "Attributions" for licences.
   the whole `docs` folder, so `docs/plans/` was already public; linking it makes that a decision
   rather than an accident. Read them first for anything private: there is nothing in them but the
   work, and the only key they mention is `ELEVENLABS_API_KEY` by name, never its value.
+- 2026-09-20 Stewart, two asks: the long exposure on the Sky stage, and "on the lighter version can
+  we have the moon still look like the moon like the dark version".
+  **The Moon in the manuscript** was an engraving: the photograph thresholded into cross-hatching on
+  the night side, a stipple on the maria, bare parchment on the highlands. It is the same photograph
+  now, taken through the page's inks instead: a sepia duotone (`SEPIA` in `web/src/ui/moon.ts`) from
+  iron-gall brown to parchment-white, with the map's own greys deciding everything between, so the
+  craters and the maria are the LROC mosaic's and not a pattern. Two things had to be got right.
+  **Contrast**: the first pass boosted the albedo and lifted the gamma, which clipped the highlands
+  and left the maria pale, a flat biscuit disc; `grey * shade * 1.45` with no lift separates them.
+  **The night side**: against the vitrine's black panel an unlit limb simply disappears, but the same
+  ink on cream is a mud-coloured disc, and a twelve-per-cent crescent read as a full Moon with a
+  bright edge. The night side is washed thin instead (alpha `0.2 + 0.8 * lit^0.45`), so the page shows
+  through it and a crescent is a crescent. Checked at full, gibbous, quarter and a thin crescent. The
+  vitrine is untouched.
+  **The long exposure** (`long exposure` in the stage bar, on the Sky stage only, `?expose=1`, carried
+  by Share): the trails keep their whole history instead of the last `span`, so the figure each body
+  makes draws itself. Venus's eight-year pentagram, Mars's chain of retrograde loops, Saturn's
+  rosette. Three things came out of building it, and two of them were bugs that were already shipped:
+  - **The trails were being rebuilt from scratch sixty times a second.** `tick` called any move of
+    more than 0.05 years a jump, and a frame at ten years a second is 0.167 years, so every frame at
+    the top speed threw all seven trails away and re-sampled them, about a thousand evaluations of
+    the gear graph per frame. `tick` now takes a `continuous` flag, which `main.ts` sets from
+    `playing || viewer.cranking`, because only the caller knows whether the crank is turning or the
+    visitor jumped. Measured: tick 5.78 ms -> 0.45 ms a frame at that speed. Then the sub-stepping
+    below put some of it back deliberately, to 1.38 ms, and the whole Sky stage is still cheaper than
+    it was.
+  - **A tight continuity ceiling fails silently on a slow machine.** With the ceiling at 2 years a
+    frame, anything under 5 fps read as a jump every frame and the exposure quietly accumulated
+    nothing. It is 25 now, so a slow machine gets a coarse exposure rather than none.
+  - **The sub-step cap was too mean.** Drawing frame to frame joins a body to itself by chords across
+    its own circle (a sixth of a year is 240 degrees of Mercury), so `advance` walks the machine
+    between frames as `trails.ts` does. At 32 steps a slow frame put Mars across the sky in straight
+    lines; a sub-step costs about a hundredth of a millisecond and the work per year of crank is the
+    same whatever the cap, so it is 128, which also took the Sun's ring from a visible polygon to a
+    circle at ordinary speeds.
+  **What it cost and what bounds it.** Memory is bounded by thinning: at `EXPOSURE_CAP` = 3000 samples
+  a trail drops every other sample and doubles its step, so an exposure runs as long as you like at a
+  resolution that falls off slowly (600 years still sits at ~1800 samples). Drawing thousands of
+  segments one `stroke()` at a time is 1 fps, so everything older than the last span is one path at
+  one faint weight and only the head keeps the per-segment fade; each sample also carries its own
+  cosine and sine, since the trigonometry was most of the redraw. Measured at 120 years, both canvases:
+  tick 1.45 ms, draw 5.26 ms a frame, against 1.38 and 3.39 with the exposure shut.
+  **The Moon is never held open** (`hold: false`). It goes round twelve times a year, so as the
+  thinning coarsens its step the chords cut across its own circle and a century of it is a spiked star
+  through the middle of the diagram: an artefact of the sampling that says something false about where
+  the Moon goes. Its month-long loop is still there at rest, which is where it means anything.
+  The retrograde strip skips samples older than its own width, or an open exposure would draw outside
+  its box. `window.__cosmos` is exposed alongside `__viewer`, which is how all of the above was timed.

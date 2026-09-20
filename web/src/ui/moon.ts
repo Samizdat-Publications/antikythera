@@ -6,9 +6,10 @@
  * northern hemisphere); the light comes from the machine's elongation (0 = new, 90 = first
  * quarter with the right half lit, 180 = full); the shading follows the Lommel-Seeliger law
  * the regolith obeys (the full Moon is flat to the limb, a quarter Moon brightest at the limb),
- * with a trace of earthshine on the night side. The manuscript draws the same sphere as an
- * engraving: cross-hatching on the night side, a single hatch at the terminator, a stipple on
- * the maria, bare parchment on the highlands. Until the map has arrived a silvered disc stands in.
+ * with a trace of earthshine on the night side. The manuscript draws the same sphere from the
+ * same photograph, taken through the page's own inks: a sepia duotone, warm parchment-white on
+ * the highlands down to iron-gall brown on the night side, so it is the real Moon and not a
+ * diagram. Until the map has arrived a plain disc stands in, in whichever palette is asked for.
  *
  * Elongation e (moon minus sun, degrees): the terminator is the projection of a great circle,
  * x_t(y) = side * cos(e) * sqrt(R^2 - y^2); `litPolygon` is that region, used by the stand-in
@@ -34,6 +35,26 @@ export function litPolygon(cx: number, cy: number, R: number, elongationDeg: num
 
 const MAP_URL = "./textures/moon_1k.jpg";
 const EARTHSHINE = 0.035;
+
+/**
+ * The manuscript's Moon is the same photograph in the page's inks: a duotone ramp from iron-gall
+ * brown through a warm mid to parchment-white. The night side stops well short of black, because
+ * a black disc on a cream page reads as a hole punched in the paper rather than as an unlit limb.
+ */
+const SEPIA: [number, number, number][] = [
+  [74, 58, 42],      // the night side: dark, but still ink on paper
+  [126, 106, 82],
+  [178, 158, 128],
+  [222, 209, 184],
+  [250, 245, 232],   // the highlands in full sun
+];
+/** Sample the ramp at t in 0..1. */
+function sepia(t: number): [number, number, number] {
+  const x = Math.max(0, Math.min(1, t)) * (SEPIA.length - 1);
+  const i = Math.min(SEPIA.length - 2, Math.floor(x)), f = x - i;
+  const a = SEPIA[i], b = SEPIA[i + 1];
+  return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];
+}
 
 interface MoonMap { w: number; h: number; data: Uint8ClampedArray }
 let map: MoonMap | null = null;
@@ -127,20 +148,21 @@ export function drawMoon(canvas: HTMLCanvasElement, elongationDeg: number, ink =
     ctx.strokeStyle = "rgba(201,151,63,0.35)"; ctx.lineWidth = 1; ctx.stroke();      // the bronze rim of the drum
     return;
   }
-  // the engraving: tone = albedo x light; ink where the tone falls below the hatch it is drawn with
-  const sp = Math.max(3, Math.round(2.6 * dpr));                        // hatch spacing, device pixels
-  const ink0 = [58, 44, 30], parch = [241, 232, 213];
+  // the same photograph through the page's inks: the maria and the craters are the map's own,
+  // the ramp only decides what grey means in brown. Tone = albedo x light, as in the vitrine.
   for (let k = 0; k < T.px.length; k++) {
-    const p = T.px[k], i = p % w, j = (p - i) / w, t = T.tex[k];
+    const p = T.px[k], t = T.tex[k];
     const grey = (M[t] * 0.299 + M[t + 1] * 0.587 + M[t + 2] * 0.114) / 255;
-    const tone = Math.min(1, grey * 1.9) * (EARTHSHINE * 1.5 + (1 - EARTHSHINE * 1.5) * Math.pow(Math.max(0, shade(T.nx[k], T.nz[k], lx, lz) - EARTHSHINE) / (1 - EARTHSHINE), 0.8));
-    const dither = ((((i * 7 + j * 13) % 11) / 11) - 0.5) * 0.05;
-    const v = tone + dither;
-    const h1 = (i + j) % sp === 0, h2 = (i - j + 8 * sp) % (2 * sp) === 0;          // the cross-hatch's second family is twice as open, or the night side reads as a mesh
-    const dot = (i % (2 * sp) === 0 && j % (2 * sp) === 0) || ((i + sp) % (2 * sp) === 0 && (j + sp) % (2 * sp) === 0);
-    const inked = v < 0.11 ? h1 || h2 : v < 0.26 ? h1 : v < 0.4 ? dot : false;
-    const o = p * 4, c = inked ? ink0 : parch;
-    D[o] = c[0]; D[o + 1] = c[1]; D[o + 2] = c[2]; D[o + 3] = Math.round(255 * T.cov[k] * (inked ? 0.88 : 1));
+    const sh = shade(T.nx[k], T.nz[k], lx, lz);
+    const tone = grey * sh * 1.45;                                     // no lift: the highlands clip and the maria go pale
+    const lit = Math.max(0, sh - EARTHSHINE) / (1 - EARTHSHINE);       // 0 on the night side, 1 in full sun
+    const c = sepia(Math.min(1, tone));
+    // the night side is washed thin so the page shows through it. Against the vitrine's black
+    // panel an unlit limb simply disappears; on parchment the same ink would be a mud-coloured
+    // disc, and a crescent would read as a full Moon with a bright edge.
+    const o = p * 4;
+    D[o] = c[0]; D[o + 1] = c[1]; D[o + 2] = c[2];
+    D[o + 3] = Math.round(255 * T.cov[k] * (0.2 + 0.8 * Math.pow(lit, 0.45)));
   }
   ctx.putImageData(img, 0, 0);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -172,23 +194,25 @@ function drawDisc(ctx: CanvasRenderingContext2D, cx: number, cy: number, R: numb
   ctx.strokeStyle = "rgba(201,151,63,0.35)"; ctx.lineWidth = 1; ctx.stroke();
 }
 
-/** The manuscript's stand-in: a pen diagram, parchment for the lit part, hatching for the dark. */
+/** The manuscript's stand-in: the same two tones the duotone ends at, until the map arrives. */
 function drawMoonInk(ctx: CanvasRenderingContext2D, cx: number, cy: number, R: number, elongationDeg: number): void {
   const ink = "rgba(58, 44, 30, 0.9)";
+  const rgb = (c: [number, number, number]) => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
   ctx.save();
   ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
-  ctx.fillStyle = "#f1e8d5"; ctx.fill();
+  ctx.globalAlpha = 0.2;                                               // the night side, washed thin as in the map
+  ctx.fillStyle = rgb(sepia(0.06)); ctx.fill();
+  ctx.globalAlpha = 1;
   ctx.clip();
-  ctx.strokeStyle = "rgba(58, 44, 30, 0.55)"; ctx.lineWidth = 0.9;
-  for (let d = -2 * R; d < 2 * R; d += 4.2) {
-    ctx.beginPath(); ctx.moveTo(cx + d - R, cy - R); ctx.lineTo(cx + d + R, cy + R); ctx.stroke();
-  }
   const poly = litPolygon(cx, cy, R, elongationDeg);
   ctx.beginPath();
   poly.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
   ctx.closePath();
-  ctx.fillStyle = "#f6efdf"; ctx.fill();
-  ctx.strokeStyle = ink; ctx.lineWidth = 1; ctx.stroke();
+  const grad = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.08, cx, cy, R * 1.05);
+  grad.addColorStop(0, rgb(sepia(1)));
+  grad.addColorStop(0.6, rgb(sepia(0.72)));
+  grad.addColorStop(1, rgb(sepia(0.45)));
+  ctx.fillStyle = grad; ctx.fill();
   ctx.restore();
   ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
   ctx.strokeStyle = ink; ctx.lineWidth = 1.2; ctx.stroke();

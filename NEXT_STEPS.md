@@ -25,6 +25,12 @@ needs a paid plan for that. `docs/index.html` is the page, `docs/screens/` the s
 - 2026-09-18: the deferred minors cleared, the three-quarter view pulled back so the case is not
   shaved off at wide aspects, the README rewritten around eight screenshots of the running exhibit,
   and the project page written. The decisions are in NOTES.md under 2026-09-18.
+- 2026-09-20: the long exposure on the Sky stage (`long exposure` in the stage bar, `?expose=1`):
+  the trails keep their whole history, so Venus's eight-year pentagram and Mars's chain of loops draw
+  themselves as the crank turns. Building it turned up two bugs that were already shipped: the sky
+  trails were being rebuilt from scratch every frame at ten years a second, and the manuscript's Moon
+  is now the photograph in the page's inks rather than an engraving. The decisions and the numbers
+  are in NOTES.md under 2026-09-20.
 - 2026-09-20: the case boards were given a real box unwrap in `box_bm` (blender/dials.py), the
   model rebuilt headless and the four lining planes removed from the web layer. Both the outside and
   the inside of the case are the same wood at the same scale now. The decisions, and the two
@@ -57,6 +63,13 @@ at quality 84 into `docs/screens/`. Keep the README's captions and the page's in
 
 **Deploy.** `cd web && npm run build && cd .. && npx wrangler deploy --assets web/dist`, then push.
 If the GLB or any texture changed, bump `CACHE` in `web/public/sw.js` first.
+
+**Change the Sky stage.** `web/src/ui/cosmos.ts` draws it from the gear graph: `BODIES` holds each
+body's deferent radius, trail span and colours, `advance` samples the machine between frames, and the
+long exposure is `EXPOSURE_CAP` (memory) and `SUBSTEPS` (accuracy). Time anything you change from the
+console with `window.__cosmos`: `c.setExposure(true)`, then step `c.tick(y, jd, true)` yourself in a
+loop rather than trusting the frame rate, since a headless or hidden browser throttles rAF to about
+1 fps and every fps reading you take there will be wrong.
 
 **Re-narrate a leaf.** Edit the text in `tools/narration.py`, delete that clip's mp3 in
 `web/public/audio/`, run `python tools/narration.py` (needs `ELEVENLABS_API_KEY`; it regenerates only
@@ -98,8 +111,7 @@ the sources or something deliberately out of scope:
 - The one attested parapegma numeral (11) in PP1 col. i is not drawn, because the paper cannot place
   its line. Nothing to fix until someone publishes a placement.
 - Fragment A's position could still be nudged a few mm by eye at full size (a taste call).
-- Libration in the Moon panel (it would be the sky's, not the machine's, and would need saying so);
-  a long-exposure trail on the Sky stage at ten years a second.
+- Libration in the Moon panel (it would be the sky's, not the machine's, and would need saying so).
 - If a slow GPU ever matters more, the two-round quality guard could be given a third round. (The
   other half of this line was stale: the service worker has precached the model on install since
   version 1.0.)
@@ -114,3 +126,8 @@ the sources or something deliberately out of scope:
   wider render would let `OG_FOCUS` in `tools/gen_icons.py` centre it.
 - The eleven parapegma letters not read on the bronze are cut in the same faint ink as the schematic
   Saros hours; the colophon says so.
+- The manuscript's Moon is a sepia duotone of the LROC photograph (`SEPIA` in `web/src/ui/moon.ts`),
+  and its night side is washed to a fifth so the page shows through. Darker night, or a warmer or
+  cooler ramp, is a five-line change; the old cross-hatched engraving is in git if it is ever wanted.
+- The long exposure is opt-in, a checkbox on the Sky stage, rather than something the top speed turns
+  on by itself. The Moon is left out of it on purpose (see NOTES.md, 2026-09-20).

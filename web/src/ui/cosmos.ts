@@ -24,12 +24,13 @@ interface BodySpec {
   R: number;            // deferent radius as a fraction of the zodiac ring
   span: number;         // years of trail
   samples: number;      // trail samples across the span
+  hold?: false;         // false: never held open by a long exposure (see EXPOSURE_CAP)
   colour: string;       // the stone on the front dial (vitrine)
   inkColour: string;    // the same body in the manuscript's inks
 }
 
 const BODIES: BodySpec[] = [
-  { id: "moon", label: "Moon", glyph: "☾", display: "moon", device: "k2", R: 0.17, span: 0.085, samples: 60, colour: "#e9e5d9", inkColour: "#6b655c" },
+  { id: "moon", label: "Moon", glyph: "☾", display: "moon", device: "k2", R: 0.17, span: 0.085, samples: 60, hold: false, colour: "#e9e5d9", inkColour: "#6b655c" },
   { id: "mercury", label: "Mercury", glyph: "☿", display: "mercury", device: "mercury_ptr", R: 0.27, span: 0.5, samples: 150, colour: "#5cc9bd", inkColour: "#3e8f80" },
   { id: "venus", label: "Venus", glyph: "♀", display: "venus", device: "venus_ptr", R: 0.36, span: 1.7, samples: 190, colour: "#5d7ee6", inkColour: "#3d5aa8" },
   { id: "sun", label: "Sun", glyph: "☉", display: "true_sun", device: "true_sun_ptr", R: 0.45, span: 1.0, samples: 90, colour: "#ffcf6e", inkColour: "#b8892a" },
@@ -43,7 +44,13 @@ export const STONE_COLOURS: Record<string, { stone: string; ink: string }> = Obj
 
 const SIGNS = ["♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓"];
 
-interface Sample { years: number; lon: number; rho: number }
+interface Sample { years: number; lon: number; rho: number; ux: number; uy: number }
+/** A trail sample, with the longitude's cosine and sine kept: a long exposure redraws these
+ *  thousands of times a frame, and the trigonometry was most of the cost of doing it. */
+function sample(years: number, lon: number, rho: number): Sample {
+  const a = lon * DEG;
+  return { years, lon, rho, ux: Math.cos(a), uy: Math.sin(a) };
+}
 
 class Body {
   a: [number, number];
@@ -51,9 +58,12 @@ class Body {
   pin: string;
   scale: number;
   trail: Sample[] = [];
+  /** Years between samples. Starts at the spec's own and doubles as a long exposure fills up. */
+  step: number;
   lon = 0;
   trueLon = 0;
   constructor(readonly spec: BodySpec, graph: GearGraph) {
+    this.step = spec.span / spec.samples;
     const n = graph.get(spec.device);
     const c = (n?.coupling ?? {}) as Record<string, number | string>;
     if (c.type === "pin_slot") { this.a = [c.dx as number, c.dy as number]; this.r = c.r as number; this.pin = c.pin as string; }
@@ -75,7 +85,41 @@ class Body {
     const rot = (x: number, y: number): [number, number] => [(x * c - y * sn) * k, (x * sn + y * c) * k];
     return { lon, rho: Math.hypot(qx, qy) * k, A: rot(this.a[0], this.a[1]), B: rot(bx, by) };
   }
+  /** Throw the trail away and go back to the spec's own sampling. */
+  reset(): void { this.trail = []; this.step = this.spec.span / this.spec.samples; }
 }
+
+/**
+ * The long exposure. Ordinarily each body keeps only the last `span` years, which is one
+ * retrograde loop for Mars and rather less for the rest: at ten years a second that is a
+ * quarter of a second of wall time, so the trail is a short worm racing round the ring and
+ * never becomes a shape. With the exposure open the trail keeps everything instead, and the
+ * figure each body actually makes, Saturn's thirty-year rosette, Jupiter's twelve, Mars's
+ * chain of loops, draws itself as the crank turns.
+ *
+ * Two things keep it honest. Memory is bounded: at `EXPOSURE_CAP` samples the trail is thinned
+ * by half and the sampling step doubles, so the exposure runs for as long as you like at a
+ * resolution that falls off slowly. And time is sampled between frames, not once a frame: at
+ * ten years a second a frame is a sixth of a year, which is 240 degrees of Mercury, so drawing
+ * frame to frame would join a body to itself by chords through the middle of its own circle.
+ *
+ * The Moon is never held open (`hold: false`). It goes round more than twelve times a year, so
+ * as the thinning coarsens its step the chords cut straight across its own circle and a hundred
+ * years of it is a spiked star through the middle of the diagram: an artefact of the sampling,
+ * not a figure the machine makes, and it says something false about where the Moon goes. Its own
+ * month-long loop is there to see at rest, which is where it means anything.
+ */
+const EXPOSURE_CAP = 3000;          // samples per body: about 7 ms a frame to draw both canvases
+// Graph evaluations allowed in one frame's walk. A sub-step is cheap (a hundredth of a millisecond),
+// and the work per year of crank is the same whatever the cap, so a generous one costs nothing in
+// throughput and buys the slow frames their accuracy: at 32 a frame of ten years put Mars across the
+// sky in straight lines, which is a lie about where it went.
+const SUBSTEPS = 128;
+// Years in one frame that the turning crank could still account for. Generous on purpose: at ten
+// years a second this tolerates a machine down to half a frame a second, and a slow machine then
+// gets a coarse exposure (the walk below still samples the path between the two frames) rather
+// than silently getting none, which is what a tight limit gives, since every frame reads as a jump.
+const CONTINUOUS_MAX = 25;
 
 export class Cosmos {
   private bodies: Body[] = [];
@@ -84,6 +128,7 @@ export class Cosmos {
   private lastTruth = -1;
   private jd = 0;
   private hovered: string | null = null;
+  private exposure = false;
   theme: "vitrine" | "manuscript" = "vitrine";
 
   constructor(private canvases: HTMLCanvasElement[]) {
@@ -91,6 +136,15 @@ export class Cosmos {
   }
 
   setTheme(t: "vitrine" | "manuscript"): void { this.theme = t; }
+
+  /** Open or close the long exposure. Either way the trails start again from where the machine is. */
+  setExposure(on: boolean): void {
+    if (on === this.exposure) return;
+    this.exposure = on;
+    for (const b of this.bodies) b.reset();
+    if (Number.isFinite(this.lastYears)) this.rebuild(this.lastYears);   // the ordinary window, to open from
+  }
+  get exposed(): boolean { return this.exposure; }
   private stone(id: string): string {
     const b = BODIES.find((x) => x.id === id);
     return b ? (this.theme === "manuscript" ? b.inkColour : b.colour) : "#fff";
@@ -102,24 +156,23 @@ export class Cosmos {
     this.lastYears = NaN;
   }
 
-  /** Call whenever the machine moves: appends to the trails, or rebuilds them after a jump. */
-  tick(years: number, jd: number): void {
+  /**
+   * Call whenever the machine moves. `continuous` says the crank is turning (playing, or a hand
+   * on the crank) rather than the visitor having jumped somewhere; a jump throws the trails away
+   * and samples a fresh window, which is also what closes an exposure.
+   *
+   * The distinction matters more than it looks. A frame at ten years a second advances a sixth
+   * of a year, so a flat threshold of 0.05 called every single frame a jump, and the trails were
+   * being rebuilt from scratch, a thousand evaluations of the gear graph, sixty times a second.
+   */
+  tick(years: number, jd: number, continuous = false): void {
     const g = this.graph;
     if (!g) return;
     this.jd = jd;
-    const jump = !Number.isFinite(this.lastYears) || Math.abs(years - this.lastYears) > 0.05;
+    const dy = years - this.lastYears;
+    const jump = !Number.isFinite(this.lastYears) || dy < 0 || dy > (continuous ? CONTINUOUS_MAX : 0.05);
     if (jump) this.rebuild(years);
-    else {
-      for (const b of this.bodies) {
-        const m = b.measure(g);
-        b.lon = m.lon;
-        const step = b.spec.span / b.spec.samples;
-        const last = b.trail[b.trail.length - 1];
-        if (!last || Math.abs(years - last.years) >= step) b.trail.push({ years, lon: m.lon, rho: m.rho });
-        while (b.trail.length && years - b.trail[0].years > b.spec.span) b.trail.shift();
-        if (years < (b.trail[0]?.years ?? years)) b.trail = [];      // running backwards: start again
-      }
-    }
+    else if (dy > 0) this.advance(years);
     this.lastYears = years;
     if (performance.now() - this.lastTruth > 120) {
       this.lastTruth = performance.now();
@@ -128,17 +181,51 @@ export class Cosmos {
     }
   }
 
+  /**
+   * One frame of movement: walk the machine from where it was to where it is in steps fine
+   * enough for the quickest body, measuring every body on the way, then put it back. The walk
+   * is capped, so a very fast crank samples more coarsely rather than stalling. Then each trail
+   * is trimmed: to the last `span` years ordinarily, or, with the exposure open, thinned by half
+   * whenever it fills, so the figure keeps its whole history at a resolution that falls slowly.
+   */
+  private advance(years: number): void {
+    const g = this.graph!;
+    const from = this.lastYears, dt = years - from;
+    const finest = Math.min(...this.bodies.map((b) => b.step));
+    const n = Math.max(1, Math.min(SUBSTEPS, Math.ceil(dt / finest)));
+    for (let i = 1; i <= n; i++) {
+      const y = from + (dt * i) / n;
+      g.setYears(y);
+      for (const b of this.bodies) {
+        const last = b.trail[b.trail.length - 1];
+        if (last && y - last.years < b.step) continue;
+        const m = b.measure(g);
+        b.trail.push(sample(y, m.lon, m.rho));
+      }
+    }
+    for (const b of this.bodies) {
+      if (!this.exposure || b.spec.hold === false) {
+        while (b.trail.length && years - b.trail[0].years > b.spec.span) b.trail.shift();
+      } else if (b.trail.length > EXPOSURE_CAP) {
+        b.trail = b.trail.filter((_, i) => i % 2 === 0);             // thin by half, and take twice as long a step
+        b.step *= 2;
+      }
+    }
+    g.setYears(years);
+    for (const b of this.bodies) b.lon = b.measure(g).lon;
+  }
+
   /** Sample the gear graph backwards over each body's span, then put the machine back. */
   private rebuild(years: number): void {
     const g = this.graph!;
     for (const b of this.bodies) {
-      b.trail = [];
+      b.reset();
       const n = b.spec.samples;
       for (let i = 0; i < n; i++) {
         const y = years - b.spec.span * (1 - i / (n - 1));
         g.setYears(y);
         const m = b.measure(g);
-        b.trail.push({ years: y, lon: m.lon, rho: m.rho });
+        b.trail.push(sample(y, m.lon, m.rho));
       }
     }
     g.setYears(years);
@@ -201,12 +288,30 @@ export class Cosmos {
       // deferent
       ctx.strokeStyle = `rgba(${bronze},${0.13 * alpha})`;
       ctx.beginPath(); ctx.arc(cx, cy, b.spec.R * Rz, 0, TAU); ctx.stroke();
-      // trail, fading into the past
+      // trail, fading into the past. With the exposure open the figure can run to thousands of
+      // samples, far too many to stroke one segment at a time (that is 1 fps), so everything
+      // older than the last span is one path at one faint weight, and only the head, the part
+      // that says where the body is and which way it is going, is drawn segment by segment
+      // with the fade. The exposure's own alpha is low, so a dense figure still reads as dense.
       const n = b.trail.length;
       if (n > 1) {
         const w0 = big ? 1.6 : 1.1;
-        for (let i = 1; i < n; i++) {
-          const k = i / (n - 1);
+        const held = this.exposure && b.spec.hold !== false;
+        const head = held ? Math.max(1, n - b.spec.samples) : 1;
+        if (head > 1) {
+          ctx.lineWidth = w0 * 0.85;
+          ctx.lineJoin = "round";
+          ctx.strokeStyle = hexToRgba(col, 0.2 * alpha);
+          ctx.beginPath();
+          for (let i = 0; i <= head; i++) {
+            const t = b.trail[i], rz = t.rho * Rz;
+            if (i) ctx.lineTo(cx + rz * t.ux, cy + rz * t.uy); else ctx.moveTo(cx + rz * t.ux, cy + rz * t.uy);
+          }
+          ctx.stroke();
+          ctx.lineJoin = "miter";
+        }
+        for (let i = head === 1 ? 1 : head + 1; i < n; i++) {
+          const k = held ? (i - head) / Math.max(1, n - 1 - head) : i / (n - 1);
           const [x0, y0] = P(b.trail[i - 1].lon, b.trail[i - 1].rho);
           const [x1, y1] = P(b.trail[i].lon, b.trail[i].rho);
           // in the manuscript the trail is a pen stroke: the nib's pressure varies a little along the line
@@ -312,6 +417,7 @@ export class Cosmos {
       ctx.beginPath();
       let prev: Sample | null = null;
       for (const s of b.trail) {
+        if (now - s.years > span) { prev = null; continue; }                  // an open exposure runs older than the strip is wide
         const x = X(now - s.years), y = Y(s.lon);
         if (prev && Math.abs(s.lon - prev.lon) > 180) ctx.moveTo(x, y);        // the wrap at 360°: lift the pen
         else if (prev) ctx.lineTo(x, y); else ctx.moveTo(x, y);

@@ -141,6 +141,7 @@ function stateUrl(forSharing = false): URL {
   set("inside", $<HTMLInputElement>("#xray").checked ? "1" : null);
   set("apart", $<HTMLInputElement>("#apart").checked ? "1" : null);
   set("sky", stageEl.classList.contains("sky") ? "1" : null);
+  set("expose", $<HTMLInputElement>("#expose").checked ? "1" : null);
   return u;
 }
 let urlTimer = 0;
@@ -152,7 +153,7 @@ function writeUrl(): void {
 /** Apply a linked state after the overture; true if the address carried one. */
 function readUrl(): boolean {
   const q = new URLSearchParams(location.search);
-  const keys = ["epoch", "years", "view", "inside", "apart", "sky"];
+  const keys = ["epoch", "years", "view", "inside", "apart", "sky", "expose"];
   if (!keys.some((k) => q.has(k))) return false;
   const ep = q.get("epoch");
   if (ep && EPOCHS.some((e) => e.id === ep)) { $<HTMLSelectElement>("#epoch").value = ep; $<HTMLSelectElement>("#epoch").dispatchEvent(new Event("change")); }
@@ -164,6 +165,7 @@ function readUrl(): boolean {
   const v = q.get("view");
   if (v && v in PLATES) viewer.view(v);
   if (q.get("sky") === "1") setSky(true);
+  if (q.get("expose") === "1") { $<HTMLInputElement>("#expose").checked = true; cosmos.setExposure(true); }
   return true;
 }
 $("#begin-btn").addEventListener("click", () => { $("#begin").hidden = true; onboarding.start(); });
@@ -177,6 +179,7 @@ loadCanon().then((c) => { canon = c; update(); refreshAnalytics(); });
 
 // ---- the sky it tracks: the small diagram in the column and the same thing over the stage
 const cosmos = new Cosmos([$<HTMLCanvasElement>("#cosmos"), $<HTMLCanvasElement>("#cosmos-stage")]);
+(window as unknown as { __cosmos: Cosmos }).__cosmos = cosmos;      // alongside __viewer, for timing the sky from the console
 const retro = $<HTMLCanvasElement>("#retro");
 
 function buildLegend(): void {
@@ -243,7 +246,8 @@ function caption(): void {
   const date = formatJd(epoch.jdn + years * TROPICAL_YEAR);
   const no = (n: string) => `<span class="plate-no">Plate ${n}</span>`;
   if (stageEl.classList.contains("sky")) {
-    el.innerHTML = `${no("V")}The sky it tracks, Earth at the centre and each body on its epicycle, set to ${date}`;
+    const held = $<HTMLInputElement>("#expose").checked ? ", the trails held open" : "";
+    el.innerHTML = `${no("V")}The sky it tracks, Earth at the centre and each body on its epicycle${held}, set to ${date}`;
     return;
   }
   if (viewer.fragmentShown) {
@@ -258,6 +262,13 @@ function caption(): void {
   el.innerHTML = `${v ? no(v[0]) : ""}The mechanism ${v ? v[1] : "as you have turned it"}${state}, set to ${date}`;
 }
 $("#sky-btn").addEventListener("click", () => setSky(!stageEl.classList.contains("sky")));
+// the long exposure: the trails keep everything instead of the last span, so each body draws the
+// whole figure it makes. Opening or closing it starts the trails again from where the machine is.
+$("#expose").addEventListener("change", (e) => {
+  cosmos.setExposure((e.target as HTMLInputElement).checked);
+  caption();
+  writeUrl();
+});
 
 // ---- sounds (crank loop, eclipse chime)
 const tour = new Tour();
@@ -312,7 +323,7 @@ const onboarding = new Onboarding({
   fragment: showFragment,
   sky: setSky,
   mood: (m) => viewer.setMood(m),
-  reset: () => { viewer.setMood("room"); viewer.isolate([]); showFragment(0); setSky(false); $<HTMLInputElement>("#xray").checked = false; $<HTMLInputElement>("#apart").checked = false; applyVisibility(); setPlaying(false, 1); viewer.view("iso"); },
+  reset: () => { viewer.setMood("room"); viewer.isolate([]); showFragment(0); setSky(false); $<HTMLInputElement>("#xray").checked = false; $<HTMLInputElement>("#apart").checked = false; $<HTMLInputElement>("#expose").checked = false; cosmos.setExposure(false); applyVisibility(); setPlaying(false, 1); viewer.view("iso"); },
 });
 addEventListener("keydown", (e) => {                                   // space turns the crank, unless a field has focus
   const t = e.target as HTMLElement | null;
@@ -474,7 +485,7 @@ let lastDom = 0;
 function update(force = false): void {
   const s: MechanismState = mechanismState(years, epoch.jdn, mechCalibration());
   viewer.setYears(years);
-  cosmos.tick(years, s.jd);
+  cosmos.tick(years, s.jd, playing || viewer.cranking);          // the crank turning is not a jump, however fast
   const now = performance.now();
   if (playing && !force && now - lastDom < 250) return;     // the column updates four times a second while the crank runs
   lastDom = now;
