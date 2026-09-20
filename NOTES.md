@@ -434,3 +434,31 @@ See README "Attributions" for licences.
   to the UV unit, so the grain runs on at the right size and follows the theme through `tuneLining`.
   The deeper fix, giving the case boards a proper box unwrap in `box_bm`, would want a Blender rebuild
   and is in NEXT_STEPS.
+- 2026-09-20: **the case boards got a real box unwrap, and the lining went.** The deeper fix left in
+  NEXT_STEPS on 2026-09-18. `box_bm` in `blender/dials.py` projected x for u on every face, which is
+  right for a thin plate lying in the xy plane and wrong for a board standing on edge: `case_left` and
+  `case_right` are 9 mm thick in x, so their broad faces took a 9 mm strip of u across 340 mm of
+  height and the grain smeared into vertical streaks. It now picks, per face, the two axes the face
+  actually spans, which is the same rule `surface.py`'s `box_uvs` already used for meshes arriving
+  without UVs; the span stays the boards' own 120 mm, so the outside is pixel for pixel what it was.
+  Only faces whose normal is dominantly x change. Rebuilt headless in two invocations, no Blender
+  session and no MCP: `blender -b --factory-startup --python blender/build_all.py -- --out build`,
+  then `blender -b build/antikythera.blend --python blender/dials.py --python blender/surface.py
+  --python blender/export_glb.py` (Blender takes several `--python` flags and runs them in order,
+  which is the headless equivalent of the socket's one long session). The AO bake fell back to the
+  CPU, the Intel Arc driver being older than oneAPI wants, and still finished inside three minutes.
+  **The rebuild is faithful:** the rig verified at 69 gears and a worst error of 5.3e-05 rad, and
+  `dist/gears.json` came out byte for byte the file already deployed. `case_left`'s UVs now run
+  -1.000..1.833 in u and -0.833..2.000 in v where they used to be a line. The optimiser displaced
+  exactly the four childless pointers again (date, Games, Callippic, Exeligmos) and `pivots.ts` mended
+  all four at load, as it was written to; all fourteen displays at three years read identical to six
+  decimals against the deployed build. **The lining is gone**: `lineCase` and `tuneLining` are removed
+  from `web/src/scene/viewer.ts` with the four planes and the cloned material, because the boards'
+  own inner faces now carry the grain at the right scale and the baked AO keeps the inside of the box
+  darker than the outside. Checked in both versions at the front, close to the dial and from inside
+  the case; the manuscript's pale oak was where the old panel read as a hole, and it reads as a wall
+  now. `CACHE` bumped to `antikythera-v2`.
+- 2026-09-20: the project page now links the plan and the ledger from "How it is built". Pages serves
+  the whole `docs` folder, so `docs/plans/` was already public; linking it makes that a decision
+  rather than an accident. Read them first for anything private: there is nothing in them but the
+  work, and the only key they mention is `ELEVENLABS_API_KEY` by name, never its value.

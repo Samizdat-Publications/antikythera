@@ -9,7 +9,7 @@
 // The worker assumes the site is served from the root of its origin: the `/assets/` test and the
 // shelved prefixes below are absolute paths, and a deployment under a sub-path would miss them.
 
-const CACHE = "antikythera-v1";
+const CACHE = "antikythera-v2";
 
 // the heavy parts of the exhibit: the machine, the room it stands in, the sky it is checked against
 const SHELVED = ["/models/", "/hdri/", "/textures/", "/data/", "/icons/", "/still/"];

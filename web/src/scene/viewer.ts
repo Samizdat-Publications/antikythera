@@ -286,7 +286,6 @@ export class Viewer {
   theme: Theme = "vitrine";
   private bloomBase = 0.55;
   private wood: { mat: THREE.MeshStandardMaterial; base: THREE.Color } | null = null;
-  private lining: THREE.MeshStandardMaterial | null = null;
   private plate: { mat: THREE.MeshPhysicalMaterial; base: THREE.Color } | null = null;
   /** Every wheel pushed out along its arbor: built once from the graph; `f` is how far out each one is (0 home, 1 apart). */
   private apartItems: { o: THREE.Object3D; z0: number; off: number; wz: number; f: number }[] | null = null;
@@ -440,7 +439,6 @@ export class Viewer {
       this.scene.add(this.root);
       this.graph = new GearGraph(this.root);
       this.graph.setYears(0);
-      this.lineCase();
       this.trails = new Trails(this.graph, this.root);
       this.trails.enabled = new URLSearchParams(location.search).get("trails") !== "0";
       this.scene.add(this.trails.group);
@@ -633,61 +631,8 @@ export class Viewer {
       this.wood.mat.color.copy(this.wood.base).multiplyScalar(m ? 1.15 : 0.85);
       this.wood.mat.envMapIntensity = m ? 0.8 : 0.55;
       this.wood.mat.roughness = m ? 0.72 : 0.82;
-      this.tuneLining();                                           // the inside of the case follows the outside
     }
     this.tunePlate();
-  }
-
-  /**
-   * The inside of the box is dark. The plates sit 10 mm inside the case, so the boards' inner
-   * faces show as a lit frame around each dial; by day, in pale oak, that frame read as gaps in
-   * the geometry. Four boards line the case (left, right, top, bottom) and follow the case in
-   * every way (Inside, the case box, the overture) by joining its role.
-   *
-   * The lining is the wood of the case in shadow, not a flat dark panel. A panel was what it
-   * was, and looking in through the dial it read as a hole: textured board on the outside,
-   * nothing on the inside. The lining takes the wood's own material and maps it at the boards'
-   * own 120 mm of surface to the UV unit, so the grain runs on at the right size and a wall
-   * looks like a wall from either side.
-   */
-  private lineCase(): void {
-    if (!this.graph || !this.root) return;
-    const UV_SPAN = 120;                                         // the case boards' own, from blender/dials.py
-    const wood = this.wood?.mat;
-    const mat = wood ? wood.clone() : new THREE.MeshStandardMaterial({ color: 0x2a1f16, roughness: 0.95, metalness: 0 });
-    mat.name = "WoodLining";
-    mat.envMapIntensity = 0.3;
-    this.lining = mat;
-    this.tuneLining();
-    const specs: [[number, number, number], [number, number, number], [number, number]][] = [
-      [[-80.7, -10, -4], [0, Math.PI / 2, 0], [90, 322]],
-      [[80.7, -10, -4], [0, -Math.PI / 2, 0], [90, 322]],
-      [[0, 150.7, -4], [Math.PI / 2, 0, 0], [162, 90]],
-      [[0, -170.7, -4], [-Math.PI / 2, 0, 0], [162, 90]],
-    ];
-    const list = this.graph.roles.get("case") ?? [];
-    for (const [pos, rot, [w, h]] of specs) {
-      const geom = new THREE.PlaneGeometry(w, h);
-      const uv = geom.attributes.uv;                              // 0..1 as it comes; the wood wants millimetres
-      for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (w / UV_SPAN), uv.getY(i) * (h / UV_SPAN));
-      const m = new THREE.Mesh(geom, mat);
-      m.position.set(...pos);
-      m.rotation.set(...rot);
-      m.receiveShadow = true;
-      m.name = "case_lining";
-      m.userData.am_role = "case";
-      this.root.add(m);
-      list.push(m);
-    }
-    this.graph.roles.set("case", list);
-  }
-
-  /** The lining follows the wood, half its light: the inside of a box, not the outside of one. */
-  private tuneLining(): void {
-    const wood = this.wood?.mat;
-    if (!this.lining || !wood) return;
-    this.lining.color.copy(wood.color).multiplyScalar(0.5);
-    this.lining.roughness = Math.min(1, wood.roughness * 1.1);
   }
 
   /** Swap in the theme's HDRI once it has loaded (the hand-built room stands in until then). */

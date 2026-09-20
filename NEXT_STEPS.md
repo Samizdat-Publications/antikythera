@@ -1,6 +1,6 @@
 # Where things stand, and how to keep it
 
-_Updated 2026-09-18. Version 1.0 is finished, deployed and written up. Read this first in a new
+_Updated 2026-09-20. Version 1.0 is finished, deployed and written up. Read this first in a new
 session; NOTES.md has the decisions, newest entry last; CLAUDE.md has the rebuild order and the
 deploy command._
 
@@ -25,6 +25,10 @@ needs a paid plan for that. `docs/index.html` is the page, `docs/screens/` the s
 - 2026-09-18: the deferred minors cleared, the three-quarter view pulled back so the case is not
   shaved off at wide aspects, the README rewritten around eight screenshots of the running exhibit,
   and the project page written. The decisions are in NOTES.md under 2026-09-18.
+- 2026-09-20: the case boards were given a real box unwrap in `box_bm` (blender/dials.py), the
+  model rebuilt headless and the four lining planes removed from the web layer. Both the outside and
+  the inside of the case are the same wood at the same scale now. The decisions, and the two
+  headless Blender commands the rebuild used, are in NOTES.md under 2026-09-20.
 - 2026-09-18, after release: four pointers (date, Games, Callippic, Exeligmos) were being drawn about
   a pivot off their arbor, because `gltf-transform optimize` folds a mesh's centre into the node's own
   translation when that node has no children. `web/src/mech/pivots.ts` puts the pivot back at load.
@@ -65,8 +69,23 @@ closed: `& "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe" -b buil
 The parapegma table lives twice, in `web/src/astro/parapegma.ts` and `tools/gen_dial_textures.py`;
 change both.
 
-**Change a gear.** `data/gears.json`, then the full rebuild order in CLAUDE.md (Blender open with the
-Lab MCP add-on), then `python -m pytest` and the web tests, then bump `CACHE`.
+**Change a gear, a board or anything else in the model.** `data/gears.json` or the script that builds
+the part, then the full rebuild order in CLAUDE.md (Blender open with the Lab MCP add-on), then
+`python -m pytest` and the web tests, then bump `CACHE`. With Blender closed, the same rebuild runs
+headless in two invocations, and this is the easier way:
+
+```
+& "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe" -b --factory-startup `
+    --python-exit-code 1 --python blender/build_all.py -- --out build
+& "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe" -b build/antikythera.blend `
+    --python-exit-code 1 --python blender/dials.py --python blender/surface.py --python blender/export_glb.py
+```
+
+Several `--python` flags run in order in one session, which is what the socket gave. Nothing prints
+each script's `result`, so check the rebuild instead: `build/rig_dump.json` carries the verification
+report (69 gears, worst error under 1e-4 rad), and `dist/gears.json` should come out byte for byte
+the `web/public/data/gears.json` already deployed unless the gear table itself changed. Then the
+three gltf-transform steps in CLAUDE.md, then `CACHE`.
 
 **Hero renders.** `python tools/bl.py blender/hero_render.py 1800` (Blender open), then
 `python tools/gen_icons.py` to refresh the share image and the still.
@@ -81,15 +100,9 @@ the sources or something deliberately out of scope:
 - Fragment A's position could still be nudged a few mm by eye at full size (a taste call).
 - Libration in the Moon panel (it would be the sky's, not the machine's, and would need saying so);
   a long-exposure trail on the Sky stage at ten years a second.
-- If a slow GPU ever matters more: the two-round quality guard could be given a third round, or the
-  service worker could precache the model on install for kiosks.
-- The case boards' inner faces take the box unwrap's 9 mm strip of u across 90 mm of depth, so the
-  grain smears; `lineCase` covers them with wood at the right scale, but a proper box unwrap in
-  `box_bm` (blender/dials.py) would fix both faces and let the lining go. Wants a Blender rebuild,
-  the three gltf-transform steps and a `CACHE` bump.
-- If the repository ever goes public, the project page and the README are ready for it; check that
-  `docs/plans/` and `docs/research/` read the way you want them read in the open, since Pages serves
-  the whole `docs` folder.
+- If a slow GPU ever matters more, the two-round quality guard could be given a third round. (The
+  other half of this line was stale: the service worker has precached the model on install since
+  version 1.0.)
 
 ## Taste calls Stewart may want to reverse
 

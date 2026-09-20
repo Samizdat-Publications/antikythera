@@ -162,11 +162,22 @@ def box_bm(w, h, d, cx=0.0, cy=0.0, cz=0.0, uv_span=None):
     bmesh.ops.scale(bm, vec=(w, h, d), verts=bm.verts)
     bmesh.ops.translate(bm, vec=(cx, cy, cz), verts=bm.verts)
     if uv_span:
+        # a real box unwrap: each face takes the two axes it actually spans, so the grain keeps
+        # its scale on all six. Projecting x across a board only 9 mm thick smeared its broad
+        # faces into vertical streaks (see NOTES.md, 2026-09-18). Same rule as surface.py's
+        # box_uvs, so a mesh that arrives here and one that is projected there agree.
         uv = bm.loops.layers.uv.new("UVMap")
         for f in bm.faces:
+            n = f.normal
             for lp in f.loops:
                 x, y, z = lp.vert.co
-                lp[uv].uv = (x / uv_span + 0.5, (y if abs(f.normal.z) > 0.5 else z) / uv_span + 0.5)
+                if abs(n.z) >= 0.5:
+                    u, v = x, y
+                elif abs(n.x) >= abs(n.y):
+                    u, v = y, z
+                else:
+                    u, v = x, z
+                lp[uv].uv = (u / uv_span + 0.5, v / uv_span + 0.5)
     return bm
 
 
