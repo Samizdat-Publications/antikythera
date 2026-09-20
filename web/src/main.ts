@@ -166,6 +166,7 @@ function readUrl(): boolean {
   if (v && v in PLATES) viewer.view(v);
   if (q.get("sky") === "1") setSky(true);
   if (q.get("expose") === "1") { $<HTMLInputElement>("#expose").checked = true; cosmos.setExposure(true); }
+  caption();                                                          // a linked state has to say what it is
   return true;
 }
 $("#begin-btn").addEventListener("click", () => { $("#begin").hidden = true; onboarding.start(); });
