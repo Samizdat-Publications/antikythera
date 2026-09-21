@@ -1,6 +1,6 @@
 # Where things stand, and how to keep it
 
-_Updated 2026-09-20. Version 1.0 is finished, deployed and written up. Read this first in a new
+_Updated 2026-09-21. Version 1.0 is finished, deployed and written up. Read this first in a new
 session; NOTES.md has the decisions, newest entry last; CLAUDE.md has the rebuild order and the
 deploy command._
 
@@ -41,6 +41,10 @@ needs a paid plan for that. `docs/index.html` is the page, `docs/screens/` the s
   Watch for it: a pointer that loses its last child will be hit the same way, and the tell is a
   pointer that reads backwards or seems to turn about its point. The case lining is wood now, not a
   flat dark panel.
+
+- 2026-09-21: the sky's libration on the Moon face (`the sky's libration` under the Moon, `?lib=1`).
+  The face turns to the real Moon's libration from astronomy-engine while the light stays the
+  machine's; opt-in and labelled as the sky's. NOTES.md, 2026-09-21.
 
 ## Maintenance guide (for sessions at any effort level)
 
@@ -111,7 +115,6 @@ the sources or something deliberately out of scope:
 - The one attested parapegma numeral (11) in PP1 col. i is not drawn, because the paper cannot place
   its line. Nothing to fix until someone publishes a placement.
 - Fragment A's position could still be nudged a few mm by eye at full size (a taste call).
-- Libration in the Moon panel (it would be the sky's, not the machine's, and would need saying so).
 - If a slow GPU ever matters more, the two-round quality guard could be given a third round. (The
   other half of this line was stale: the service worker has precached the model on install since
   version 1.0.)
@@ -131,3 +134,6 @@ the sources or something deliberately out of scope:
   cooler ramp, is a five-line change; the old cross-hatched engraving is in git if it is ever wanted.
 - The long exposure is opt-in, a checkbox on the Sky stage, rather than something the top speed turns
   on by itself. The Moon is left out of it on purpose (see NOTES.md, 2026-09-20).
+- The sky's libration is opt-in, and off in a fresh visit, because the panel's first job is the
+  machine's Moon. Turning it on by default is one `checked` attribute in `web/index.html`; the
+  position-angle tilt of the lunar axis is left out on purpose (the terminator is drawn upright too).

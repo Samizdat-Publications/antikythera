@@ -510,3 +510,20 @@ See README "Attributions" for licences.
   the Moon goes. Its month-long loop is still there at rest, which is where it means anything.
   The retrograde strip skips samples older than its own width, or an open exposure would draw outside
   its box. `window.__cosmos` is exposed alongside `__viewer`, which is how all of the above was timed.
+- 2026-09-21: **the sky's libration on the Moon face** (`the sky's libration` under the Moon, `?lib=1`,
+  carried by Share). The last buildable line of the backlog. The machine's phase ball shows one face
+  always, so this is the sky's, not the machine's, and the panel says so twice: the box is named for
+  the sky, and the foot says the face is turned to where the real Moon stood that day under the
+  machine's light. The light, the terminator and every number above the new row stay the machine's;
+  only which part of the map falls on the disc changes. `moonLibration` in `web/src/astro/truth.ts`
+  takes the sub-Earth point from astronomy-engine's `Libration` (Meeus ch. 53, through `timeFromJd`,
+  so no JS `Date` ever touches a BC date); `selenographic` in `web/src/ui/moon.ts` tilts the view by
+  the latitude and turns it by the longitude before the map lookup, and three tests hold it (no
+  libration is the mean face, the disc's centre lands on the sub-Earth point, the limbs move the
+  right way). The position angle of the axis is left out: the Moon is drawn north up, as its
+  terminator already is. Checked by eye at the extremes (7.9 W 6.7 S against 7.9 E 6.7 N): Mare
+  Crisium sits on the limb in one and well inside it in the other. **Cost**: the map lookup is now
+  cached per libration to a tenth of a degree (under a texel of the 1k map); a draw is 1.07 ms with
+  the face still and 2.45 ms when the libration changes every call, and the panel only redraws four
+  times a second while the crank turns. Off by default, because the panel's first job is to show
+  the machine's Moon.

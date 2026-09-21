@@ -59,7 +59,7 @@ function sepia(t: number): [number, number, number] {
 interface MoonMap { w: number; h: number; data: Uint8ClampedArray }
 let map: MoonMap | null = null;
 let mapState: "idle" | "loading" | "ready" | "failed" = "idle";
-let lastCall: [HTMLCanvasElement, number, boolean] | null = null;
+let lastCall: [HTMLCanvasElement, number, boolean, number, number] | null = null;
 
 function loadMap(): void {
   if (mapState !== "idle" || typeof Image === "undefined") return;
@@ -79,13 +79,31 @@ function loadMap(): void {
   img.src = MAP_URL;
 }
 
-/** Per-pixel geometry of the disc for one canvas size: normals, map texel, and the rim's coverage. */
-interface Table { w: number; h: number; mapW: number; px: Int32Array; nx: Float32Array; ny: Float32Array; nz: Float32Array; tex: Int32Array; cov: Float32Array; R: number }
+/**
+ * Libration: where on the Moon the centre of the disc falls. The machine has no libration (its
+ * phase ball shows one face, always); the real Moon rocks by up to about eight degrees in
+ * longitude and seven in latitude, and when asked the face is turned to the sky's values, from
+ * astronomy-engine, while the light stays the machine's. The axis is kept upright: the small
+ * position-angle tilt is left out, as the terminator's is.
+ *
+ * `selenographic` maps a point of the sphere in the observer's frame (x right, y up, z toward
+ * the observer) to lunar longitude and latitude in radians, with the disc's centre falling on
+ * (lonDeg, latDeg): first a tilt about x by the latitude, then a turn about y by the longitude.
+ */
+export function selenographic(x: number, y: number, z: number, lonDeg = 0, latDeg = 0): [number, number] {
+  const l = (lonDeg * Math.PI) / 180, b = (latDeg * Math.PI) / 180;
+  const Y = y * Math.cos(b) + z * Math.sin(b), Z = z * Math.cos(b) - y * Math.sin(b);
+  const X2 = x * Math.cos(l) + Z * Math.sin(l), Z2 = Z * Math.cos(l) - x * Math.sin(l);
+  return [Math.atan2(X2, Z2), Math.asin(Math.max(-1, Math.min(1, Y)))];
+}
+
+/** Per-pixel geometry of the disc for one canvas size: normals and the rim's coverage; the map texel per libration. */
+interface Table { w: number; h: number; mapW: number; px: Int32Array; nx: Float32Array; ny: Float32Array; nz: Float32Array; tex: Int32Array; cov: Float32Array; R: number; lib: string }
 let table: Table | null = null;
 
 function buildTable(w: number, h: number, R: number, m: MoonMap): Table {
   const cx = w / 2, cy = h / 2;
-  const px: number[] = [], nx: number[] = [], ny: number[] = [], nz: number[] = [], tex: number[] = [], cov: number[] = [];
+  const px: number[] = [], nx: number[] = [], ny: number[] = [], nz: number[] = [], cov: number[] = [];
   for (let j = 0; j < h; j++) {
     for (let i = 0; i < w; i++) {
       const dx = (i + 0.5 - cx) / R, dy = (j + 0.5 - cy) / R;
@@ -94,13 +112,24 @@ function buildTable(w: number, h: number, R: number, m: MoonMap): Table {
       if (c <= 0) continue;
       const s = d > 1 ? 1 / d : 1;                                       // rim pixels take the limb's normal
       const x = dx * s, y = -dy * s, z = Math.sqrt(Math.max(0, 1 - x * x - y * y));
-      const lat = Math.asin(Math.max(-1, Math.min(1, y))), lon = Math.atan2(x, z);
-      const u = Math.min(m.w - 1, Math.max(0, Math.floor((0.5 + lon / (2 * Math.PI)) * m.w)));
-      const v = Math.min(m.h - 1, Math.max(0, Math.floor((0.5 - lat / Math.PI) * m.h)));
-      px.push(j * w + i); nx.push(x); ny.push(y); nz.push(z); tex.push((v * m.w + u) * 4); cov.push(c);
+      px.push(j * w + i); nx.push(x); ny.push(y); nz.push(z); cov.push(c);
     }
   }
-  return { w, h, mapW: m.w, R, px: Int32Array.from(px), nx: Float32Array.from(nx), ny: Float32Array.from(ny), nz: Float32Array.from(nz), tex: Int32Array.from(tex), cov: Float32Array.from(cov) };
+  return { w, h, mapW: m.w, R, px: Int32Array.from(px), nx: Float32Array.from(nx), ny: Float32Array.from(ny), nz: Float32Array.from(nz), tex: new Int32Array(px.length), cov: Float32Array.from(cov), lib: "" };
+}
+
+/** Look the map up again for a libration; a tenth of a degree is under a texel of the 1k map. */
+function mapTexels(T: Table, m: MoonMap, lonDeg: number, latDeg: number): void {
+  const key = `${lonDeg.toFixed(1)},${latDeg.toFixed(1)}`;
+  if (T.lib === key) return;
+  const l = +lonDeg.toFixed(1), b = +latDeg.toFixed(1);
+  for (let k = 0; k < T.px.length; k++) {
+    const [lon, lat] = selenographic(T.nx[k], T.ny[k], T.nz[k], l, b);
+    const u = Math.min(m.w - 1, Math.max(0, Math.floor((0.5 + lon / (2 * Math.PI)) * m.w)));
+    const v = Math.min(m.h - 1, Math.max(0, Math.floor((0.5 - lat / Math.PI) * m.h)));
+    T.tex[k] = (v * m.w + u) * 4;
+  }
+  T.lib = key;
 }
 
 /** Lommel-Seeliger with a little earthshine, 1 at the centre of the full Moon. */
@@ -110,8 +139,9 @@ function shade(nx: number, nz: number, lx: number, lz: number): number {
   return EARTHSHINE + (1 - EARTHSHINE) * Math.pow(ls, 0.92);
 }
 
-export function drawMoon(canvas: HTMLCanvasElement, elongationDeg: number, ink = false): void {
-  lastCall = [canvas, elongationDeg, ink];
+/** `libLon`, `libLat`: the sub-Earth point in degrees (0, 0 is the machine's face, the mean one). */
+export function drawMoon(canvas: HTMLCanvasElement, elongationDeg: number, ink = false, libLon = 0, libLat = 0): void {
+  lastCall = [canvas, elongationDeg, ink, libLon, libLat];
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   // the canvas is drawn at device resolution; its CSS size is the size it was written with
@@ -132,6 +162,7 @@ export function drawMoon(canvas: HTMLCanvasElement, elongationDeg: number, ink =
     return;
   }
   if (!table || table.w !== w || table.h !== h || table.mapW !== map.w || table.R !== R) table = buildTable(w, h, R, map);
+  mapTexels(table, map, libLon, libLat);
   const e = (elongationDeg * Math.PI) / 180;
   const lx = Math.sin(e), lz = -Math.cos(e);                           // from the Moon toward the Sun, in the observer's frame
   const img = ctx.createImageData(w, h);

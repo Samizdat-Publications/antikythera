@@ -48,7 +48,7 @@ Hero renders: `python tools/bl.py blender/hero_render.py 1800` -> docs/renders/*
 Deploy: `cd web && npm run build && cd .. && npx wrangler deploy --assets web/dist`
 Before deploying a changed GLB or texture, bump `CACHE` in `web/public/sw.js` (the service worker keeps
 the model stale-while-revalidate; the bump clears the old copy on every visitor's next visit).
-URL switches: `?theme=manuscript`, `?view=&years=&epoch=&inside=1&apart=1&sky=1` (Share writes them),
+URL switches: `?theme=manuscript`, `?view=&years=&epoch=&inside=1&apart=1&sky=1&expose=1&lib=1` (Share writes them),
 `?fps=1`, `?quality=low|medium|high`, `?trails=0`, `?hdri=0`, `?webgl=0` (the no-WebGL still).
 → https://antikythera.stewartgregerson.workers.dev (Cloudflare Workers static assets).
 Source: github.com/Samizdat-Publications/antikythera (public since 2026-09-18).

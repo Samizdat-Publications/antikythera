@@ -3,7 +3,7 @@ import { EPOCHS, mechanismState, type MechanismState, type Calibration } from ".
 import { civilToJdn, formatJd, TROPICAL_YEAR } from "./astro/jd";
 import { drawMoon } from "./ui/moon";
 import { calibrate, type CalibrationSet } from "./astro/calibration";
-import { loadCanon, nextEclipse, prevEclipse, eclipsesBetween, describeType, skyState, type EclipseRow } from "./astro/truth";
+import { loadCanon, nextEclipse, prevEclipse, eclipsesBetween, describeType, skyState, moonLibration, type EclipseRow } from "./astro/truth";
 import { glyphByMonth, OBSERVED_HOURS } from "./astro/eym";
 import { parapegmaAt } from "./astro/parapegma";
 import { auditSaros, drawErrorChart, errorBands, type ErrorBands } from "./ui/analytics";
@@ -142,6 +142,7 @@ function stateUrl(forSharing = false): URL {
   set("apart", $<HTMLInputElement>("#apart").checked ? "1" : null);
   set("sky", stageEl.classList.contains("sky") ? "1" : null);
   set("expose", $<HTMLInputElement>("#expose").checked ? "1" : null);
+  set("lib", $<HTMLInputElement>("#libration").checked ? "1" : null);
   return u;
 }
 let urlTimer = 0;
@@ -153,10 +154,11 @@ function writeUrl(): void {
 /** Apply a linked state after the overture; true if the address carried one. */
 function readUrl(): boolean {
   const q = new URLSearchParams(location.search);
-  const keys = ["epoch", "years", "view", "inside", "apart", "sky", "expose"];
+  const keys = ["epoch", "years", "view", "inside", "apart", "sky", "expose", "lib"];
   if (!keys.some((k) => q.has(k))) return false;
   const ep = q.get("epoch");
   if (ep && EPOCHS.some((e) => e.id === ep)) { $<HTMLSelectElement>("#epoch").value = ep; $<HTMLSelectElement>("#epoch").dispatchEvent(new Event("change")); }
+  $<HTMLInputElement>("#libration").checked = q.get("lib") === "1";
   const y = parseFloat(q.get("years") ?? "");
   if (Number.isFinite(y)) setYears(y, true);
   $<HTMLInputElement>("#xray").checked = q.get("inside") === "1";
@@ -270,6 +272,8 @@ $("#expose").addEventListener("change", (e) => {
   caption();
   writeUrl();
 });
+// the sky's libration on the Moon face: the machine's light, the real Moon's rocking
+$("#libration").addEventListener("change", () => { update(true); writeUrl(); });
 
 // ---- sounds (crank loop, eclipse chime)
 const tour = new Tour();
@@ -509,11 +513,15 @@ function update(force = false): void {
   ]);
   const pdt = [...$("#front-dl").querySelectorAll("dt")].find((x) => x.textContent === "parapegma");
   pdt?.nextElementSibling?.classList.toggle("on-letter", pp.ahead === 0);   // the row lights while the pointer is on a letter
+  // libration is the sky's: the machine's phase ball has one face, so it is only drawn when asked for
+  let lib: { lon: number; lat: number } | null = null;
+  if ($<HTMLInputElement>("#libration").checked) { try { lib = moonLibration(s.jd); } catch { lib = null; } }
   setDl($("#moon-dl"), [
     ["Phase", s.phaseName],
     ["Elongation", `${fmt(s.elongation, 1)}°`],
     ["Illuminated", `${fmt(s.illuminated * 100, 0)} %`],
     ["Age", `${fmt(s.moonAgeDays, 1)} d`],
+    ...(lib ? [["Libration", `${fmt(Math.abs(lib.lon), 1)}°${lib.lon >= 0 ? "E" : "W"}\u00a0· ${fmt(Math.abs(lib.lat), 1)}°${lib.lat >= 0 ? "N" : "S"}`] as [string, string]] : []),
   ]);
   setDl($("#back-dl"), [
     ["Metonic", `cell ${s.metonicCell} / 235 · turn ${s.metonicTurn + 1}`],
@@ -537,7 +545,7 @@ function update(force = false): void {
   } catch (e) {
     setDl($("#sky-dl"), [["ephemeris", String(e)]]);
   }
-  drawMoon($<HTMLCanvasElement>("#moon"), s.elongation, currentTheme() === "manuscript");
+  drawMoon($<HTMLCanvasElement>("#moon"), s.elongation, currentTheme() === "manuscript", lib?.lon ?? 0, lib?.lat ?? 0);
   eclipsePanel(s);
   if (s.sarosCell !== lastSarosCell) {
     // a glyph has come round: the chime, and when NASA agrees the room dims for a breath (not at the speeds where months fly past)

@@ -90,6 +90,15 @@ export function skyState(jd: number): SkyState {
   return { sunLon: sun.elon, moonLon: moon.lon, moonLat: moon.lat, elongation, illuminated: ill.phase_fraction, moonDistanceKm: moon.dist * 149597870.7 };
 }
 
+/**
+ * The Moon's libration at a Julian Day: the sub-Earth point in selenographic longitude and
+ * latitude, degrees (positive: east, north). The sky's, not the machine's; the machine has none.
+ */
+export function moonLibration(jd: number): { lon: number; lat: number } {
+  const lib = Astronomy.Libration(timeFromJd(jd));
+  return { lon: lib.elon, lat: lib.elat };
+}
+
 /** Geocentric ecliptic longitudes of the seven bodies the machine shows, degrees. */
 export function skyLongitudes(jd: number): Record<string, number> {
   const t = timeFromJd(jd);

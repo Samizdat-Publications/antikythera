@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { litPolygon } from "./moon";
+import { litPolygon, selenographic } from "./moon";
 
 function area(p: [number, number][]): number {
   let a = 0;
@@ -31,5 +31,25 @@ describe("moon disc", () => {
       const want = (1 - Math.cos((e * Math.PI) / 180)) / 2;
       expect(area(litPolygon(0, 0, R, e, 800)) / disc).toBeCloseTo(want, 2);
     }
+  });
+});
+
+describe("libration", () => {
+  const deg = (r: number) => (r * 180) / Math.PI;
+  it("with none, the disc's centre is the mean face and the right limb is lunar east", () => {
+    const [l0, b0] = selenographic(0, 0, 1);
+    expect(deg(l0)).toBeCloseTo(0, 9); expect(deg(b0)).toBeCloseTo(0, 9);
+    expect(deg(selenographic(1, 0, 0)[0])).toBeCloseTo(90, 9);
+    expect(deg(selenographic(0, 1, 0)[1])).toBeCloseTo(90, 9);
+  });
+  it("puts the disc's centre on the sub-Earth point", () => {
+    for (const [l, b] of [[7.5, 0], [0, -6.5], [-7.9, 6.7], [4, 3]]) {
+      const [lon, lat] = selenographic(0, 0, 1, l, b);
+      expect(deg(lon)).toBeCloseTo(l, 9); expect(deg(lat)).toBeCloseTo(b, 9);
+    }
+  });
+  it("moves the limb: a west libration shows past the west limb and hides the east one", () => {
+    expect(deg(selenographic(1, 0, 0, -7)[0])).toBeCloseTo(83, 6);
+    expect(deg(selenographic(-1, 0, 0, -7)[0])).toBeCloseTo(-97, 6);
   });
 });
