@@ -14,6 +14,8 @@ person (no Attenborough clones).
 
 ## To do, in this order
 
+All done 2026-09-23 except item 1, which waits on Stewart's choice of voice.
+
 1. [ ] **Narration voice.** Auditions in `.playwright-mcp/audition/` (index.html plays them; gitignored).
        Waiting on Stewart's pick: George (current), Liam Dale, AK, Arthur (added to the ElevenLabs
        library as "am Liam Dale" etc.). Then: set the voice in `tools/narration.py` `pick_voice`
@@ -56,5 +58,5 @@ person (no Attenborough clones).
 9. [x] **"What survives" switch.** Only the 30 surviving gears (gears.json marks them), the rest
        ghosted; in the Exhibit menu, carried by Share (`?survives=1`).
 10. [x] **Front view framing** (front/back at 670, target y -32) (case top jammed under the view bar) and **one line on Rhodes**.
-11. [ ] Docs: NEXT_STEPS.md, NOTES.md entry, README/project page screenshots if the look changed;
+11. [x] Docs (NOTES, NEXT_STEPS, README, docs/screens retaken, deployed through 9bb07dd): NEXT_STEPS.md, NOTES.md entry, README/project page screenshots if the look changed;
         bump `CACHE` in `web/public/sw.js` for any GLB or texture change; deploy; push.
