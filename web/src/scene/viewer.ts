@@ -7,7 +7,8 @@
  * plates, the baked per-vertex ambient occlusion (blender/surface.py, COLOR_0) darkens
  * indirect light deep in the stack, a selective bloom lifts the golden Sun and the
  * stones, a gentle depth of field softens the hero view, and a vignette plus a static
- * film grain finish the frame before ACES tone mapping.
+ * film grain finish the frame before AgX tone mapping (ACES in the manuscript). The room,
+ * the shaders and the material dressing live in room.ts, shaders.ts and materials.ts.
  */
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -26,215 +27,14 @@ import { GearGraph } from "../mech/gearGraph";
 import { restorePointerPivots } from "../mech/pivots";
 import { Trails } from "./trails";
 import { canvasToBlob } from "../ui/snapshot";
+import { galleryEnvironment, studioEnvironment, wallTexture, speckleTexture, HDRI, type Theme } from "./room";
+import { AO, PLATE_MIX, withVertexAO, FinalShader } from "./shaders";
+import { dressMaterials } from "./materials";
+
+export type { Theme } from "./room";
 
 /** The visitor has asked for less motion: no idle orbit, no overture, views cut rather than fly. */
 export const REDUCE_MOTION = matchMedia("(prefers-reduced-motion: reduce)");
-
-/**
- * A gallery at night, built as geometry so PMREM can turn it into reflections:
- * a large warm key panel high on the left with a small, very bright lamp inside it
- * (crisp glints on the polished parts), a dim cool fill on the right, a thin warm
- * rim strip behind the exhibit, a floor bounce, and dark walls so bronze keeps its depth.
- */
-function galleryEnvironment(): THREE.Scene {
-  const s = new THREE.Scene();
-  const room = new THREE.Mesh(new THREE.BoxGeometry(20, 12, 20), new THREE.MeshStandardMaterial({ color: 0x17120e, side: THREE.BackSide, roughness: 1 }));
-  s.add(room);
-  const panel = (geom: THREE.BufferGeometry, color: number, intensity: number, pos: [number, number, number], look: [number, number, number]) => {
-    const m = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
-    (m.material as THREE.MeshBasicMaterial).color.multiplyScalar(intensity);
-    m.position.set(...pos);
-    m.lookAt(...look);
-    s.add(m);
-  };
-  const plane = (w: number, h: number) => new THREE.PlaneGeometry(w, h);
-  panel(plane(5, 6), 0xffe2b8, 6.0, [-6, 5, 5], [0, 0, 0]);          // key, warm, high left
-  panel(new THREE.CircleGeometry(0.45, 32), 0xfff4e2, 22.0, [-5.6, 5.4, 5.4], [0, 0, 0]); // the lamp itself
-  panel(plane(6, 4), 0x9fb4c8, 1.3, [7, 2, 3], [0, 0, 0]);           // fill, cool, right
-  panel(plane(9, 0.6), 0xffc98a, 5.0, [0, 6, -7], [0, 0, 0]);        // rim strip, behind and above
-  panel(plane(3, 3), 0xfff1dc, 1.8, [0, -5.5, 4], [0, 0, 0]);        // floor bounce
-  panel(plane(5, 6), 0xffe2b8, 5.0, [6, 5, -5], [0, 0, 0]);          // second key for the back dials
-  panel(new THREE.CircleGeometry(0.4, 32), 0xfff4e2, 45.0, [5.6, 5.3, -5.4], [0, 0, 0]);
-  panel(plane(6, 4), 0x9fb4c8, 1.1, [-7, 2, -3], [0, 0, 0]);         // cool fill behind
-  panel(plane(14, 1.2), 0x6b5a48, 0.9, [0, -5.9, 0], [0, 0, 0]);     // faint floor
-  return s;
-}
-
-/**
- * The manuscript version's light: a scholar's room by day. Pale walls, a tall window of
- * north light high on the left, a skylight, a warm floor bounce, and a small bright source
- * for the glints. Bronze on parchment wants a bright, soft environment.
- */
-function studioEnvironment(): THREE.Scene {
-  const s = new THREE.Scene();
-  const room = new THREE.Mesh(new THREE.BoxGeometry(20, 12, 20), new THREE.MeshBasicMaterial({ color: 0xd8ccb8, side: THREE.BackSide }));
-  (room.material as THREE.MeshBasicMaterial).color.multiplyScalar(0.55);
-  s.add(room);
-  const panel = (geom: THREE.BufferGeometry, color: number, intensity: number, pos: [number, number, number]) => {
-    const m = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
-    (m.material as THREE.MeshBasicMaterial).color.multiplyScalar(intensity);
-    m.position.set(...pos);
-    m.lookAt(0, 0, 0);
-    s.add(m);
-  };
-  panel(new THREE.PlaneGeometry(6, 8), 0xdfe9ff, 3.2, [-7, 4, 5]);            // the window, north light
-  panel(new THREE.PlaneGeometry(7, 7), 0xfff6e8, 1.4, [0, 6, 0]);              // skylight
-  panel(new THREE.PlaneGeometry(9, 9), 0xd9c7a8, 1.1, [0, -6, 0]);             // parchment floor bounce
-  panel(new THREE.PlaneGeometry(6, 6), 0xf0e6d4, 1.2, [7, 2, -4]);             // the far wall, lit
-  panel(new THREE.CircleGeometry(0.4, 32), 0xffffff, 14.0, [-6.4, 4.6, 5.2]);  // glints
-  panel(new THREE.PlaneGeometry(6, 8), 0xe6edf8, 2.4, [-6, 4, -6]);            // a second window behind, so the opened back is not in its own shade
-  panel(new THREE.CircleGeometry(0.4, 32), 0xffffff, 12.0, [-5.6, 4.4, -6.2]);
-  return s;
-}
-
-export type Theme = "vitrine" | "manuscript";
-
-/**
- * Real light (lighting phase d): Poly Haven HDRIs, CC0. A small dark photo studio with a few
- * softboxes for the gallery at night; an artist's workshop with big windows for the room by day.
- * Each is turned so its main source sits where the hand-built key was (high, front-left), and
- * scaled to the exposure the hand-built rooms were tuned for. `?hdri=0` keeps the hand-built rooms.
- */
-const HDRI: Record<Theme, { file: string; rotation: number; intensity: number }> = {
-  vitrine: { file: "./hdri/studio_small_09_1k.hdr", rotation: 0.6, intensity: 0.7 },
-  manuscript: { file: "./hdri/artist_workshop_1k.hdr", rotation: 2.4, intensity: 1.05 },
-};
-
-/** The wall behind the exhibit: a warm pool of light on a dark gallery wall, or a sheet of parchment. */
-function wallTexture(theme: Theme): THREE.Texture {
-  const c = document.createElement("canvas");
-  c.width = c.height = 512;
-  const g = c.getContext("2d")!;
-  const rg = g.createRadialGradient(256, 210, 20, 256, 256, 330);
-  if (theme === "manuscript") {
-    c.width = c.height = 1024;                                     // the fibre must not blur into mottling
-    const rg2 = g.createRadialGradient(512, 420, 40, 512, 512, 660);
-    rg2.addColorStop(0, "#f3e9d3"); rg2.addColorStop(0.55, "#e6d8bc"); rg2.addColorStop(1, "#cbb996");
-    g.fillStyle = rg2;
-    g.fillRect(0, 0, 1024, 1024);
-    let seed = 7;
-    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    const img = g.getImageData(0, 0, 1024, 1024), d = img.data;
-    for (let i = 0; i < d.length; i += 4) { const n = (rnd() - 0.5) * 12; d[i] += n; d[i + 1] += n * 0.92; d[i + 2] += n * 0.75; }
-    g.putImageData(img, 0, 0);
-    g.lineWidth = 0.9;                                             // a few longer fibres in the sheet
-    for (let i = 0; i < 700; i++) {
-      const x = rnd() * 1024, y = rnd() * 1024, a = rnd() * Math.PI, l = 10 + rnd() * 40;
-      g.strokeStyle = `rgba(110, 86, 52, ${0.04 + rnd() * 0.06})`;
-      g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke();
-    }
-    const t = new THREE.CanvasTexture(c);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return t;
-  } else {
-    // drawn bright: ACES with the gallery exposure crushes the low end
-    rg.addColorStop(0, "#6b5443");
-    rg.addColorStop(0.45, "#3a2c22");
-    rg.addColorStop(1, "#17120e");
-  }
-  g.fillStyle = rg;
-  g.fillRect(0, 0, 512, 512);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-}
-
-/**
- * Feed the baked ambient occlusion (vertex colour, channel R) into the indirect light
- * instead of tinting the albedo: env reflections vanish in the crevices, which is what
- * makes stacked metal read as deep.
- */
-const AO = { strength: { value: 0.9 } };            // shared by every bronze shader; lowered in X-ray
-/** How much of the plates' mottled albedo shows: 1 in the vitrine, less on parchment, where the tarnish read as stains. */
-const PLATE_MIX = { value: 1.0 };
-function withVertexAO(mat: THREE.Material, mapMix?: THREE.IUniform<number>): void {
-  mat.onBeforeCompile = (shader) => {
-    shader.uniforms.aoStrength = AO.strength;
-    if (mapMix) {
-      shader.uniforms.mapMix = mapMix;
-      shader.fragmentShader = shader.fragmentShader
-        .replace("#include <common>", "#include <common>\nuniform float mapMix;")
-        .replace("#include <map_fragment>", /* glsl */ `
-          #ifdef USE_MAP
-            vec4 sampledDiffuseColor = texture2D( map, vMapUv );
-            // toward the map's own mean (an orange bronze), so only the mottle's amplitude changes, never the hue
-            sampledDiffuseColor.rgb = mix( vec3( 0.78, 0.55, 0.28 ), sampledDiffuseColor.rgb, mapMix );
-            diffuseColor *= sampledDiffuseColor;
-          #endif`);
-    }
-    shader.fragmentShader = shader.fragmentShader
-      .replace("#include <common>", "#include <common>\nuniform float aoStrength;")
-      .replace("#include <color_fragment>", "")
-      .replace("#include <aomap_fragment>", /* glsl */ `
-        #if defined( USE_COLOR ) || defined( USE_COLOR_ALPHA )
-          {
-            // the bake is honest and harsh (plates sit flush on dials); lift the midtones
-            float ambientOcclusion = mix( 1.0, pow( vColor.r, 0.6 ), aoStrength );
-            reflectedLight.indirectDiffuse *= ambientOcclusion;
-            #if defined( USE_CLEARCOAT )
-              clearcoatSpecularIndirect *= ambientOcclusion;
-            #endif
-            #if defined( USE_ENVMAP ) && defined( STANDARD )
-              float dotNV = saturate( dot( geometryNormal, geometryViewDir ) );
-              reflectedLight.indirectSpecular *= computeSpecularOcclusion( dotNV, ambientOcclusion, material.roughness );
-            #endif
-          }
-        #endif
-        #include <aomap_fragment>`);
-  };
-  mat.customProgramCacheKey = () => (mapMix ? "vao-mix" : "vao");
-}
-
-/** A honed stone's speckle, drawn once: grey noise at two scales, faint, tiled over the plinth. */
-function speckleTexture(): THREE.CanvasTexture {
-  const n = 256, c = document.createElement("canvas");
-  c.width = c.height = n;
-  const g = c.getContext("2d")!, img = g.createImageData(n, n);
-  let seed = 7;
-  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  for (let i = 0; i < n * n; i++) {
-    const v = 214 + rnd() * 30 + (rnd() < 0.02 ? -40 : 0);          // a light ground, fine grain, the odd darker fleck
-    img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255;
-  }
-  g.putImageData(img, 0, 0);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.repeat.set(3, 2);
-  t.anisotropy = 4;
-  return t;
-}
-
-const FinalShader = {
-  uniforms: {
-    baseTexture: { value: null as THREE.Texture | null },
-    bloomTexture: { value: null as THREE.Texture | null },
-    bloomStrength: { value: 0.55 },
-    vignette: { value: 0.5 },
-    grain: { value: 0.035 },
-    saturation: { value: 1.15 },
-    resolution: { value: new THREE.Vector2(1, 1) },
-  },
-  vertexShader: /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-  fragmentShader: /* glsl */ `
-    uniform sampler2D baseTexture; uniform sampler2D bloomTexture;
-    uniform float bloomStrength; uniform float vignette; uniform float grain; uniform float saturation; uniform vec2 resolution;
-    varying vec2 vUv;
-    float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-    void main() {
-      vec4 base = texture2D(baseTexture, vUv);
-      vec3 c = base.rgb + texture2D(bloomTexture, vUv).rgb * bloomStrength;
-      vec2 q = vUv - 0.5;
-      float d = dot(q, q) * (1.0 + 0.35 * abs(q.x));
-      c *= 1.0 - vignette * smoothstep(0.10, 0.70, d);
-      // AgX keeps a metal's hue in its highlights but greys the whole picture a little: give some colour back
-      c = mix(vec3(dot(c, vec3(0.2126, 0.7152, 0.0722))), c, saturation);
-      float g = hash(floor(vUv * resolution)) - 0.5;              // static grain, seeded per pixel
-      float lum = clamp(dot(c, vec3(0.2126, 0.7152, 0.0722)), 0.0, 1.0);
-      c += g * grain * (0.25 + 0.75 * (1.0 - lum));               // lives in the shadows
-      gl_FragColor = vec4(max(c, 0.0), base.a);
-    }`,
-};
 
 interface RevealItem { o: THREE.Object3D; mats: THREE.Material[]; p0: THREE.Vector3; d: THREE.Vector3 }
 type Mood = { env: number; key: number; back: number };
@@ -266,7 +66,6 @@ const PRESETS: Record<string, Preset> = {
   "crank": [[520, 0, 80], [60, 0, 0]],
   "top": [[0, 560, 1], [0, 0, 0]],
 };
-const BLOOM_NAMES = /^(sun_ball|stone_|moon_ball)/;
 const CRANK_TURNS_PER_YEAR = 223 / 48;                 // the crown wheel against the main wheel
 const CLICK_SLOP = 6;                                  // CSS pixels a press may travel and still be a click, not a drag
 // what each quality tier costs the picture, for the console line that announces it
@@ -475,7 +274,11 @@ export class Viewer {
     loader.load(opts.url, (gltf) => {
       this.root = gltf.scene;
       restorePointerPivots(this.root);                                // before the graph reads am_pointer
-      this.dressMaterials(this.root);
+      const dressed = dressMaterials(this.root, this.theme);
+      this.plate = dressed.plate;
+      this.wood = dressed.wood;
+      for (const [m, glow] of dressed.glow) { this.bloomMeshes.add(m); this.glowMats.set(m, glow); }
+      this.tunePlate();
       this.scene.add(this.root);
       this.graph = new GearGraph(this.root);
       this.graph.setYears(0);
@@ -548,86 +351,6 @@ export class Viewer {
     this.resize();
     addEventListener("resize", () => this.resize());
     new ResizeObserver(() => this.resize()).observe(opts.canvas.parentElement ?? opts.canvas);
-  }
-
-  /**
-   * The GLB carries the textured PBR materials from Blender (albedo, spun/brushed normals,
-   * roughness, engraving normals on the dials). Promote the metals to MeshPhysicalMaterial
-   * for clearcoat and wire in the baked AO; tune each family by name.
-   */
-  private dressMaterials(root: THREE.Object3D): void {
-    const cache = new Map<string, THREE.Material>();
-    const physical = (src: THREE.MeshStandardMaterial, extra: Partial<THREE.MeshPhysicalMaterial> & { colorMul?: number; mapMix?: THREE.IUniform<number> }): THREE.MeshPhysicalMaterial => {
-      const m = new THREE.MeshPhysicalMaterial();
-      THREE.MeshStandardMaterial.prototype.copy.call(m, src);   // physical.copy() expects physical-only fields
-      m.name = src.name;
-      const { colorMul, mapMix, ...rest } = extra;
-      m.setValues(rest);
-      if (colorMul !== undefined) m.color.multiplyScalar(colorMul);
-      m.vertexColors = true;
-      withVertexAO(m, mapMix);
-      return m;
-    };
-    const tune: Record<string, (src: THREE.MeshStandardMaterial) => THREE.Material> = {
-      // roughness > 1 scales the roughness map up: the plates are duller than the turned gears
-      Bronze: (s) => physical(s, { metalness: 1.0, roughness: 0.92, envMapIntensity: 1.0, normalScale: new THREE.Vector2(1.2, 1.2), clearcoat: 0.0, colorMul: 0.8 }),
-      PlateBronze: (s) => { const m = physical(s, { metalness: 1.0, roughness: 1.35, envMapIntensity: 0.55, normalScale: new THREE.Vector2(1.6, 1.6), mapMix: PLATE_MIX }); this.plate = { mat: m, base: m.color.clone() }; this.tunePlate(); return m; },
-      DarkBronze: (s) => physical(s, { metalness: 0.9, roughness: 1.4, envMapIntensity: 0.5, normalScale: new THREE.Vector2(1.2, 1.2), colorMul: 0.7 }),
-      Gold: (s) => physical(s, { color: new THREE.Color(0xffcf6e), metalness: 1.0, roughness: 0.2, clearcoat: 1.0, clearcoatRoughness: 0.1, envMapIntensity: 1.3 }),
-      MoonSilver: (s) => physical(s, { color: new THREE.Color(0xeeeef4), metalness: 1.0, roughness: 0.26, clearcoat: 0.4, clearcoatRoughness: 0.15 }),
-      MoonBlack: (s) => physical(s, { color: new THREE.Color(0x07070a), metalness: 0.2, roughness: 0.45, clearcoat: 0.6, clearcoatRoughness: 0.2 }),
-      Turquoise: (s) => physical(s, { metalness: 0, roughness: 0.28, clearcoat: 1.0, clearcoatRoughness: 0.06, ior: 1.6 }),
-      Lapis: (s) => physical(s, { metalness: 0, roughness: 0.25, clearcoat: 1.0, clearcoatRoughness: 0.06, ior: 1.6 }),
-      Carnelian: (s) => physical(s, { metalness: 0, roughness: 0.22, clearcoat: 1.0, clearcoatRoughness: 0.05, ior: 1.65 }),
-      Crystal: (s) => physical(s, { color: new THREE.Color(0xf4f2ff), metalness: 0.05, roughness: 0.08, clearcoat: 1.0, clearcoatRoughness: 0.03, ior: 1.55, specularIntensity: 1.2 }),
-      Obsidian: (s) => physical(s, { color: new THREE.Color(0x0b0b10), metalness: 0.15, roughness: 0.12, clearcoat: 1.0, clearcoatRoughness: 0.04 }),
-      // the boards' baked occlusion is near zero where they meet the plates; the loader would multiply it
-      // into the wood and paint the case black, so the wood ignores the bake (GTAO handles its contacts)
-      Wood: (s) => { s.metalness = 0; s.roughness = 0.82; s.envMapIntensity = 0.55; s.vertexColors = false; s.needsUpdate = true; this.wood = { mat: s, base: s.color.clone() }; s.color.multiplyScalar(this.theme === "manuscript" ? 1.15 : 0.85); return s; },
-    };
-    const dial = (s: THREE.MeshStandardMaterial): THREE.Material => {
-      s.metalness = 0.72; s.roughness = 0.66; s.envMapIntensity = 0.6; s.color.multiplyScalar(0.9);
-      if (s.normalMap) s.normalScale.set(1.5, 1.5);
-      return s;
-    };
-    root.traverse((o) => {
-      if (!(o as THREE.Mesh).isMesh) return;
-      const m = o as THREE.Mesh;
-      m.castShadow = true;
-      m.receiveShadow = true;
-      const hasAO = !!m.geometry.attributes.color;
-      const mats = Array.isArray(m.material) ? m.material : [m.material];
-      const out = mats.map((mat) => {
-        const name = mat.name.replace(/\.\d+$/, "");
-        const polished = name === "Bronze" && /^(ring_|spoke_)/.test(m.name);
-        const key = polished ? "Bronze:polished" : name;
-        let made = cache.get(key);
-        if (!made) {
-          const std = mat as THREE.MeshStandardMaterial;
-          if (polished) made = physical(std, { metalness: 1.0, roughness: 0.8, clearcoat: 0.8, clearcoatRoughness: 0.2, envMapIntensity: 0.85, normalScale: new THREE.Vector2(0.5, 0.5) });
-          else if (tune[name]) made = tune[name](std);
-          else if (std.map) made = dial(std);
-          else made = std;
-          cache.set(key, made);
-        }
-        if (!hasAO && (made as THREE.MeshStandardMaterial).vertexColors) {
-          // a mesh without baked AO must not read a missing attribute (the AO block is behind USE_COLOR, so the shader hook can stay)
-          const clone = (made as THREE.MeshPhysicalMaterial).clone(); clone.vertexColors = false; clone.onBeforeCompile = made.onBeforeCompile; clone.customProgramCacheKey = () => "novao-" + (made.customProgramCacheKey?.() ?? "");
-          return clone;
-        }
-        return made;
-      });
-      m.material = Array.isArray(m.material) ? out : out[0];
-      if (BLOOM_NAMES.test(m.name)) {
-        this.bloomMeshes.add(m);
-        const src = (Array.isArray(m.material) ? m.material[0] : m.material) as THREE.MeshStandardMaterial;
-        const glow = new THREE.MeshBasicMaterial({ color: src.color.clone() });
-        if (m.name === "sun_ball") glow.color.set(0xffb340).multiplyScalar(1.6);
-        else if (m.name === "moon_ball") glow.color.set(0xe8e2d0).multiplyScalar(0.35);
-        else glow.color.multiplyScalar(0.7);                      // the stones keep their own hue, no LED white
-        this.glowMats.set(m, glow);
-      }
-    });
   }
 
   /**

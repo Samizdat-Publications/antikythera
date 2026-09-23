@@ -38,7 +38,8 @@ person (no Attenborough clones).
        Share button: use `navigator.share` where it exists (phones), clipboard otherwise.
 4. [x] **Mobile pass.** (portrait crops up to a quarter of the width: `keep` in viewer.resize; view
        bar gutter under 480 px.) Was: View bar clipped at 390 px ("Inside" at the edge), machine small in the stage.
-5. [ ] **Split viewer.ts** (1,189 lines) into scene/environment.ts, materials.ts, interaction.ts,
+5. [x] **Split viewer.ts** (1,240 to 962 lines: room.ts, shaders.ts, materials.ts; interaction and
+       animation stay in the class, whose state they share.) Was: (1,189 lines) into scene/environment.ts, materials.ts, interaction.ts,
        animations.ts; pure refactor, tests and a visual check before and after.
 6. [x] **Bronze and lighting pass.** IN CODE (uncommitted until the rebuild lands): AgX tone mapping at
        exposure 0.72 (manuscript 0.95), a saturation uniform in FinalShader (1.15 / 1.05), Bronze colorMul 0.8
