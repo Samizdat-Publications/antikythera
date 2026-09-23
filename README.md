@@ -55,11 +55,13 @@ Saros cell reads out an attested glyph, H, against NASA's partial solar eclipse 
   twenty-two centuries have carried the pointers (the Sun a few degrees, the Moon over a hundred: the
   Metonic cycle's two hours per nineteen years).
 * Hover a gear for its tooth count and rate; click it to see its train alone. **Inside** lifts the
-  plates away; **Taken apart** spreads all 69 wheels along their arbors, still turning; the Fragment A
-  slider crossfades to the CT scan of the real bronze.
+  plates away; **Taken apart** spreads all 69 wheels along their arbors, still turning; **only what
+  survives** shows the thirty gears found in the fragments with the thirty-nine reconstructed ones as
+  ghosts; the Fragment A slider crossfades to the CT scan of the real bronze.
 * **Sky** draws the machine's own cosmos, each body where its pin-and-slot puts it, with the retrograde
   loops and the true sky beside them; the Moon panel is lit from where the machine's Sun pointer stands.
-* A narrated fourteen-leaf walkthrough; **Share** copies a link to whatever is set up; **save this view**
+* A narrated fourteen-leaf walkthrough; **Share** copies a link to whatever is set up (on a phone it
+  opens the share sheet); **save this view**
   keeps the stage as a picture; the exhibit installs as an app and opens offline once visited.
 * Every number says where it came from: NASA's eclipse canon, astronomy-engine, and the papers.
 
