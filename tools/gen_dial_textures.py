@@ -197,15 +197,21 @@ class Dial:
         self.d.ellipse(box, outline=ink, width=w, fill=fill)
         self.db.ellipse(box, outline=40, width=w, fill=200 if fill else None)
 
-    def text(self, x, y, s, mm, angle=0.0, bold=False, ink=INK, anchor="mm", faint=False):
+    def text(self, x, y, s, mm, angle=0.0, bold=False, ink=INK, anchor="mm", faint=False, fit=None):
         """Text centred at (x, y) mm, rotated by angle degrees (ccw).
 
         faint=True marks reconstructed lettering: lighter ink and a shallower cut.
+        fit: the most the line may run, in mm; a longer one is set smaller to fit, as a letter
+        cutter squeezes a long month name into a short cell on the inner turns.
         """
         if faint and ink is INK:
             ink = INK_FAINT
         f = self.font(mm, bold)
         bbox = f.getbbox(s)
+        if fit is not None and (bbox[2] - bbox[0]) > fit * self.scale:
+            mm *= fit * self.scale / (bbox[2] - bbox[0])
+            f = self.font(mm, bold)
+            bbox = f.getbbox(s)
         w, h = bbox[2] - bbox[0] + 4, bbox[3] - bbox[1] + 4
         tile = Image.new("L", (w, h), 0)
         ImageDraw.Draw(tile).text((-bbox[0] + 2, -bbox[1] + 2), s, font=f, fill=255)
@@ -348,7 +354,7 @@ def spiral_dial(D, r0, pitch, turns, cells, label_fn=None, mm=1.15, glyph_fn=Non
             if label_fn:
                 s = label_fn(k)
                 if s:
-                    D.text(x, y, s, mm, angle=rot)
+                    D.text(x, y, s, mm, angle=rot, fit=0.9 * rm * 2 * math.pi / cells_per_turn)
             if glyph_fn:
                 g = glyph_fn(k)
                 if isinstance(g, list):
@@ -391,9 +397,15 @@ def back_upper(n_xy, o_xy, cal_xy):
             a = start - 360.0 * i / sectors * (1 if labels[0][0] != "Α" else -1)
             D.line(dx, dy, dx + 9.5 * math.cos(math.radians(a)), dy + 9.5 * math.sin(math.radians(a)), 0.16)
             am = a - 45.0 * (1 if labels[0][0] != "Α" else -1)
+            if len(labels[i]) == 1:                                   # Callippic: one large letter out along the bisector
+                rr = 9.5 * 0.62
+                D.text(dx + rr * math.cos(math.radians(am)), dy + rr * math.sin(math.radians(am)), labels[i][0], 2.2, bold=True)
+                continue
+            # Games: the two festivals of the year stacked level at the middle of the quarter, where a
+            # seven-letter name has room; set out along the bisector the inner one ran over the divider
+            cx_, cy_ = dx + 5.6 * math.cos(math.radians(am)), dy + 5.6 * math.sin(math.radians(am))
             for j, s in enumerate(labels[i]):
-                rr = 9.5 * (0.62 - 0.30 * j)
-                D.text(dx + rr * math.cos(math.radians(am)), dy + rr * math.sin(math.radians(am)), s, 1.35 if len(s) > 2 else 2.2, bold=True)
+                D.text(cx_, cy_ + (0.95 if j == 0 else -0.95), s, 1.15, bold=True)
     return D.finish()
 
 
