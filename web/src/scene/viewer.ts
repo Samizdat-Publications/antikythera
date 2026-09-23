@@ -644,7 +644,10 @@ export class Viewer {
     this.applyHdri(name);
     (this.scene.background as THREE.Texture | null)?.dispose?.();
     this.scene.background = wallTexture(name);
-    this.renderer.toneMappingExposure = m ? 0.95 : 0.72;
+    // AgX for the gallery at night, where ACES had lit bronze reading as gold foil; the manuscript keeps
+    // ACES, which its parchment and inks were balanced under (AgX greyed the room)
+    this.renderer.toneMapping = m ? THREE.ACESFilmicToneMapping : THREE.AgXToneMapping;
+    this.renderer.toneMappingExposure = m ? 1.0 : 0.72;
     const L = this.lights;
     L.key.intensity = m ? 1.4 : 2.2;
     L.key.color.set(m ? 0xfff3e2 : 0xffe4bf);
@@ -667,7 +670,7 @@ export class Viewer {
     const u = this.finalPass.material.uniforms;
     u.vignette.value = m ? 0.2 : 0.62;
     u.grain.value = m ? 0.02 : 0.024;
-    u.saturation.value = m ? 1.05 : 1.15;
+    u.saturation.value = m ? 1.0 : 1.15;
     this.bloomBase = m ? 0.32 : 0.55;
     if (this.wood) {                                               // the case reads as black lacquer against parchment otherwise
       this.wood.mat.color.copy(this.wood.base).multiplyScalar(m ? 1.15 : 0.85);
