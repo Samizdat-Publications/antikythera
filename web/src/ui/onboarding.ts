@@ -35,47 +35,47 @@ const LUNAR_TRAIN = ["b2", "c1", "c2", "d1", "d2", "e2", "e5", "k1", "k2", "e6",
 export const STEPS: Step[] = [
   {
     id: "welcome", title: "A machine that models the sky", clip: "welcome",
-    body: "This is a working reconstruction of the Antikythera mechanism, the geared astronomical calculator pulled from a Roman-era shipwreck in 1901. All 69 gears turn here with the tooth counts read from the X-ray scans, following the 2021 UCL reconstruction, so every pointer moves exactly as the bronze would have.",
+    body: "This is a working reconstruction of the Antikythera mechanism, the geared astronomical calculator pulled from a Roman-era shipwreck in 1901. Thirty of its gears survive in the fragments, most with their tooth counts estimated from broken rims in the X-ray scans; the other thirty-nine follow the model Tony Freeth's team at UCL published in 2021. All 69 turn here at the ratios their teeth give, so every pointer moves as that model says the bronze would have.",
     run: (h) => { h.mood("room"); h.sky(false); h.fragment(0); h.isolate([]); h.xray(false); h.view("iso"); h.setYears(0); h.play(false); h.focus(null); },
   },
   {
     id: "found", title: "What the divers found", clip: "discovery",
-    body: "In 1901 sponge divers working a Roman-era wreck off Antikythera brought up a corroded lump of bronze that split into fragments. This is Fragment A, the largest, from a CT scan of the original: two thousand years of seawater have turned the metal to a green crust, but the four spokes of the main wheel still show through it. Thirty of the gears survive in the fragments; the rest are inferred from those.",
+    body: "In 1901 sponge divers working a Roman-era wreck off Antikythera brought up a corroded lump of bronze. It lay unregarded until May 1902, when the archaeologist Valerios Stais saw a gearwheel in it. Today it is 82 fragments, about a third of the machine, in the National Archaeological Museum in Athens. This is Fragment A, the largest, from a CT scan of the original: two thousand years of seawater have turned the metal to a crust of corrosion, but the four spokes of the main wheel still show through it.",
     run: (h) => { h.mood("spot"); h.sky(false); h.isolate([]); h.xray(false); h.play(false); h.setYears(0); h.fragment(1); h.view("front-close"); h.focus(null); },
   },
   {
     id: "xray", title: "Seeing inside the corrosion", clip: "xray",
-    body: "In 2005 a twelve-tonne X-ray tomography machine was carried to Athens and scanned the fragments slice by slice. Inside the crust were the gears, their teeth countable one by one, and two thousand characters of Greek that no one had read since antiquity. Here the reconstruction is laid inside the scan so the wheels show through the corrosion: everything that follows was built from those tooth counts.",
+    body: "In 2005 an eight-tonne X-ray machine was shipped to Athens and scanned the fragments slice by slice. Inside the crust were the gears, their teeth countable where the rims survive, and thousands of letters of Greek, many of them read for the first time since antiquity. Here the reconstruction is laid inside the scan so the wheels show through the corrosion.",
     run: (h) => { h.mood("spot"); h.sky(false); h.isolate([]); h.fragment(0.45); h.xray(true); h.play(true, 0.0821918); h.view("front-close"); h.focus(null); },
   },
   {
     id: "crank", title: "One crank, one year", clip: "crank",
-    body: "Everything starts at the crank on the right. It turns a 48-tooth crown wheel against the 223-tooth main wheel: four and two-thirds turns of the crank move the main wheel once round, which is one year. Every other pointer is geared off that single rotation.",
+    body: "Everything starts at the crank on the right. It turns a 48-tooth crown wheel against the 223-tooth main wheel: about four and two-thirds turns of the crank move the main wheel once round, which is one year. Every other pointer is geared off that single rotation.",
     run: (h) => { h.mood("room"); h.fragment(0); h.xray(false); h.view("crank"); h.play(true, 0.0821918); h.focus("#panel-crank"); },
   },
   {
     id: "epoch", title: "Why everything is counted from an epoch", clip: "epoch",
-    body: "The machine has no clock inside it. It was set by hand once, on one particular day, and after that it only counts turns. That day is the epoch. Nothing on the bronze states it, so scholars inferred it from the eclipse glyphs on the Saros dial: the pattern of 51 glyphs fits only certain starting months. Carman & Evans found the full moon of 12 May 205 BC; Voulgaris argues for 22 Dec 178 BC. Switch between them and every dial re-sets. Because the machine only knows turns, dates here are written as years since epoch, and its errors grow the further you crank from it.",
+    body: "The machine has no clock inside it. It was set by hand once, on one particular day, and after that it only counts turns. That day is the epoch. Nothing on the bronze states it, so scholars inferred it from the eclipse glyphs on the Saros dial: the pattern of 51 glyphs fits only certain starting months. Carman & Evans found the full moon of 12 May 205 BC; Voulgaris and colleagues argue for the eclipse of 22 Dec 178 BC. Switch between them and every dial re-sets. The epoch is a setting, not the day it was made: the wreck went down around 70 to 60 BC. Because the machine only knows turns, dates here are written as years since epoch, and its errors grow the further you crank from it.",
     run: (h) => { h.fragment(0); h.xray(false); h.play(false); h.setYears(0); h.view("front"); h.focus("#epoch"); },
   },
   {
     id: "zodiac", title: "The front dial is the sky", clip: "zodiac",
-    body: "The inner ring is the zodiac, twelve signs of 30°. The outer ring is the Egyptian civil calendar of 365 days, which the owner could slip round one day every four years to stay in step with the seasons. The date pointer reads the calendar; the true-sun pointer with its golden ball reads the zodiac. The plates above and below carry the parapegma, a list of star risings and settings keyed to letters on the dial.",
+    body: "The inner ring is the zodiac, twelve signs of 30°. The outer ring names the months of the Egyptian calendar, drawn here with its 365 days as the 2021 model has it; the owner could slip it round a day every four years. A 2024 recount of the holes beneath the ring points to 354, a lunar year, so how it was kept in step is still argued over. The date pointer reads the calendar; the true-sun pointer with its golden ball reads the zodiac. The plates above and below carry the parapegma, a list of star risings and settings keyed to letters on the dial.",
     run: (h) => { h.view("front-close"); h.play(false); h.focus("#front-dl"); },
   },
   {
     id: "moon", title: "The Moon and its phase", clip: "moon",
-    body: "The moon pointer runs through five gears whose counts multiply out to exactly 254/19: in nineteen years the Moon circles the zodiac 254 times, the Metonic relation. The little half-silver ball turns once a lunar month, driven by a differential between the sun and moon pointers, showing the phase. Watch it now at a month per second. The Moon in the column is lit the way the ball is; its face is the near side as NASA's LROC cameras mapped it.",
+    body: "The moon pointer is driven through three pairs of gears, 64 on 38, 48 on 24 and 127 on 32, whose counts multiply out to exactly 254/19: in nineteen years the Moon circles the zodiac 254 times, the Metonic relation. The little ball, half pale and half dark, turns once a lunar month, driven by a differential between the sun and moon pointers, showing the phase. Watch it now at a month per second. The Moon in the column is lit the way the ball is; its face is the near side as NASA's LROC cameras mapped it.",
     run: (h) => { h.view("front-close"); h.play(true, 0.0821918); h.focus("#moon"); },
   },
   {
     id: "pinslot", title: "The pin and slot", clip: "pinslot",
-    body: "Hidden at the back are two 50-tooth gears face to face on axes offset by 1.1 mm, a pin on one riding in a slot on the other. As they turn, the slotted gear speeds up and slows down by ±6.5°: the Moon's own acceleration near perigee. The pair rides on a 223-tooth platform that creeps round once in nine years, so the swing follows the slowly turning lunar orbit. Nothing this sophisticated appears again for over a thousand years.",
+    body: "Hidden at the back are two 50-tooth gears face to face on axes offset by 1.1 mm, a pin on one riding in a slot on the other. As they turn, the slotted gear speeds up and slows down by ±6.5°: the Moon's own acceleration near perigee. The pair rides on a 223-tooth platform that creeps round once in nine years, so the swing follows the slowly turning lunar orbit. Nothing this intricate survives from the next thousand years.",
     run: (h) => { h.mood("spot"); h.play(true, 0.0821918); h.xray(true); h.isolate(LUNAR_TRAIN); h.view("pinslot"); h.focus("#train-lunar-anomaly"); },
   },
   {
     id: "backdials", title: "The calendars on the back", clip: "backdials",
-    body: "The upper spiral is the Metonic calendar: 235 months in five turns, nineteen years, named in the Corinthian dialect of north-west Greece. Inside it one small dial counts the 76-year Callippic period and another the four-year cycle of the games: Olympia, Pythia, Nemea, Isthmia. Both spiral pointers carry a pin that slides outward along the groove as the years pass.",
+    body: "The upper spiral is the Metonic calendar: 235 months in five turns, nineteen years. Its month names belong to a Corinthian family of calendars, most likely that of Epirus in north-west Greece. Inside it one small dial counts the 76-year Callippic period and another the four-year cycle of the games: the Isthmia, Olympia, Nemea and Pythia, and two lesser games, the Naa at Dodona and the Halieia of Rhodes. Both spiral pointers carry a pin that slides outward along the groove as the years pass.",
     run: (h) => { h.mood("room"); h.isolate([]); h.xray(false); h.view("back-upper"); h.play(true, 0.0821918); h.focus("#back-dl"); },
   },
   {
@@ -85,17 +85,17 @@ export const STEPS: Step[] = [
   },
   {
     id: "cosmos", title: "The planets", clip: "cosmos",
-    body: "The 2021 reconstruction adds a cosmos on the front: rings for Mercury, Venus, Mars, Jupiter and Saturn, each with its own epicyclic module and a coloured stone. The period relations come from the machine's cover inscription: 462 years for Venus, 442 for Saturn. Watch the red stone of Mars now, at a month a second: its pin-and-slot has the largest offset, and the ring slows, stops and runs backwards through its retrograde loop.",
+    body: "The 2021 reconstruction adds a cosmos on the front: rings for Mercury, Venus, Mars, Jupiter and Saturn, each with its own epicyclic module and a coloured stone. Two periods are read on the cover inscription, 462 years for Venus and 442 for Saturn; the others, and all the planetary gearing, are the 2021 team's reconstruction. Watch the red stone of Mars now, at a month a second: its pin-and-slot has the largest offset, and the ring slows, stops and runs backwards through its retrograde loop.",
     run: (h) => { h.sky(false); h.isolate([]); h.xray(false); h.view("front-close"); h.play(true, 0.0821918); h.focus("#train-mars"); },
   },
   {
     id: "sky", title: "The sky it tracks", clip: "sky",
-    body: "The same machine drawn as a sky: Earth in the middle, each body where its own pin-and-slot puts it, trailing the path it has followed. The outer planets loop backwards each time the Earth overtakes them, and the loops these gears draw are the ones Ptolemy drew, because his epicycles and these pins are the same idea. The green ticks on the rim are the true sky, so you can see how close the bronze comes.",
+    body: "The same machine drawn as a sky: Earth in the middle, each body where its own pin-and-slot puts it, trailing the path it has followed. The outer planets loop backwards each time the Earth overtakes them. These are the loops a Greek epicycle predicts, the geometry of Apollonius and Hipparchus that Ptolemy later refined. The green ticks on the rim are the true sky, so you can see how close the bronze comes.",
     run: (h) => { h.isolate([]); h.xray(false); h.sky(true); h.play(true, 0.0821918); h.focus("#panel-cosmos"); },
   },
   {
     id: "accuracy", title: "How good was it?", clip: "accuracy",
-    body: "Against a modern ephemeris the mean Sun drifts a fraction of a degree per century. The Moon, thanks to the pin and slot, stays within about two degrees; what remains is the evection and variation, which the machine does not model. Over three Saros cycles every solar glyph and most lunar glyphs land on real eclipses. The chart and the audit below update for whichever epoch you choose.",
+    body: "Against a modern ephemeris the mean Sun drifts a fraction of a degree per century. The Moon, thanks to the pin and slot, stays within about two degrees; what remains is the evection and variation, which the machine does not model. Over three Saros cycles most lunar glyphs land on real eclipses, and every solar glyph falls in a month with a solar eclipse somewhere on Earth, though many could not have been seen from Greece. One caution: these wheels are cut perfectly, and the originals were filed by hand. A 2025 study argues that teeth as uneven as those measured would have jammed, so either the maker worked finer than the corroded remains now show, or it never ran this smoothly.",
     run: (h) => { h.sky(false); h.isolate([]); h.xray(false); h.play(false); h.view("front"); h.focus("#chart-moon"); },
   },
   {
@@ -118,12 +118,14 @@ export class Onboarding {
   constructor(private hooks: StepHooks, private steps: Step[] = STEPS) {
     this.el = document.createElement("div");
     this.el.className = "onboard";
+    this.el.setAttribute("role", "region");
+    this.el.setAttribute("aria-label", "walkthrough");
     this.el.hidden = true;
     this.el.innerHTML = `
       <div class="onboard-card">
-        <div class="onboard-head"><span class="onboard-step"></span><span class="onboard-mini-title"></span><span class="onboard-head-btns"><button class="onboard-min" title="fold the card away; the narration goes on">–</button><button class="onboard-close" title="close">✕</button></span></div>
+        <div class="onboard-head"><span class="onboard-step"></span><span class="onboard-mini-title"></span><span class="onboard-head-btns"><button class="onboard-min" title="fold the card away; the narration goes on" aria-label="fold the walkthrough card">–</button><button class="onboard-close" title="close" aria-label="close the walkthrough">✕</button></span></div>
         <h3 class="onboard-title"></h3>
-        <p class="onboard-body"></p>
+        <p class="onboard-body" aria-live="polite"></p>
         <div class="onboard-foot">
           <label class="chk"><input type="checkbox" class="onboard-narrate" checked /> narration</label>
           <span class="onboard-keys small">← → keys · Esc closes</span>
@@ -144,6 +146,10 @@ export class Onboarding {
     });
     addEventListener("keydown", (e) => {
       if (this.el.hidden) return;
+      // a key meant for a control is left to it: Enter on a button presses that button, the arrows move a slider
+      const t = e.target as HTMLElement | null;
+      if (t && /^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName)) return;
+      if (e.key === "Enter" && t && /^(BUTTON|A|SUMMARY)$/.test(t.tagName)) return;
       if (e.key === "ArrowRight" || e.key === "Enter") this.next();
       else if (e.key === "ArrowLeft") this.prev();
       else if (e.key === "Escape") this.close();

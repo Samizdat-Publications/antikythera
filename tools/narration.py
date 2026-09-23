@@ -17,62 +17,92 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "web", "public", "audio")
 os.makedirs(OUT, exist_ok=True)
 
+# One clip per walkthrough leaf, in the order of STEPS in web/src/ui/onboarding.ts. Each is the
+# leaf's body said aloud: keep the two in step when either changes.
 TOUR = [
     ("welcome", "iso",
-     "Welcome. What you are looking at is a working reconstruction of the Antikythera mechanism, the geared astronomical calculator recovered from a shipwreck in 1901. "
-     "Every one of its sixty-nine gears turns here with the tooth counts the researchers read from the X-ray scans, so the pointers move exactly as the bronze would have. "
-     "This short walk-through shows you how to read it."),
+     "Welcome. This is a working reconstruction of the Antikythera mechanism, the geared astronomical calculator "
+     "recovered from a Roman-era shipwreck in 1901. Thirty of its gears survive in the fragments, most with their tooth counts "
+     "estimated from broken rims in the X-ray scans. The other thirty-nine follow the model Tony Freeth's team published in 2021. "
+     "All sixty-nine turn here at the ratios their teeth give, so every pointer moves as that model says the bronze would have."),
+    ("discovery", "front",
+     "In 1901, sponge divers working a Roman-era wreck off the island of Antikythera brought up a corroded lump of bronze. "
+     "It lay unregarded until May 1902, when the archaeologist Valerios Stais saw a gearwheel in it. "
+     "Today it is eighty-two fragments, about a third of the machine, in the National Archaeological Museum in Athens. "
+     "This is Fragment A, the largest, from a CT scan of the original. Two thousand years of seawater have turned the metal to a crust of corrosion, "
+     "but the four spokes of the main wheel still show through it."),
+    ("xray", "front",
+     "In 2005 an eight-tonne X-ray machine was shipped to Athens, and scanned the fragments slice by slice. "
+     "Inside the crust were the gears, their teeth countable where the rims survive, and thousands of letters of Greek, "
+     "many of them read for the first time since antiquity. "
+     "Here the reconstruction is laid inside the scan, so the wheels show through the corrosion."),
+    ("crank", "crank",
+     "Everything begins at the crank on the right-hand side. It turns a forty-eight-tooth crown wheel against the great "
+     "two-hundred-and-twenty-three-tooth main wheel. "
+     "About four and two-thirds turns of the crank carry the main wheel once around: one year. "
+     "Every other pointer is geared off that single rotation."),
     ("epoch", "front",
-     "One idea makes everything else on this screen make sense: the machine has no clock inside it. It was set by hand once, on one particular day, and after that it only ever counts turns of the crank. "
-     "That starting day is the epoch. Nothing on the bronze states it, so scholars had to work it out from the eclipse glyphs on the Saros dial: the pattern of fifty-one glyphs only fits certain starting months. "
-     "Carman and Evans found the full moon of the twelfth of May, 205 BC; Voulgaris and his colleagues argue for the winter-solstice eclipse of December 178 BC. You can switch between them, and every dial re-sets. "
-     "Because the machine only knows turns, every date here is written as years since epoch, and its errors grow the further you crank away from it."),
+     "The machine has no clock inside it. It was set by hand once, on one particular day, and after that it only ever counts turns. "
+     "That day is the epoch. Nothing on the bronze states it, so scholars worked it out from the eclipse glyphs on the Saros dial: "
+     "the pattern of fifty-one glyphs fits only certain starting months. "
+     "Carman and Evans found the full moon of the twelfth of May, 205 BC; Voulgaris and his colleagues argue for the eclipse of December 178 BC. "
+     "Switch between them, and every dial re-sets. The epoch is a setting, not the day it was made: the wreck went down around 70 to 60 BC. "
+     "Because the machine only knows turns, dates here are written as years since the epoch, and its errors grow the further you crank from it."),
     ("zodiac", "front",
-     "The front dial is the sky. The inner ring is the zodiac, twelve signs of thirty degrees; the outer ring is the Egyptian civil calendar of 365 days, which the owner could slip round by one day every four years. "
-     "The date pointer reads the calendar; the true-sun pointer, with its little golden ball, reads the zodiac. Around the plate, the parapegma lists the risings and settings of stars, keyed to letters on the dial."),
+     "The front dial is the sky. The inner ring is the zodiac, twelve signs of thirty degrees. "
+     "The outer ring names the months of the Egyptian calendar, drawn here with its 365 days as the 2021 model has it, "
+     "so the owner could slip it round a day every four years. A 2024 recount of the holes beneath the ring points to 354, a lunar year, "
+     "so how it was kept in step is still argued over. "
+     "The date pointer reads this ring; the true-sun pointer, with its golden ball, reads the zodiac. "
+     "The plates above and below carry the parapegma, a list of star risings and settings, keyed to letters on the dial."),
+    ("moon", "front",
+     "The moon pointer is driven through three pairs of gears: sixty-four on thirty-eight, forty-eight on twenty-four, "
+     "and a hundred and twenty-seven on thirty-two. "
+     "Multiplied out, they give exactly 254 over 19: in nineteen years the Moon circles the zodiac 254 times, the Metonic relation. "
+     "The little ball, half pale and half dark, turns once a lunar month, driven by the difference between the sun and moon pointers, "
+     "and shows the phase. Watch it now, at a month a second. The Moon in the column is lit the way the ball is."),
+    ("pinslot", "back",
+     "Hidden at the back is the machine's most astonishing device. Two fifty-tooth gears sit face to face on axes offset by "
+     "just over a millimetre, a pin on one riding in a slot on the other. As they turn, the slotted gear speeds up and slows down "
+     "by six and a half degrees: the Moon's own acceleration near perigee. And because the pair rides on a platform that creeps "
+     "round once in nine years, the swing follows the slowly turning orbit of the Moon. "
+     "Nothing this intricate survives from the next thousand years."),
     ("backdials", "back",
-     "Turn the machine round. The upper spiral is the Metonic calendar: 235 months in five turns, nineteen years, named in the Corinthian dialect of north-west Greece. "
-     "Inside it a small dial counts the seventy-six-year Callippic period, and another runs through the four-year cycle of the great games: Olympia, Pythia, Nemea, Isthmia. "
+     "Turn the machine round. The upper spiral is the Metonic calendar: 235 months in five turns, nineteen years. "
+     "Its month names belong to a Corinthian family of calendars, most likely that of Epirus, in north-west Greece. "
+     "Inside it, one small dial counts the seventy-six-year Callippic period, and another the four-year cycle of the games: "
+     "the Isthmia, Olympia, Nemea and Pythia, and two lesser games, the Naa at Dodona and the Halieia of Rhodes. "
      "Both spiral pointers carry a pin that slides outward along the groove as the years pass."),
+    ("saros", "back",
+     "The lower spiral is the eclipse predictor. Its 223 cells are the months of a Saros, after which eclipses repeat. "
+     "Fifty-one cells carry glyphs: sigma for an eclipse of the Moon, eta for one of the Sun, with the hour. "
+     "A Saros is a third of a day longer than 6,585 days, so the small Exeligmos dial adds nought, eight or sixteen hours. "
+     "The panel compares the glyph in the current cell with NASA's catalogue of real eclipses. "
+     "We have jumped to the next eclipse of the Moon."),
+    ("cosmos", "front",
+     "The 2021 reconstruction adds a cosmos on the front: rings for Mercury, Venus, Mars, Jupiter and Saturn, "
+     "each with its own epicyclic module and a coloured stone. Two periods are read on the cover inscription, "
+     "462 years for Venus and 442 for Saturn; the others, and all the planetary gearing, are the 2021 team's reconstruction. "
+     "Watch the red stone of Mars now. Its ring slows, stops, and runs backwards through its retrograde loop."),
+    ("sky", "front",
+     "This is the same machine, drawn as a sky. Earth sits in the middle, and each body is placed where its own pin and slot puts it, "
+     "trailing the path it has followed. The outer planets loop backwards each time the Earth overtakes them. "
+     "These are the loops a Greek epicycle predicts, the geometry of Apollonius and Hipparchus that Ptolemy later refined. "
+     "The green ticks on the rim are the true sky, so you can see for yourself how close the bronze comes."),
+    ("accuracy", "front",
+     "How good was it? Against a modern ephemeris the mean Sun drifts a fraction of a degree a century. "
+     "The Moon, thanks to the pin and slot, stays within about two degrees. "
+     "Over three Saros cycles most of the lunar glyphs land on real eclipses, and every solar glyph falls in a month with an "
+     "eclipse of the Sun somewhere on Earth, though many could not have been seen from Greece. "
+     "One caution. These wheels are cut perfectly, and the originals were filed by hand. "
+     "A 2025 study argues that teeth as uneven as those measured would have jammed, so either the maker worked finer than "
+     "the corroded remains now show, or it never ran this smoothly."),
     ("explore", "iso",
      "That is the machine. Drag to orbit, scroll to zoom, hover any gear for its tooth count and rate, and click it to see its train alone. "
      "Inside lifts the plates away; Taken apart spreads every wheel along its arbor. "
-     "Drag the crank handle to wind it by hand, jump to the next eclipse, type a year, or press today and see how far twenty-two centuries have carried the pointers. "
-     "Share copies a link to whatever you have set up, and Save keeps the view as a picture. Enjoy the cosmos."),
-    ("discovery", "front",
-     "In 1901, sponge divers working a Roman-era shipwreck off the island of Antikythera brought up a corroded lump of bronze. "
-     "Inside it were gears, thirty of them survive, cut by hand more than two thousand years ago. "
-     "This is a working reconstruction of that machine, following the model published by Tony Freeth's team in 2021."),
-    ("crank", "crank",
-     "Everything begins at the crank on the right-hand side. One turn of the crank drives a 48-tooth crown wheel against the great 223-tooth main wheel. "
-     "Four and two-thirds turns of the crank carry the main wheel once around: one year. Every pointer you see is geared off that single rotation."),
-    ("moon", "front",
-     "The moon pointer runs through a train of five gears whose tooth counts, 64, 38, 48, 24, 127 and 32, multiply out to exactly 254 over 19. "
-     "That is the ancient Metonic relation: in 19 years the Moon circles the zodiac 254 times. The little half-silver ball turns once a lunar month, showing the phase."),
-    ("pinslot", "back",
-     "Hidden on the back is the machine's most astonishing device. Two 50-tooth gears sit face to face on axes offset by just over a millimetre, a pin on one riding in a slot on the other. "
-     "As they turn, the slotted gear speeds up and slows down, adding a swing of six and a half degrees: the Moon's own acceleration near perigee. "
-     "And because the pair rides on a great 223-tooth platform that creeps round once in nine years, the swing follows the slowly turning orbit of the Moon."),
-    ("metonic", "back",
-     "The upper back dial is a five-turn spiral of 235 cells, the months of the nineteen-year Metonic calendar, named in the Corinthian dialect of north-west Greece. "
-     "A small pin on the pointer slides outward along the spiral, and two subsidiary dials count the seventy-six-year Callippic period and the four-year cycle of the Panhellenic games."),
-    ("saros", "back",
-     "The lower spiral is the eclipse predictor. Its 223 cells are the months of a Saros, after which eclipses repeat. "
-     "Fifty-one cells carry glyphs: sigma for a lunar eclipse, eta for a solar one, with the hour of day. Because a Saros is a third of a day longer than 6,585 days, the small Exeligmos dial adds zero, eight or sixteen hours to the reading."),
-    ("cosmos", "front",
-     "On the front, the 2021 reconstruction adds a cosmos: rings for Mercury, Venus, Mars, Jupiter and Saturn, each driven by its own epicyclic module and marked with a coloured stone. "
-     "The period relations come from the machine's own cover inscription, 462 years for Venus, 442 for Saturn, and reproduce the planets' retrograde loops."),
-    ("xray", "front",
-     "In 2005 a twelve-tonne X-ray tomography machine was carried to Athens and scanned the fragments slice by slice. "
-     "Inside the crust were the gears, their teeth countable one by one, and two thousand characters of Greek that no one had read since antiquity. "
-     "Here the reconstruction is laid inside the scan, so the wheels show through the corrosion. Everything that follows was built from those tooth counts."),
-    ("sky", "front",
-     "This is the same machine, drawn as a sky. Earth sits in the middle, and each body is placed where its own pin and slot puts it, trailing the path it has followed. "
-     "The outer planets loop backwards each time the Earth overtakes them, and the loops these gears draw are the very ones Ptolemy drew, because his epicycles and these pins are the same idea. "
-     "The green ticks on the rim are the true sky, so you can see for yourself how close the bronze comes."),
-    ("accuracy", "front",
-     "How good was it? Against a modern ephemeris the mean Sun drifts a fraction of a degree per century; the Moon, thanks to the pin and slot, stays within about two degrees. "
-     "The eclipse glyphs land on real eclipses far more often than chance. Crank the handle, pick a year, and judge for yourself."),
+     "Drag the crank handle to wind it by hand, jump to the next eclipse, type a year, "
+     "or press today, and see how far twenty-two centuries have carried the pointers. "
+     "Share copies a link to whatever you have set up, and save keeps the view as a picture. Enjoy the cosmos."),
 ]
 
 SFX = {

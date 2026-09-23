@@ -1,6 +1,6 @@
 # Antikythera Cosmos
 
-A working, mechanically correct 3D reconstruction of the Antikythera mechanism
+A working 3D reconstruction of the Antikythera mechanism
 (Freeth et al. 2021 "Cosmos" model: 69 gears, eight nested front outputs, the
 Metonic, Callippic, Games, Saros and Exeligmos back dials) built parametrically
 in Blender 5.1 from a single gear table, exported as glTF, and driven date by
@@ -11,7 +11,8 @@ date in a web dashboard that compares what the machine shows with the real sky.
 **Live: https://antikythera.stewartgregerson.workers.dev** · [about the project](https://samizdat-publications.github.io/antikythera/)
 
 Turn the crank and all 69 wheels turn with it, at the exact ratios their tooth
-counts give. The pointers go where the bronze would have put them, the eclipse
+counts give. Thirty of them survive in the fragments and thirty-nine are the 2021
+model's; the pointers go where that model says the bronze would have put them, the eclipse
 glyphs come round on the Saros spiral, and the panel beside the machine says
 whether NASA agrees. Nothing in the picture is decorative: every wheel is cut
 from `data/gears.json`, every rate is an exact fraction, and every number on
@@ -31,7 +32,7 @@ the full moon of 12 May 205 BC.*
 
 | ![The front dial](docs/screens/front.jpg) | ![The back dials](docs/screens/back.jpg) |
 |---|---|
-| **The front dial.** The zodiac ring inside, the 365-day Egyptian calendar outside, the Sun, the Moon and the five planets each on their own pointer, and the parapegma plates above and below. | **The back dials.** The Metonic spiral, 235 months in five turns, with the Callippic and Games sub-dials inside it; below, the Saros spiral of 223 months with Exeligmos. |
+| **The front dial.** The zodiac ring inside, the Egyptian calendar outside (drawn with 365 days; a 2024 hole count suggests 354), the Sun, the Moon and the five planets each on their own pointer, and the parapegma plates above and below. | **The back dials.** The Metonic spiral, 235 months in five turns, with the Callippic and Games sub-dials inside it; below, the Saros spiral of 223 months with Exeligmos. |
 
 | ![Inside, the plates lifted away](docs/screens/inside.jpg) | ![Taken apart, all 69 wheels](docs/screens/apart.jpg) |
 |---|---|
@@ -142,7 +143,7 @@ rebuild order and the conventions that must not drift.
 * Parapegma and front dial inscriptions: Bitsakis and Jones, "The Front Dial and Parapegma
   Inscriptions", Almagest 7.1 (2016), CC BY-NC 4.0.
 * Layout reference: Thomas Weibel's CC BY reconstruction (thomasweibel.ch).
-* Epochs: Carman & Evans 2014 (12 May 205 BC); Voulgaris, Mouratidis & Vossinakis 2022 (22 Dec 178 BC).
+* Epochs: Carman & Evans 2014 (12 May 205 BC); Voulgaris, Mouratidis & Vossinakis 2023 (22 Dec 178 BC).
 * The Moon's face in the Moon panel: NASA's CGI Moon Kit (LROC colour mosaic), public domain.
 * Rooms: Poly Haven HDRIs `studio_small_09` and `artist_workshop`, CC0.
 
