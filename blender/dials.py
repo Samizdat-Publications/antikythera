@@ -34,6 +34,10 @@ TEX = os.path.join(REPO, "assets", "textures")
 DIALS = json.load(open(os.path.join(TEX, "dials.json"), encoding="utf-8"))
 SPEC = ratios.load(os.path.join(REPO, "data", "gears.json"))
 GEARS = {g["id"]: g for g in SPEC["gears"]}
+# the z of every arbor a front output rides on: the gears, and the three pin-follower carriers
+# (mercury_ptr, venus_ptr, true_sun_ptr), which are not gears but sit at their own depth on b1.
+# Leaving the followers out put the Sun pointer 29.5 mm and Mercury and Venus 10 mm too far forward.
+HOST_Z = {**{k: g["z"] for k, g in GEARS.items()}, **{f["id"]: f["z"] for f in SPEC.get("followers", [])}}
 L = layout.solve_layout(SPEC)
 R = ratios.solve(SPEC)
 OBJ = bpy.data.objects
@@ -369,13 +373,12 @@ def build():
         h = OBJ[host]
         bm = cylinder_bm(ro, 0.0, z1 - z0, 32, r_in=ri)
         t = obj_from_bmesh("tube_" + host, bm, c_ptr, bronze, parent=h)
-        t.location.z = z0 - h.location.z if h.parent is None else z0 - (GEARS[host]["z"] if host in GEARS else 0.0)
+        t.location.z = z0 - h.location.z if h.parent is None else z0 - HOST_Z.get(host, 0.0)
         t["am_role"] = "tube"
 
     # ---- front pointers and rings ------------------------------------------------------
     def front_z(host):
-        g = GEARS.get(host)
-        return g["z"] if g else 0.0
+        return HOST_Z.get(host, 0.0)
 
     # date pointer on the outermost tube (b1), reaching the calendar ring
     o = obj_from_bmesh("ptr_date", pointer_bm(80.5, 2.4, 1.0, 0.8, hub_r=11.5), c_ptr, bronze, parent=OBJ["b1"])
@@ -386,7 +389,7 @@ def build():
                               ("venus_ptr", 18.0, 37.0, "venus"), ("mercury_ptr", 12.5, 37.8, "mercury")):
         h = OBJ[host]
         ring = obj_from_bmesh(f"ring_{name}", annulus_bm(r - 1.6, r + 1.6, 160, 0.6), c_ptr, bronze, parent=h)
-        ring.location.z = zt - (front_z(host) if h.parent is None else (GEARS[host]["z"] if host in GEARS else 0.0))
+        ring.location.z = zt - front_z(host)
         ring["am_role"] = "pointer"; ring["am_pointer"] = name
         # a thin spoke from the hub to the ring so the rotation reads
         spoke = obj_from_bmesh(f"spoke_{name}", box_bm(r, 1.2, 0.5, r / 2, 0.0, 0.0), c_ptr, bronze, parent=ring)
@@ -395,7 +398,7 @@ def build():
     # true sun: pointer with a golden ball
     ts = OBJ["true_sun_ptr"]
     o = obj_from_bmesh("ptr_true_sun", pointer_bm(60.0, 2.0, 0.8, 0.7, hub_r=5.4), c_ptr, gold, parent=ts)
-    o.location.z = 36.2 - 0.0
+    o.location.z = 36.2 - HOST_Z["true_sun_ptr"]
     o["am_role"] = "pointer"; o["am_pointer"] = "true_sun"
     ball = obj_from_bmesh("sun_ball", sphere_bm(2.6), c_ptr, gold, parent=o)
     ball.location = (52.0, 0.0, 2.8)

@@ -213,6 +213,12 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
   .onboard { left: 12px; right: 12px; bottom: 12px; max-width: none; --onboard-bottom: 12px; }
   .onboard-body { font-size: 14.5px; }
 }
+@media (max-width: 480px) {
+  /* a phone: the view bar keeps a gutter on the right, and wraps inside it rather than running off */
+  .stage-hud { left: 12px; right: 12px; top: 10px; }
+  .seg button { padding: 5px 8px; }
+  .topbar-actions { gap: 6px; }
+}
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 
 /* ==========================================================================================

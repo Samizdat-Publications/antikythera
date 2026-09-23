@@ -19,7 +19,11 @@ person (no Attenborough clones).
        library as "am Liam Dale" etc.). Then: set the voice in `tools/narration.py` `pick_voice`
        (prefer by voice_id), delete `web/public/audio/tour_*.mp3`, run `python tools/narration.py`,
        delete the unused `tour_metonic.mp3`, check tour.json has 14 clips, commit, deploy.
-2. [~] **The "crank floats" report.** Found: the crank is fine (axle from the wall, knob at x 108).
+2. [x] **The "crank floats" report.** DONE: stack now 33.0-41.6 mm, order date, Saturn, Jupiter, Mars,
+       Sun, Venus, Mercury, dragon, Moon; CACHE v4. FOLLOW-UP folded into item 8's rebuild: the sun ball
+       (r 2.6 at z 39) is swept by the Moon pointer and dragon hand; set it r 1.9 centred 36.45; flatten
+       the planet stones to inlays (scale z so they span ring mid +-0.38) and the dragon head (scale z 0.35).
+       Was: Found: the crank is fine (axle from the wall, knob at x 108).
        What floats is the true-Sun pointer and ball at z 65-71, 35 mm off the plate (z 30), because
        `blender/dials.py` placed the follower carriers' tubes, rings and pointer without their own
        z (true_sun_ptr 29.5, venus_ptr 11.5, mercury_ptr 10). Fixed with `HOST_Z` in dials.py
@@ -32,7 +36,8 @@ person (no Attenborough clones).
        sheet on touch devices.) Was: Absolute `og:image` (1200x630), og:title/description/url/type,
        twitter:card summary_large_image, canonical, description, robots.txt, sitemap.xml, JSON-LD.
        Share button: use `navigator.share` where it exists (phones), clipboard otherwise.
-4. [ ] **Mobile pass.** View bar clipped at 390 px ("Inside" at the edge), machine small in the stage.
+4. [x] **Mobile pass.** (portrait crops up to a quarter of the width: `keep` in viewer.resize; view
+       bar gutter under 480 px.) Was: View bar clipped at 390 px ("Inside" at the edge), machine small in the stage.
 5. [ ] **Split viewer.ts** (1,189 lines) into scene/environment.ts, materials.ts, interaction.ts,
        animations.ts; pure refactor, tests and a visual check before and after.
 6. [ ] **Bronze and lighting pass.** Gears read as flat gold foil; the plate ground reads as rust or

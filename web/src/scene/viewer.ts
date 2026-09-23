@@ -749,8 +749,11 @@ export class Viewer {
     this.renderer.setSize(w, h, false);
     const aspect = w / h;
     this.camera.aspect = aspect;
-    // a narrow stage (tablet, phone) keeps the width of view a 6:5 stage has, so the case is not cut off
-    this.camera.fov = aspect >= 1.2 ? 38 : Math.min(72, (2 * Math.atan((Math.tan((38 / 2) * Math.PI / 180) * 1.2) / aspect) * 180) / Math.PI);
+    // a narrow stage keeps most of the width of view a 6:5 stage has, so the case is not cut off; a
+    // portrait one (a phone) gives up to a quarter of it, which is plinth and room either side of a
+    // tall case, so the machine can fill the height it has instead of sitting small in the middle
+    const keep = aspect >= 1.2 ? 1.2 : 0.9 + 0.3 * Math.min(1, Math.max(0, (aspect - 0.75) / 0.45));
+    this.camera.fov = aspect >= 1.2 ? 38 : Math.min(72, (2 * Math.atan((Math.tan((38 / 2) * Math.PI / 180) * keep) / aspect) * 180) / Math.PI);
     this.camera.updateProjectionMatrix();
     const pr = this.renderer.getPixelRatio();
     this.composer?.setSize(w, h);
