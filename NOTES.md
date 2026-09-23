@@ -527,3 +527,49 @@ See README "Attributions" for licences.
   the face still and 2.45 ms when the libration changes every call, and the panel only redraws four
   times a second while the crank turns. Off by default, because the panel's first job is to show
   the machine's Moon.
+- 2026-09-23: **the review before calling it final** (Opus 5.5, with three read-only reviewers:
+  code, the historical claims, performance and accessibility). What was wrong, and is fixed:
+  **The copy claimed more than the sources.** The Moon leaf said "five gears" and listed six (three
+  meshing pairs, 64/38 x 48/24 x 127/32); the X-ray machine was eight tonnes, not twelve; the Games
+  gloss named Delphi (a place) for the Pythia and left out the Naa and the Halieia that the dial model
+  already had; the welcome said every tooth count was read from the scans when 39 of the 69 gears
+  are the 2021 model's and most surviving counts are estimated from broken rims; only Venus's 462
+  and Saturn's 442 are read on the cover inscription; the loops are an epicycle's, which Ptolemy
+  refined, not Ptolemy's; the month names are a Corinthian-family calendar, probably Epirus, not a
+  dialect; the solar hits count an eclipse anywhere on Earth; Voulgaris et al. is Almagest 14.1
+  (2023). Added: Stais in 1902 and the 82 fragments, the epoch is not the date it was made (wreck
+  c. 70-60 BC), the 2024 recount of the calendar ring's holes points to 354 not 365 (the ring is still
+  drawn with 365 as Freeth 2021 has it, and says so), and the 2025 argument (Szigety and Arenas, a
+  preprint) that teeth as uneven as the measured ones would have jammed. `tools/narration.py` is now
+  one clip per leaf in walkthrough order, each the leaf said aloud; the unused `metonic` clip is gone.
+  "A green crust" became "a crust of corrosion", since the CT texture renders terracotta.
+  **Performance** (measured by the reviewer, 10 Mbps): a first visit moved 35.8 MB because the worker
+  registered on `load` and fetched the model a second time alongside the page, plus the fragment and
+  both rooms; it now registers three seconds after the machine assembles, when its fetch of the model
+  is a revalidation, and `/models/` and `/hdri/` are cache-first with no background refresh (CACHE v3;
+  they change only with a CACHE bump anyway). `fragment_a.glb` was raw float geometry: meshopt takes it
+  from 10.64 to 3.16 MB (a WebP pass on top saved 60 KB and meant quantising twice, so not done).
+  `errorBands` ran in an idle callback with a 3 s timeout whether or not anyone looked: 1.3 s of main
+  thread on desktop and about 6 s on a throttled phone. The chart, the bands and the Saros audit now
+  wait until "How accurate was it?" is opened, and Chart.js is its own chunk (`web/src/ui/chart.ts`,
+  70 KB gzip out of the first load). `web/public/_headers` gives `/assets/*` a year, immutable.
+  **Accessibility.** Enter on the walkthrough's next button went two leaves and back did nothing (the
+  card's global key handler also fired); arrows on the years slider turned leaves; Space on a panel
+  header turned the crank; the Manuscript theme button carried `data-theme="manuscript"` and so took
+  the manuscript's whole token block (2.29:1 in the vitrine), now `data-set-theme`; `--ink-faint` was
+  3.2:1 and 3.7:1, now 4.5:1 or better on every ground (vitrine L 0.60, manuscript 0.48); reduced
+  motion now also stops the idle orbit and the crank starting on a return visit, and smooth scrolling;
+  the canvases are `role="img"`, the chart is labelled, the title is an `h1`; the card is a labelled
+  region whose body is a polite live region; the sky legend lights a body on focus.
+  **Also:** the view buttons and the Exhibit menu had no ground and vanished over lit bronze in the
+  close views; a `?lib=1` link at the epoch left the Moon's column without the libration row
+  (`readUrl` now ends with `update(true)`); a saved picture's object URL is revoked after 4 s, not at
+  once (Safari). **The back dial texture:** the Games dial's second lines ran across the divider and
+  into each other, and the Metonic spiral's long month names ran into the next cell on the inner
+  turns; the Games names now sit level at the middle of each quarter and `Dial.text` takes a `fit`
+  width so a name is set smaller to fit its cell. Model re-exported headless; 10.28 MB.
+  **Environment gotcha:** OneDrive was not running, and 1,589 files in `web/node_modules` and four
+  reflogs in `.git/logs/refs` were cloud-only stubs that nothing could read (tsc, vitest and git commit
+  all failed with UNKNOWN or "unable to append"). `npm ci` rewrote `node_modules`; the four reflogs
+  were renamed `*.onedrive-stub` (not deleted) so git could start new ones. Check with
+  `attrib` for an `O` flag if a tool fails to read a file for no reason.
