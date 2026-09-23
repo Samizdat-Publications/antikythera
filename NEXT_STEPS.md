@@ -119,7 +119,7 @@ report (69 gears, worst error under 1e-4 rad), and `dist/gears.json` should come
 the `web/public/data/gears.json` already deployed unless the gear table itself changed. Then the
 three gltf-transform steps in CLAUDE.md, then `CACHE`.
 
-**Hero renders.** Headless, with Blender closed: `& "C:\Program Files\Blender Foundation\Blender 5.1lender.exe"
+**Hero renders.** Headless, with Blender closed: `& "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe"
 -b build/antikythera.blend --python blender/hero_render.py` (all five views, under four minutes),
 then `python tools/gen_icons.py` to refresh the share image and the still, then bump the `?v=` on
 `og.jpg` in `web/index.html` (three places) so the social networks fetch it again.
