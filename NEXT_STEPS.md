@@ -1,6 +1,6 @@
 # Where things stand, and how to keep it
 
-_Updated 2026-09-21. Version 1.0 is finished, deployed and written up. Read this first in a new
+_Updated 2026-09-23. Version 1.0 is finished, deployed and written up. Read this first in a new
 session; NOTES.md has the decisions, newest entry last; CLAUDE.md has the rebuild order and the
 deploy command._
 
@@ -46,6 +46,14 @@ needs a paid plan for that. `docs/index.html` is the page, `docs/screens/` the s
   The face turns to the real Moon's libration from astronomy-engine while the light stays the
   machine's; opt-in and labelled as the sky's. NOTES.md, 2026-09-21.
 
+- 2026-09-23: a review by three read-only agents (code, the historical claims, performance and
+  accessibility) and a pass on everything it found, then the five recommendations Stewart approved:
+  the copy corrected against the sources, a first visit eleven megabytes lighter, the keyboard and
+  screen reader fixed, the Sun pointer brought back to its depth (it stood 35 mm off the plate), the
+  bronze under AgX, a museum plinth, the spirals cut as slots, only what survives, SEO and a share
+  card, the phone's framing, and viewer.ts split. NOTES.md, both 2026-09-23 entries; the ledger is
+  `docs/plans/2026-09-23-review-run.md`.
+
 ## Maintenance guide (for sessions at any effort level)
 
 **Change copy or a panel.** Edit `web/index.html` (the page), `web/src/ui/onboarding.ts` (the
@@ -75,10 +83,17 @@ console with `window.__cosmos`: `c.setExposure(true)`, then step `c.tick(y, jd, 
 loop rather than trusting the frame rate, since a headless or hidden browser throttles rAF to about
 1 fps and every fps reading you take there will be wrong.
 
-**Re-narrate a leaf.** Edit the text in `tools/narration.py`, delete that clip's mp3 in
-`web/public/audio/`, run `python tools/narration.py` (needs `ELEVENLABS_API_KEY`; it regenerates only
-missing clips), then put back the `duration` values of the other clips in `tour.json` if you care
-(the app does not read them). Keep `onboarding.ts`'s body text in step.
+**Re-narrate a leaf.** `tools/narration.py` holds one clip per walkthrough leaf, in the order of
+`STEPS` in `web/src/ui/onboarding.ts`, each the leaf's body said aloud: change the two together.
+Delete that clip's mp3 in `web/public/audio/`, run `python tools/narration.py` (needs
+`ELEVENLABS_API_KEY`; it regenerates only missing clips). Never a voice that imitates a real person.
+
+**Tune the look.** The vitrine tone-maps with AgX (exposure 0.72), the manuscript with ACES (1.0);
+`setTheme` in `web/src/scene/viewer.ts` sets both, with the final pass's `saturation`, `vignette` and
+`grain`. The material families are tuned by name in `web/src/scene/materials.ts`, the room in
+`room.ts`, the shader hooks in `shaders.ts`. Try values live first: `__viewer.tuning.plateMix.value`,
+`__viewer.plate.mat`, the materials on `__viewer.root`, `__viewer.renderer.toneMappingExposure`, and
+pin the camera (`__viewer.controls.autoRotateSpeed = 0`) or the idle orbit wanders off mid-test.
 
 **Change a dial face or the parapegma.** `python tools/gen_dial_textures.py`, then with Blender
 closed: `& "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe" -b build/antikythera.blend
@@ -104,8 +119,10 @@ report (69 gears, worst error under 1e-4 rad), and `dist/gears.json` should come
 the `web/public/data/gears.json` already deployed unless the gear table itself changed. Then the
 three gltf-transform steps in CLAUDE.md, then `CACHE`.
 
-**Hero renders.** `python tools/bl.py blender/hero_render.py 1800` (Blender open), then
-`python tools/gen_icons.py` to refresh the share image and the still.
+**Hero renders.** Headless, with Blender closed: `& "C:\Program Files\Blender Foundation\Blender 5.1lender.exe"
+-b build/antikythera.blend --python blender/hero_render.py` (all five views, under four minutes),
+then `python tools/gen_icons.py` to refresh the share image and the still, then bump the `?v=` on
+`og.jpg` in `web/index.html` (three places) so the social networks fetch it again.
 
 ## Backlog (small, unranked; none blocks anything)
 
@@ -120,6 +137,13 @@ the sources or something deliberately out of scope:
   version 1.0.)
 
 ## Taste calls Stewart may want to reverse
+
+- 2026-09-23: the vitrine under AgX with a little saturation given back; the plates' mottle at half
+  strength; the planet stones flattened to inlays and the Sun's ball smaller (both so the pointers
+  can pass over them); the new plinth; Front and Back further out. All in `viewer.ts`,
+  `materials.ts` and `blender/dials.py`, each a number or two.
+- The Cycles hero renders still use Blender's own plate material, which is more orange than the web
+  plate now is; `blender/surface.py` could follow the web's halved mottle.
 
 - The saved picture is capped at three times the device pixel ratio, so on a retina screen it is 1.5x
   the screen, and the label says "larger than the screen"; raising the cap to 4 costs a 23-megapixel
