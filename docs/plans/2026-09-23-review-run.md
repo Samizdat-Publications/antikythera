@@ -19,11 +19,17 @@ person (no Attenborough clones).
        library as "am Liam Dale" etc.). Then: set the voice in `tools/narration.py` `pick_voice`
        (prefer by voice_id), delete `web/public/audio/tour_*.mp3`, run `python tools/narration.py`,
        delete the unused `tour_metonic.mp3`, check tour.json has 14 clips, commit, deploy.
-2. [ ] **The "crank floats" report.** Stewart's screenshot (side view) shows a stack sticking far out
-       of the front plate with a glowing ball at its tip, and asks whether the crank is meant to
-       float off what it turns. Measure in the scene: the front pointer stack's depth in front of the
-       plate, and the crank (a1) against the case wall. Fix whatever is not by design.
-3. [ ] **SEO and share cards.** Absolute `og:image` (1200x630), og:title/description/url/type,
+2. [~] **The "crank floats" report.** Found: the crank is fine (axle from the wall, knob at x 108).
+       What floats is the true-Sun pointer and ball at z 65-71, 35 mm off the plate (z 30), because
+       `blender/dials.py` placed the follower carriers' tubes, rings and pointer without their own
+       z (true_sun_ptr 29.5, venus_ptr 11.5, mercury_ptr 10). Fixed with `HOST_Z` in dials.py
+       (uncommitted until checked). Rebuild running: build_all + dials + surface + export, log in
+       `build/rebuild_2026-09-23.log`. After it: `cmp dist/gears.json web/public/data/gears.json`,
+       check `build/rig_dump.json`, the three gltf-transform steps, measure the stack (sun_ball z
+       should be ~36-41), bump CACHE to v4, commit, deploy.
+3. [x] **SEO and share cards.** (done: descriptive title, canonical, robots, og:site_name/locale/image:type,
+       twitter:image:alt, JSON-LD WebApplication, robots.txt, sitemap.xml; Share opens the native
+       sheet on touch devices.) Was: Absolute `og:image` (1200x630), og:title/description/url/type,
        twitter:card summary_large_image, canonical, description, robots.txt, sitemap.xml, JSON-LD.
        Share button: use `navigator.share` where it exists (phones), clipboard otherwise.
 4. [ ] **Mobile pass.** View bar clipped at 390 px ("Inside" at the edge), machine small in the stage.

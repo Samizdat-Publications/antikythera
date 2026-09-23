@@ -346,8 +346,19 @@ $("#tour-btn").addEventListener("click", () => onboarding.start());
 // the address for the state on screen, put on the clipboard so a visitor can send what they have set up
 const shareBtn = $<HTMLButtonElement>("#share-btn");
 let shareTimer = 0;
+// on a phone or tablet the device's own share sheet (Messages, Facebook, WhatsApp...); on a desktop,
+// where that sheet is an odd little window, the link goes on the clipboard as before
+const shareSheet = (): boolean => typeof navigator.share === "function" && matchMedia("(pointer: coarse)").matches;
 shareBtn.addEventListener("click", async () => {
   const url = stateUrl(true).toString();
+  if (shareSheet()) {
+    try {
+      await navigator.share({ title: "Antikythera Cosmos", text: `The Antikythera mechanism, set to ${$("#date-main").textContent}`, url });
+      return;
+    } catch (e) {
+      if ((e as DOMException).name === "AbortError") return;           // the visitor closed the sheet: nothing more to do
+    }
+  }
   try {
     await navigator.clipboard.writeText(url);
     clearTimeout(shareTimer);

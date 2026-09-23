@@ -31,6 +31,20 @@
         "docs"
       ],
       "port": 5178
+    },
+    {
+      "name": "voice-audition",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5180",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        ".playwright-mcp/audition"
+      ],
+      "port": 5180
     }
   ]
 }
