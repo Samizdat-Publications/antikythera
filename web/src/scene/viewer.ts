@@ -253,10 +253,10 @@ export interface ViewerOptions {
 
 type Preset = [[number, number, number], [number, number, number]];
 const PRESETS: Record<string, Preset> = {
-  // 610 out and aimed a little low: at 560 the case top sat under the view bar
-  "front": [[0, -35, 610], [0, -22, 0]],
+  // 670 out and aimed a little low: at 560 the case top sat under the view bar
+  "front": [[0, -40, 670], [0, -32, 0]],
   "front-close": [[30, -40, 300], [0, 0, 30]],
-  "back": [[0, -35, -610], [0, -22, 0]],
+  "back": [[0, -40, -670], [0, -32, 0]],
   "back-upper": [[20, 40, -260], [0, 58, -40]],
   "back-lower": [[20, -110, -260], [0, -81, -40]],
   "pinslot": [[75, -70, -150], [28, -32, -25]],

@@ -40,20 +40,20 @@ person (no Attenborough clones).
        bar gutter under 480 px.) Was: View bar clipped at 390 px ("Inside" at the edge), machine small in the stage.
 5. [ ] **Split viewer.ts** (1,189 lines) into scene/environment.ts, materials.ts, interaction.ts,
        animations.ts; pure refactor, tests and a visual check before and after.
-6. [~] **Bronze and lighting pass.** IN CODE (uncommitted until the rebuild lands): AgX tone mapping at
+6. [x] **Bronze and lighting pass.** IN CODE (uncommitted until the rebuild lands): AgX tone mapping at
        exposure 0.72 (manuscript 0.95), a saturation uniform in FinalShader (1.15 / 1.05), Bronze colorMul 0.8
        roughness 0.92 env 1.0, DarkBronze colorMul 0.7, plate mix 0.5 colour 0.62 rough 1.2, vignette 0.62,
        grain 0.024. Was: Gears read as flat gold foil; the plate ground reads as rust or
        burnt paper; the front plate blows out at three-quarter. Darker, varied bronze, patina in
        recesses, more contrast between layers. Before/after stills in `.playwright-mcp/`.
-7. [~] **Back spirals read at a glance.** Slot drawn 0.8 mm SLOT ink, bump depth 8, outer turn closed,
+7. [x] **Back spirals read at a glance.** Slot drawn 0.8 mm SLOT ink, bump depth 8, outer turn closed,
        dividers 0.24 (textures regenerated, uncommitted). Was: Cut the Metonic and Saros spiral as a sunk groove, darker
        lettering (`tools/gen_dial_textures.py` bump and albedo, then headless re-export).
-8. [~] **Plinth.** New in viewer.ts: RoundedBox body, shadow gap, eased top slab, speckle texture.
+8. [x] **Plinth.** (model rebuilt, CACHE v5; hero renders and og.jpg redone headless, og ?v=2) New in viewer.ts: RoundedBox body, shadow gap, eased top slab, speckle texture.
        dials.py: sun ball r1.9 z0.25, stones flattened (scale z 0.22, z 0.3), dragon head scale z 0.35.
        NEXT: full headless rebuild, gltf-transform x3, CACHE v5, screenshots, commit, deploy. Was: Replace the grey box with a proper museum plinth.
-9. [ ] **"What survives" switch.** Only the 30 surviving gears (gears.json marks them), the rest
+9. [x] **"What survives" switch.** Only the 30 surviving gears (gears.json marks them), the rest
        ghosted; in the Exhibit menu, carried by Share (`?survives=1`).
-10. [ ] **Front view framing** (case top jammed under the view bar) and **one line on Rhodes**.
+10. [x] **Front view framing** (front/back at 670, target y -32) (case top jammed under the view bar) and **one line on Rhodes**.
 11. [ ] Docs: NEXT_STEPS.md, NOTES.md entry, README/project page screenshots if the look changed;
         bump `CACHE` in `web/public/sw.js` for any GLB or texture change; deploy; push.
