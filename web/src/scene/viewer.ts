@@ -18,6 +18,7 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass.js";
@@ -184,6 +185,26 @@ function withVertexAO(mat: THREE.Material, mapMix?: THREE.IUniform<number>): voi
   mat.customProgramCacheKey = () => (mapMix ? "vao-mix" : "vao");
 }
 
+/** A honed stone's speckle, drawn once: grey noise at two scales, faint, tiled over the plinth. */
+function speckleTexture(): THREE.CanvasTexture {
+  const n = 256, c = document.createElement("canvas");
+  c.width = c.height = n;
+  const g = c.getContext("2d")!, img = g.createImageData(n, n);
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < n * n; i++) {
+    const v = 214 + rnd() * 30 + (rnd() < 0.02 ? -40 : 0);          // a light ground, fine grain, the odd darker fleck
+    img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(3, 2);
+  t.anisotropy = 4;
+  return t;
+}
+
 const FinalShader = {
   uniforms: {
     baseTexture: { value: null as THREE.Texture | null },
@@ -191,12 +212,13 @@ const FinalShader = {
     bloomStrength: { value: 0.55 },
     vignette: { value: 0.5 },
     grain: { value: 0.035 },
+    saturation: { value: 1.15 },
     resolution: { value: new THREE.Vector2(1, 1) },
   },
   vertexShader: /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: /* glsl */ `
     uniform sampler2D baseTexture; uniform sampler2D bloomTexture;
-    uniform float bloomStrength; uniform float vignette; uniform float grain; uniform vec2 resolution;
+    uniform float bloomStrength; uniform float vignette; uniform float grain; uniform float saturation; uniform vec2 resolution;
     varying vec2 vUv;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
     void main() {
@@ -205,6 +227,8 @@ const FinalShader = {
       vec2 q = vUv - 0.5;
       float d = dot(q, q) * (1.0 + 0.35 * abs(q.x));
       c *= 1.0 - vignette * smoothstep(0.10, 0.70, d);
+      // AgX keeps a metal's hue in its highlights but greys the whole picture a little: give some colour back
+      c = mix(vec3(dot(c, vec3(0.2126, 0.7152, 0.0722))), c, saturation);
       float g = hash(floor(vUv * resolution)) - 0.5;              // static grain, seeded per pixel
       float lum = clamp(dot(c, vec3(0.2126, 0.7152, 0.0722)), 0.0, 1.0);
       c += g * grain * (0.25 + 0.75 * (1.0 - lum));               // lives in the shadows
@@ -229,9 +253,10 @@ export interface ViewerOptions {
 
 type Preset = [[number, number, number], [number, number, number]];
 const PRESETS: Record<string, Preset> = {
-  "front": [[0, -30, 560], [0, -10, 0]],
+  // 610 out and aimed a little low: at 560 the case top sat under the view bar
+  "front": [[0, -35, 610], [0, -22, 0]],
   "front-close": [[30, -40, 300], [0, 0, 30]],
-  "back": [[0, -30, -560], [0, -10, 0]],
+  "back": [[0, -35, -610], [0, -22, 0]],
   "back-upper": [[20, 40, -260], [0, 58, -40]],
   "back-lower": [[20, -110, -260], [0, -81, -40]],
   "pinslot": [[75, -70, -150], [28, -32, -25]],
@@ -280,7 +305,7 @@ export class Viewer {
 
   /** Gallery furniture (plinth, floor): hidden while the Fragment A scan is shown alone. */
   private set: THREE.Object3D[] = [];
-  private setMats!: { floor: THREE.MeshStandardMaterial; plinth: THREE.MeshStandardMaterial; plinthTop: THREE.MeshStandardMaterial };
+  private setMats!: { floor: THREE.MeshStandardMaterial; plinth: THREE.MeshStandardMaterial; plinthTop: THREE.MeshStandardMaterial; plinthGap: THREE.MeshStandardMaterial };
   private lights!: { key: THREE.SpotLight; fill: THREE.DirectionalLight; rim: THREE.DirectionalLight; frontRake: THREE.DirectionalLight; backKey: THREE.DirectionalLight };
   private pmrem: THREE.PMREMGenerator;
   private envs: Partial<Record<Theme, THREE.Texture>> = {};
@@ -314,6 +339,8 @@ export class Viewer {
   private ghostMat = new THREE.MeshPhysicalMaterial({ color: 0x8a6a3a, metalness: 0.9, roughness: 0.5, transparent: true, opacity: 0.13, depthWrite: false, envMapIntensity: 0.4 });
   private ghosted: [THREE.Mesh, THREE.Material | THREE.Material[]][] = [];
   private lastInput = performance.now();
+  /** the shared shader knobs, for tuning the look from the console (`__viewer.tuning`) */
+  readonly tuning = { plateMix: PLATE_MIX, ao: AO.strength };
 
   // selective bloom bookkeeping
   private bloomMeshes = new Set<THREE.Mesh>();
@@ -338,8 +365,9 @@ export class Viewer {
   constructor(private opts: ViewerOptions) {
     this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(this.basePixelRatio);
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.85;
+    // AgX rather than ACES: ACES pushed lit bronze to a saturated yellow, and the gears read as gold foil
+    this.renderer.toneMapping = THREE.AgXToneMapping;
+    this.renderer.toneMappingExposure = 0.72;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.scene.background = wallTexture("vitrine");
@@ -390,20 +418,27 @@ export class Viewer {
     this.scene.add(key, key.target, fill, rim, frontRake, backKey, backKey.target);
     this.lights = { key, fill, rim, frontRake, backKey };
 
-    // the gallery set: a stone plinth under the case and a floor for the light pool and the contact shadow
-    const plinth = new THREE.Mesh(new THREE.BoxGeometry(320, 70, 220), new THREE.MeshStandardMaterial({ color: 0x2a2624, roughness: 0.62, metalness: 0.05, envMapIntensity: 0.5 }));
-    plinth.position.set(0, -216, -4);                             // the case bottom is at y = -180
+    // the gallery set: a honed stone plinth under the case, and a floor for the light pool and the
+    // contact shadow. A museum plinth, not a box: the block stands on the floor, a dark shadow gap
+    // parts it from a thicker top slab, and every edge is eased so the spot rolls along it rather
+    // than flaring into a white line. The case bottom is at y = -180, the floor at -252.
+    const stone = speckleTexture();
+    const plinth = new THREE.Mesh(new RoundedBoxGeometry(296, 58, 200, 2, 1.5), new THREE.MeshStandardMaterial({ color: 0x2a2624, map: stone, roughness: 0.85, metalness: 0.0, envMapIntensity: 0.45 }));
+    plinth.position.set(0, -223, -4);
     plinth.castShadow = true; plinth.receiveShadow = true;
-    const plinthTop = new THREE.Mesh(new THREE.BoxGeometry(336, 6, 236), new THREE.MeshStandardMaterial({ color: 0x3a3330, roughness: 0.4, metalness: 0.05, envMapIntensity: 0.6 }));
-    plinthTop.position.set(0, -183, -4);
+    const plinthGap = new THREE.Mesh(new THREE.BoxGeometry(284, 4.2, 188), new THREE.MeshStandardMaterial({ color: 0x0d0c0b, roughness: 0.95, metalness: 0.0, envMapIntensity: 0.2 }));
+    plinthGap.position.set(0, -192, -4);
+    plinthGap.receiveShadow = true;
+    const plinthTop = new THREE.Mesh(new RoundedBoxGeometry(312, 10, 216, 3, 2.5), new THREE.MeshStandardMaterial({ color: 0x3a3330, map: stone, roughness: 0.6, metalness: 0.0, envMapIntensity: 0.55 }));
+    plinthTop.position.set(0, -185, -4);
     plinthTop.castShadow = true; plinthTop.receiveShadow = true;
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), new THREE.MeshStandardMaterial({ color: 0x241d18, roughness: 0.9, metalness: 0.0, envMapIntensity: 0.35 }));
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -252;
     floor.receiveShadow = true;
-    this.scene.add(plinth, plinthTop, floor);
-    this.set.push(plinth, plinthTop, floor);
-    this.setMats = { floor: floor.material as THREE.MeshStandardMaterial, plinth: plinth.material as THREE.MeshStandardMaterial, plinthTop: plinthTop.material as THREE.MeshStandardMaterial };
+    this.scene.add(plinth, plinthGap, plinthTop, floor);
+    this.set.push(plinth, plinthGap, plinthTop, floor);
+    this.setMats = { floor: floor.material as THREE.MeshStandardMaterial, plinth: plinth.material as THREE.MeshStandardMaterial, plinthTop: plinthTop.material as THREE.MeshStandardMaterial, plinthGap: plinthGap.material as THREE.MeshStandardMaterial };
 
     // post: bloom of the glowing parts only (everything else painted black) ...
     this.bloomComposer = new EffectComposer(this.renderer);
@@ -535,9 +570,9 @@ export class Viewer {
     };
     const tune: Record<string, (src: THREE.MeshStandardMaterial) => THREE.Material> = {
       // roughness > 1 scales the roughness map up: the plates are duller than the turned gears
-      Bronze: (s) => physical(s, { metalness: 1.0, roughness: 1.15, envMapIntensity: 0.85, normalScale: new THREE.Vector2(1.2, 1.2), clearcoat: 0.0 }),
+      Bronze: (s) => physical(s, { metalness: 1.0, roughness: 0.92, envMapIntensity: 1.0, normalScale: new THREE.Vector2(1.2, 1.2), clearcoat: 0.0, colorMul: 0.8 }),
       PlateBronze: (s) => { const m = physical(s, { metalness: 1.0, roughness: 1.35, envMapIntensity: 0.55, normalScale: new THREE.Vector2(1.6, 1.6), mapMix: PLATE_MIX }); this.plate = { mat: m, base: m.color.clone() }; this.tunePlate(); return m; },
-      DarkBronze: (s) => physical(s, { metalness: 0.9, roughness: 1.4, envMapIntensity: 0.5, normalScale: new THREE.Vector2(1.2, 1.2) }),
+      DarkBronze: (s) => physical(s, { metalness: 0.9, roughness: 1.4, envMapIntensity: 0.5, normalScale: new THREE.Vector2(1.2, 1.2), colorMul: 0.7 }),
       Gold: (s) => physical(s, { color: new THREE.Color(0xffcf6e), metalness: 1.0, roughness: 0.2, clearcoat: 1.0, clearcoatRoughness: 0.1, envMapIntensity: 1.3 }),
       MoonSilver: (s) => physical(s, { color: new THREE.Color(0xeeeef4), metalness: 1.0, roughness: 0.26, clearcoat: 0.4, clearcoatRoughness: 0.15 }),
       MoonBlack: (s) => physical(s, { color: new THREE.Color(0x07070a), metalness: 0.2, roughness: 0.45, clearcoat: 0.6, clearcoatRoughness: 0.2 }),
@@ -609,7 +644,7 @@ export class Viewer {
     this.applyHdri(name);
     (this.scene.background as THREE.Texture | null)?.dispose?.();
     this.scene.background = wallTexture(name);
-    this.renderer.toneMappingExposure = m ? 1.0 : 0.85;
+    this.renderer.toneMappingExposure = m ? 0.95 : 0.72;
     const L = this.lights;
     L.key.intensity = m ? 1.4 : 2.2;
     L.key.color.set(m ? 0xfff3e2 : 0xffe4bf);
@@ -622,15 +657,17 @@ export class Viewer {
     this.setMats.floor.color.set(m ? 0xcdbfa2 : 0x241d18);
     this.setMats.floor.roughness = m ? 0.95 : 0.9;
     this.setMats.plinth.color.set(m ? 0x6b5238 : 0x2a2624);        // a scholar's oak table by day, a stone plinth at night
-    this.setMats.plinth.roughness = m ? 0.7 : 0.62;
+    this.setMats.plinth.roughness = m ? 0.75 : 0.85;
     this.setMats.plinthTop.color.set(m ? 0x7d6144 : 0x3a3330);
-    this.setMats.plinthTop.roughness = m ? 0.55 : 0.4;
+    this.setMats.plinthTop.roughness = m ? 0.6 : 0.6;
+    this.setMats.plinthGap.color.set(m ? 0x2e2317 : 0x0d0c0b);
     this.beat = null;
     this.lightBase = { key: L.key.intensity, back: L.backKey.intensity, env: this.scene.environmentIntensity };
     this.lightsSettled = false;                                     // re-apply the mood over the new base
     const u = this.finalPass.material.uniforms;
-    u.vignette.value = m ? 0.2 : 0.5;
-    u.grain.value = m ? 0.02 : 0.035;
+    u.vignette.value = m ? 0.2 : 0.62;
+    u.grain.value = m ? 0.02 : 0.024;
+    u.saturation.value = m ? 1.05 : 1.15;
     this.bloomBase = m ? 0.32 : 0.55;
     if (this.wood) {                                               // the case reads as black lacquer against parchment otherwise
       this.wood.mat.color.copy(this.wood.base).multiplyScalar(m ? 1.15 : 0.85);
@@ -666,11 +703,11 @@ export class Viewer {
   private tunePlate(): void {
     if (!this.plate) return;
     const m = this.theme === "manuscript";
-    PLATE_MIX.value = m ? 0.35 : 1.0;
-    this.plate.mat.color.copy(this.plate.base).multiplyScalar(m ? 0.98 : 0.72);
-    this.plate.mat.roughness = m ? 1.05 : 1.35;
+    PLATE_MIX.value = m ? 0.35 : 0.5;                              // at full strength the mottle read as rust, or clouds lit from behind
+    this.plate.mat.color.copy(this.plate.base).multiplyScalar(m ? 0.98 : 0.62);
+    this.plate.mat.roughness = m ? 1.05 : 1.2;
     this.plate.mat.normalScale.setScalar(m ? 1.1 : 1.6);
-    this.plate.mat.envMapIntensity = m ? 0.6 : 0.55;
+    this.plate.mat.envMapIntensity = m ? 0.6 : 0.5;
   }
 
   /**
@@ -1001,10 +1038,12 @@ export class Viewer {
     if (!ids.length || same) {
       this.isolated = false;
       this.isolatedIds = [];
+      this.onIsolate?.([]);
       return;
     }
     this.isolatedIds = ids;
     this.isolated = true;
+    this.onIsolate?.(ids);
     this.setInside(true);
     const keep = new Set(ids);
     const ghost = (o: THREE.Object3D, rootNode: THREE.Object3D): void => {
@@ -1017,6 +1056,8 @@ export class Viewer {
   }
   private isolated = false;
   private isolatedIds: string[] = [];
+  /** told whenever the set of wheels shown alone changes, with the very array passed to `isolate` */
+  onIsolate: ((ids: string[]) => void) | null = null;
   get isolatedTrain(): string[] { return this.isolatedIds; }
 
   /**

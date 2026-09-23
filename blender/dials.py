@@ -393,15 +393,20 @@ def build():
         ring["am_role"] = "pointer"; ring["am_pointer"] = name
         # a thin spoke from the hub to the ring so the rotation reads
         spoke = obj_from_bmesh(f"spoke_{name}", box_bm(r, 1.2, 0.5, r / 2, 0.0, 0.0), c_ptr, bronze, parent=ring)
+        # an inlaid stone, not a bead: the rings stand 0.8 mm apart, so a round stone 3.6 mm high
+        # was swept by every pointer above it. Flattened to span the ring and a hair either side.
         stone = obj_from_bmesh(f"stone_{name}", sphere_bm(1.8), c_ptr, stones[name], parent=ring)
-        stone.location = (r, 0.0, 0.8)
+        stone.location = (r, 0.0, 0.3)
+        stone.scale = (1.0, 1.0, 0.22)
     # true sun: pointer with a golden ball
     ts = OBJ["true_sun_ptr"]
     o = obj_from_bmesh("ptr_true_sun", pointer_bm(60.0, 2.0, 0.8, 0.7, hub_r=5.4), c_ptr, gold, parent=ts)
     o.location.z = 36.2 - HOST_Z["true_sun_ptr"]
     o["am_role"] = "pointer"; o["am_pointer"] = "true_sun"
-    ball = obj_from_bmesh("sun_ball", sphere_bm(2.6), c_ptr, gold, parent=o)
-    ball.location = (52.0, 0.0, 2.8)
+    # small enough to stay in the Sun pointer's own layer (36.0 to 37.1 mm, with the date pointer below at
+    # 34 and the dragon hand above at 38.4), so the Moon pointer and the dragon hand pass over it
+    ball = obj_from_bmesh("sun_ball", sphere_bm(1.9), c_ptr, gold, parent=o)
+    ball.location = (52.0, 0.0, 0.25)
     # dragon hand on the nodes tube
     nd = OBJ["nod48"]
     bm = pointer_bm(58.0, 1.8, 0.7, 0.7, hub_r=2.4)
@@ -411,7 +416,8 @@ def build():
     o.location.z = 38.6 - GEARS["nod48"]["z"]
     o["am_role"] = "pointer"; o["am_pointer"] = "nodes"
     head = obj_from_bmesh("dragon_head", sphere_bm(2.0, 16, 8), c_ptr, dark, parent=o)
-    head.location = (56.0, 0.0, 1.2)
+    head.location = (56.0, 0.0, 0.5)
+    head.scale = (1.0, 1.0, 0.35)                                  # clear of the Moon pointer above
     # moon pointer with lunar disc (drum) around the phase ball
     mp = OBJ["b3"]
     o = obj_from_bmesh("ptr_moon", pointer_bm(60.0, 2.2, 0.9, 0.8, hub_r=1.6), c_ptr, silver, parent=mp)

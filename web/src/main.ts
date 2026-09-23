@@ -144,6 +144,7 @@ function stateUrl(forSharing = false): URL {
   set("sky", stageEl.classList.contains("sky") ? "1" : null);
   set("expose", $<HTMLInputElement>("#expose").checked ? "1" : null);
   set("lib", $<HTMLInputElement>("#libration").checked ? "1" : null);
+  set("survives", $<HTMLInputElement>("#survives").checked ? "1" : null);
   return u;
 }
 let urlTimer = 0;
@@ -155,7 +156,7 @@ function writeUrl(): void {
 /** Apply a linked state after the overture; true if the address carried one. */
 function readUrl(): boolean {
   const q = new URLSearchParams(location.search);
-  const keys = ["epoch", "years", "view", "inside", "apart", "sky", "expose", "lib"];
+  const keys = ["epoch", "years", "view", "inside", "apart", "sky", "expose", "lib", "survives"];
   if (!keys.some((k) => q.has(k))) return false;
   const ep = q.get("epoch");
   if (ep && EPOCHS.some((e) => e.id === ep)) { $<HTMLSelectElement>("#epoch").value = ep; $<HTMLSelectElement>("#epoch").dispatchEvent(new Event("change")); }
@@ -169,6 +170,7 @@ function readUrl(): boolean {
   if (v && v in PLATES) viewer.view(v);
   if (q.get("sky") === "1") setSky(true);
   if (q.get("expose") === "1") { $<HTMLInputElement>("#expose").checked = true; cosmos.setExposure(true); }
+  if (q.get("survives") === "1") setSurvives(true);
   update(true);                                                      // the column follows even when the link sets no years (lib=1 at the epoch)
   caption();                                                          // a linked state has to say what it is
   return true;
@@ -265,7 +267,7 @@ function caption(): void {
   const ids = viewer.isolatedTrain;
   const train = ids.length ? TRAINS.find((t) => t.gears.length === ids.length && t.gears.every((x, i) => x === ids[i])) : undefined;
   const apart = $<HTMLInputElement>("#apart").checked;
-  const state = apart ? ", taken apart" : train ? `, the ${train.name} train alone` : $<HTMLInputElement>("#xray").checked && viewer.currentView !== "pinslot" ? ", opened" : "";
+  const state = $<HTMLInputElement>("#survives").checked ? ", only the thirty gears that survive" : apart ? ", taken apart" : train ? `, the ${train.name} train alone` : $<HTMLInputElement>("#xray").checked && viewer.currentView !== "pinslot" ? ", opened" : "";
   el.innerHTML = `${v ? no(v[0]) : ""}The mechanism ${v ? v[1] : "as you have turned it"}${state}, set to ${date}`;
 }
 $("#sky-btn").addEventListener("click", () => setSky(!stageEl.classList.contains("sky")));
@@ -636,6 +638,21 @@ function showFragment(a: number): void {
 }
 $<HTMLInputElement>("#fragment").addEventListener("input", (e) => showFragment(parseInt((e.target as HTMLInputElement).value, 10) / 100));
 $("#case").addEventListener("change", applyVisibility);
+// only what survives: the thirty gears found in the fragments, the reconstructed thirty-nine as ghosts.
+// The same array goes to isolate each time, so onIsolate can tell this set from a train a visitor clicked.
+let surviving: string[] = [];
+function setSurvives(on: boolean): void {
+  const g = viewer.graph;
+  if (!g) return;
+  if (!surviving.length) surviving = [...g.nodes.values()].filter((n) => n.status === "surviving").map((n) => n.id);
+  const shown = viewer.isolatedTrain === surviving;
+  if (on !== shown) viewer.isolate(on ? surviving : []);
+  $<HTMLInputElement>("#survives").checked = on;
+  caption();
+  writeUrl();
+}
+viewer.onIsolate = (ids) => { $<HTMLInputElement>("#survives").checked = ids.length > 0 && ids === surviving; };
+$<HTMLInputElement>("#survives").addEventListener("change", (e) => setSurvives((e.target as HTMLInputElement).checked));
 $("#apart").addEventListener("change", applyVisibility);
 // the stage as a picture: the Sky view is its own 2-D canvas, already drawn at the screen's resolution;
 // the machine is drawn again larger than the screen (the pixel ratio raised to at most 3)

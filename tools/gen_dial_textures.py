@@ -34,6 +34,7 @@ FONT_B = "C:/Windows/Fonts/palab.ttf"
 BRONZE = (163, 116, 58)
 BRONZE_DARK = (118, 82, 38)
 INK = (28, 20, 12)              # engraved, wax-filled
+SLOT = (14, 10, 6)             # the spiral slot, a cut right through to shadow
 RING_EDGE = (78, 54, 26)
 # reconstructed (not attested) lettering: the same ink blended 45% back toward the plate
 INK_FAINT = tuple(round(a + 0.45 * (b - a)) for a, b in zip(INK, BRONZE))
@@ -178,10 +179,11 @@ class Dial:
         """mm (relative to centre, y up; back dials in BACK-view coordinates) -> px."""
         return ((x) * self.scale + self.px / 2, self.px / 2 - (y) * self.scale)
 
-    def line(self, x0, y0, x1, y1, w_mm=0.12, ink=INK):
+    def line(self, x0, y0, x1, y1, w_mm=0.12, ink=INK, depth=40):
+        """depth is the bump value cut under the line: 40 an engraved line, lower a deeper cut."""
         w = max(1, int(w_mm * self.scale))
         self.d.line([self.P(x0, y0), self.P(x1, y1)], fill=ink, width=w)
-        self.db.line([self.P(x0, y0), self.P(x1, y1)], fill=40, width=w)
+        self.db.line([self.P(x0, y0), self.P(x1, y1)], fill=depth, width=w)
 
     def arc(self, r, a0, a1, w_mm=0.12, ink=INK):
         """Arc of radius r (mm) from angle a0 to a1 (degrees, ccw, 0 = +x)."""
@@ -327,24 +329,28 @@ def front_dial(zodiac_r=(55.0, 66.5), cal_r=(67.5, 79.5), calendar_holes=365, ze
 def spiral_dial(D, r0, pitch, turns, cells, label_fn=None, mm=1.15, glyph_fn=None):
     """Archimedean spiral r = r0 + pitch * t/(2pi), CLOCKWISE in back-view coordinates
     (angle decreasing), cells numbered from 1 at the inner start."""
-    steps = int(turns * 720)
+    # The spiral is a slot the pointer's follower pin rides in, so it is cut as one: a dark groove
+    # 0.8 mm wide, deep in the bump, that reads as a spiral from across the room. A hairline
+    # vanished once the texture was brought down to 2048 px. One turn more, drawn as a plain rule,
+    # closes the outside of the last turn of cells.
+    steps = int((turns + 1) * 720)
     pts = []
     for i in range(steps + 1):
-        t = 2 * math.pi * turns * i / steps
+        t = 2 * math.pi * (turns + 1) * i / steps
         r = r0 + pitch * t / (2 * math.pi)
         a = -t                                                 # clockwise
-        pts.append((r * math.cos(a), r * math.sin(a)))
-    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
-        D.line(x0, y0, x1, y1, 0.2)
-    # closing outer arc back to the last turn
-    for (x0, y0), (x1, y1) in zip(pts[-720:], pts[-719:]):
-        pass
+        pts.append((t, r * math.cos(a), r * math.sin(a)))
+    for (t, x0, y0), (_, x1, y1) in zip(pts, pts[1:]):
+        if t < 2 * math.pi * turns:
+            D.line(x0, y0, x1, y1, 0.8, ink=SLOT, depth=8)
+        else:
+            D.line(x0, y0, x1, y1, 0.3)
     cells_per_turn = cells / turns
     for k in range(cells + 1):
         t = 2 * math.pi * k / cells_per_turn
         r_in = r0 + pitch * t / (2 * math.pi)
         a = -t
-        D.line(r_in * math.cos(a), r_in * math.sin(a), (r_in + pitch) * math.cos(a), (r_in + pitch) * math.sin(a), 0.16)
+        D.line(r_in * math.cos(a), r_in * math.sin(a), (r_in + pitch) * math.cos(a), (r_in + pitch) * math.sin(a), 0.24)
         if k < cells:
             tm = 2 * math.pi * (k + 0.5) / cells_per_turn
             rm = r0 + pitch * tm / (2 * math.pi) + pitch / 2
