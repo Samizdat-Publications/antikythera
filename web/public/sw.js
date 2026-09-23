@@ -9,10 +9,15 @@
 // The worker assumes the site is served from the root of its origin: the `/assets/` test and the
 // shelved prefixes below are absolute paths, and a deployment under a sub-path would miss them.
 
-const CACHE = "antikythera-v2";
+const CACHE = "antikythera-v3";
 
 // the heavy parts of the exhibit: the machine, the room it stands in, the sky it is checked against
-const SHELVED = ["/models/", "/hdri/", "/textures/", "/data/", "/icons/", "/still/"];
+const SHELVED = ["/textures/", "/data/", "/icons/", "/still/"];
+
+// the two heaviest, which change only with a deployment that bumps CACHE: answered from the shelf
+// and never fetched again behind the visitor, which cost a returning visitor the ten-megabyte
+// model on every visit
+const FIXED = ["/models/", "/hdri/"];
 
 // everything the exhibit needs to open with nothing to ask: the page, the machine and the fragment,
 // the gear table, the two eclipse canons, the two skies, the Moon, the still shown without WebGL,
@@ -72,6 +77,7 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== location.origin) return;
   if (req.mode === "navigate") { event.respondWith(pageFirst(event)); return; }
   if (url.pathname.startsWith("/assets/")) { event.respondWith(cacheFirst(event)); return; }
+  if (FIXED.some((dir) => url.pathname.startsWith(dir))) { event.respondWith(cacheFirst(event)); return; }
   if (SHELVED.some((dir) => url.pathname.startsWith(dir))) { event.respondWith(shelfFirst(event)); return; }
   // everything else is left to the browser, /audio/ above all: a media element asks for byte
   // ranges, and a whole response handed back to a range request leaves Safari with silence.
@@ -95,7 +101,8 @@ async function pageFirst(event) {
   }
 }
 
-// Vite's hashed bundles: the name changes whenever the contents do, so a copy is never stale
+// Vite's hashed bundles, whose name changes whenever the contents do, and the model and the rooms,
+// which change only with a new CACHE: a copy on the shelf is never stale
 async function cacheFirst(event) {
   const cache = await caches.open(CACHE);
   const shelved = await cache.match(event.request);

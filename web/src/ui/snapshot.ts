@@ -10,7 +10,7 @@ export function canvasToBlob(canvas: HTMLCanvasElement, type = "image/png"): Pro
   });
 }
 
-/** Offer the blob as a download, then let the object URL go. */
+/** Offer the blob as a download, then let the object URL go once the browser has had it (Safari starts the download after this returns). */
 export function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -19,7 +19,7 @@ export function downloadBlob(blob: Blob, filename: string): void {
   document.body.append(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
 /**

@@ -45,7 +45,7 @@
     <div id="app">
       <header class="topbar">
         <div class="brand">
-          <span class="brand-title">ANTIKYTHERA</span>
+          <h1 class="brand-title" aria-label="Antikythera Cosmos">ANTIKYTHERA</h1>
           <span class="brand-sub">a working model of the cosmos, after Freeth et al. 2021</span>
         </div>
         <div class="topbar-actions">
@@ -53,8 +53,8 @@
           <button id="share-btn" class="mini" aria-live="polite" title="copy a link to this view">Share</button>
           <label class="chk"><input type="checkbox" id="sfx" /> crank &amp; chime</label>
           <span class="theme-switch" role="group" aria-label="version" title="two versions of the same machine: a museum vitrine at night, or a Hellenistic manuscript">
-            <button data-theme="vitrine" aria-pressed="true">Vitrine</button>
-            <button data-theme="manuscript" aria-pressed="false">Manuscript</button>
+            <button data-set-theme="vitrine" aria-pressed="true">Vitrine</button>
+            <button data-set-theme="manuscript" aria-pressed="false">Manuscript</button>
           </span>
         </div>
         <div class="date-readout">
@@ -65,8 +65,8 @@
       <main class="layout">
         <section class="stage">
           <div class="plate">
-            <canvas id="stage" aria-label="3D view of the mechanism"></canvas>
-            <canvas id="cosmos-stage" class="cosmos-stage" aria-label="the sky the machine tracks: Earth at the centre, each body on its epicycle, trails showing retrograde loops"></canvas>
+            <canvas id="stage" role="img" aria-label="3D view of the mechanism"></canvas>
+            <canvas id="cosmos-stage" class="cosmos-stage" role="img" aria-label="the sky the machine tracks: Earth at the centre, each body on its epicycle, trails showing retrograde loops"></canvas>
           </div>
           <div id="plate-caption" class="plate-caption" aria-hidden="true"></div>
           <div class="stage-hud">
@@ -142,7 +142,7 @@
           <section class="panel">
             <h2>The Moon</h2>
             <div class="moon-row">
-              <canvas id="moon" width="132" height="132" aria-label="moon phase"></canvas>
+              <canvas id="moon" width="132" height="132" role="img" aria-label="moon phase"></canvas>
               <dl id="moon-dl" class="grid"></dl>
             </div>
             <label class="chk libration" title="turn the face to the real Moon's libration on this date: the sky rocks it by up to eight degrees; the machine never did"><input type="checkbox" id="libration" /> the sky's libration</label>
@@ -150,10 +150,10 @@
           </section>
           <section class="panel" id="panel-cosmos">
             <h2>The sky it tracks</h2>
-            <canvas id="cosmos" class="cosmos-panel" aria-label="geocentric diagram of the machine's Sun, Moon and planets"></canvas>
+            <canvas id="cosmos" class="cosmos-panel" role="img" aria-label="geocentric diagram of the machine's Sun, Moon and planets"></canvas>
             <div class="cosmos-legend" id="cosmos-legend"></div>
-            <canvas id="retro" class="retro-strip" aria-label="each body's longitude against time: a retrograde loop is a backwards step"></canvas>
-            <p class="foot">Earth in the middle, the zodiac around it. Each body is drawn where its own pin-and-slot puts it, so the trail it leaves is the path Ptolemy would have drawn: the outer planets loop backwards each time the Earth overtakes them. <span class="src">Verdigris</span> ticks are the true sky; bronze ticks are what the machine shows. The strip beneath is the same motion unrolled, longitude against time: where a line steps backwards, that planet is in retrograde.</p>
+            <canvas id="retro" class="retro-strip" role="img" aria-label="each body's longitude against time: a retrograde loop is a backwards step"></canvas>
+            <p class="foot">Earth in the middle, the zodiac around it. Each body is drawn where its own pin-and-slot puts it, so the trail it leaves is the loop a Greek epicycle predicts, the geometry Ptolemy later refined: the outer planets loop backwards each time the Earth overtakes them. <span class="src">Verdigris</span> ticks are the true sky; bronze ticks are what the machine shows. The strip beneath is the same motion unrolled, longitude against time: where a line steps backwards, that planet is in retrograde.</p>
           </section>
           <section class="panel">
             <details>
@@ -173,7 +173,7 @@
           <section class="panel">
             <details>
               <summary>How accurate was it? <span class="hint">error over the centuries, eclipses hit and missed</span></summary>
-              <div class="chart-wrap"><canvas id="chart-moon"></canvas></div>
+              <div class="chart-wrap"><canvas id="chart-moon" role="img" aria-label="chart: how far each pointer strays from the real sky, year by year either side of the epoch"></canvas></div>
               <div class="chart-legend cosmos-legend"></div>
               <p class="foot">Pointer error against the ephemeris, sampled every day: each band is the swing within one year. The ±6.5° pin-and-slot removes most of the Moon's equation of centre; what is left in the band is evection and variation, which the machine does not model.</p>
               <dl id="audit-dl" class="grid"></dl>
@@ -196,7 +196,7 @@
           <section class="panel colophon">
             <details>
               <summary>Sources <span class="hint">who this rests on</span></summary>
-              <p class="foot">Reconstruction after Freeth, Higgon, Dacanalis, MacDonald, Georgakopoulou and Wojcik, <em>A Model of the Cosmos in the ancient Greek Antikythera Mechanism</em>, Scientific Reports 11:5821 (2021), CC BY 4.0, with the earlier AMRP papers (2006–2014). Epochs: Carman &amp; Evans 2014; Voulgaris, Mouratidis &amp; Vossinakis 2022.</p>
+              <p class="foot">Reconstruction after Freeth, Higgon, Dacanalis, MacDonald, Georgakopoulou and Wojcik, <em>A Model of the Cosmos in the ancient Greek Antikythera Mechanism</em>, Scientific Reports 11:5821 (2021), CC BY 4.0, with the earlier AMRP papers (2006–2014). Epochs: Carman &amp; Evans 2014; Voulgaris, Mouratidis &amp; Vossinakis 2023.</p>
               <p class="foot">Eclipses: <span class="src">NASA's Five Millennium Canon</span> (Espenak &amp; Meeus). Sky: <span class="src">astronomy-engine</span> (Don Cross). Fragment A CT scan: Ashkan Pakzad, CC BY 4.0. The Moon's face: <span class="src">NASA's CGI Moon Kit</span> (LROC), public domain. Rooms: Poly Haven HDRIs, CC0. Layout reference: Thomas Weibel, CC BY.</p>
               <p class="foot">Every gear here is generated from one tooth table. The parapegma letters stand where Bitsakis and Jones place them: thirteen read on the zodiac scale of Fragment C, six from the numerals written after the parapegma lines, five restored at the sign boundaries; the eleven not read on the bronze are cut in a fainter ink, letters whose place is lost are not drawn, and the Saros glyph hours beyond the 15 surviving cells are schematic.</p>
               <p class="foot">Version 1.0, September 2026. Built in Blender 5.1 and three.js.</p>

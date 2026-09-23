@@ -26,6 +26,9 @@ import { restorePointerPivots } from "../mech/pivots";
 import { Trails } from "./trails";
 import { canvasToBlob } from "../ui/snapshot";
 
+/** The visitor has asked for less motion: no idle orbit, no overture, views cut rather than fly. */
+export const REDUCE_MOTION = matchMedia("(prefers-reduced-motion: reduce)");
+
 /**
  * A gallery at night, built as geometry so PMREM can turn it into reflections:
  * a large warm key panel high on the left with a small, very bright lamp inside it
@@ -355,6 +358,8 @@ export class Viewer {
     this.controls.addEventListener("change", () => { this.pointerDirty = true; });
     this.controls.autoRotateSpeed = 0.35;                         // one turn in ~3 minutes: a visitor drifting round the case
     for (const ev of ["pointerdown", "wheel", "keydown", "touchstart"]) opts.canvas.addEventListener(ev, () => { this.lastInput = performance.now(); this.controls.autoRotate = false; }, { passive: true });
+    // a visitor working the column or the keyboard is not a visitor who has walked away: the idle orbit waits for them too
+    for (const ev of ["pointerdown", "keydown"]) addEventListener(ev, () => { this.lastInput = performance.now(); }, { passive: true });
 
     // the exhibit light: one warm spot from high left with soft shadows
     const key = new THREE.SpotLight(0xffe4bf, 2.2, 0, 0.46, 0.65, 0);
@@ -675,7 +680,7 @@ export class Viewer {
    */
   assemble(): void {
     if (!this.graph || !this.root) return;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { setTimeout(() => this.onAssembled?.(), 0); return; }
+    if (REDUCE_MOTION.matches) { setTimeout(() => this.onAssembled?.(), 0); return; }
     this.setApart(true, false);
     const [p] = PRESETS.iso;                                        // walk in from the side, where the spread along the arbors shows
     this.camera.position.set(p[0] * 3.3, p[1] * 1.15, p[2] * 0.45);
@@ -696,7 +701,7 @@ export class Viewer {
     this.apartTarget = to;
     if (on) this.setInside(true);
     const items = this.apartItems ?? (this.apartItems = this.buildApart());
-    if (!animate || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (!animate || REDUCE_MOTION.matches) {
       for (const it of items) { it.f = to; it.o.position.z = it.z0 + it.off * it.f; }
       this.apartTween = null;
       if (!on) setTimeout(() => this.onAssembled?.(), 0);
@@ -1170,8 +1175,8 @@ export class Viewer {
     this.stepReveal(now);
     this.stepLights(now);
     this.trails?.step(now, this.theme);
-    // a visitor left alone drifts slowly round the case
-    if (!this.tween && !this.reveal && !this.apartTween && !this.controls.autoRotate && now - this.lastInput > 12000 && ["iso", "front", "back", "free"].includes(this.currentView)) this.controls.autoRotate = true;
+    // a visitor left alone drifts slowly round the case, unless they have asked the page to keep still
+    if (!REDUCE_MOTION.matches && !this.tween && !this.reveal && !this.apartTween && !this.controls.autoRotate && now - this.lastInput > 12000 && ["iso", "front", "back", "free"].includes(this.currentView)) this.controls.autoRotate = true;
     this.controls.update();
     this.pick(now);
     this.gtao.enabled = this.quality.gtao;

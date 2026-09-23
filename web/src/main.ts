@@ -1,4 +1,4 @@
-import { Viewer, type Theme } from "./scene/viewer";
+import { Viewer, REDUCE_MOTION, type Theme } from "./scene/viewer";
 import { EPOCHS, mechanismState, type MechanismState, type Calibration } from "./mech/mechanism";
 import { civilToJdn, formatJd, TROPICAL_YEAR } from "./astro/jd";
 import { drawMoon } from "./ui/moon";
@@ -6,7 +6,7 @@ import { calibrate, type CalibrationSet } from "./astro/calibration";
 import { loadCanon, nextEclipse, prevEclipse, eclipsesBetween, describeType, skyState, moonLibration, type EclipseRow } from "./astro/truth";
 import { glyphByMonth, OBSERVED_HOURS } from "./astro/eym";
 import { parapegmaAt } from "./astro/parapegma";
-import { auditSaros, drawErrorChart, errorBands, type ErrorBands } from "./ui/analytics";
+import { auditSaros, errorBands, type ErrorBands } from "./ui/analytics";
 import { Tour } from "./ui/tour";
 import { Onboarding, firstVisit } from "./ui/onboarding";
 import { renderInspector, trainFor, trainsFor, trainRowId, TRAINS } from "./ui/inspector";
@@ -116,11 +116,12 @@ viewer.onAssembled = () => {
   applyVisibility();
   if (overtureDone) return;                                           // "taken apart" unticked later: the plates close, nothing else
   overtureDone = true;
+  setTimeout(registerWorker, 3000);
   if (readUrl()) return;                                              // a link to a particular state: show that, and nothing else competes
   if (firstVisit()) {
     // no autoplay: the invitation is one label over the exhibit, and narration starts from that click
     $("#begin").hidden = false;
-  } else {
+  } else if (!REDUCE_MOTION.matches) {
     setTimeout(() => { if (!playing && !onboarding.active) setPlaying(true, 0.0821918); }, 1600);   // a working model is already turning when you walk up
   }
 };
@@ -168,6 +169,7 @@ function readUrl(): boolean {
   if (v && v in PLATES) viewer.view(v);
   if (q.get("sky") === "1") setSky(true);
   if (q.get("expose") === "1") { $<HTMLInputElement>("#expose").checked = true; cosmos.setExposure(true); }
+  update(true);                                                      // the column follows even when the link sets no years (lib=1 at the epoch)
   caption();                                                          // a linked state has to say what it is
   return true;
 }
@@ -192,6 +194,8 @@ function buildLegend(): void {
     btn.append(dot, b.label);
     btn.addEventListener("pointerenter", () => cosmos.hover(b.id));
     btn.addEventListener("pointerleave", () => cosmos.hover(null));
+    btn.addEventListener("focus", () => cosmos.hover(b.id));          // the keyboard lights a body as the pointer does
+    btn.addEventListener("blur", () => cosmos.hover(null));
     return btn;
   }));
 }
@@ -205,7 +209,7 @@ function applyTheme(t: Theme, persist = true): void {
   // the browser chrome follows the version: parchment by day, lamp-black at night
   const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
   if (themeColor) themeColor.content = t === "manuscript" ? "#efe6d3" : "#17120e";
-  document.querySelectorAll<HTMLButtonElement>(".theme-switch [data-theme]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.theme === t)));
+  document.querySelectorAll<HTMLButtonElement>(".theme-switch [data-set-theme]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.setTheme === t)));
   viewer.setTheme(t);
   cosmos.setTheme(t);
   buildLegend();
@@ -217,7 +221,7 @@ function applyTheme(t: Theme, persist = true): void {
   }
   if (viewer.graph) { refreshAnalytics(); update(true); }
 }
-document.querySelectorAll<HTMLButtonElement>(".theme-switch [data-theme]").forEach((b) => b.addEventListener("click", () => applyTheme(b.dataset.theme as Theme)));
+document.querySelectorAll<HTMLButtonElement>(".theme-switch [data-set-theme]").forEach((b) => b.addEventListener("click", () => applyTheme(b.dataset.setTheme as Theme)));
 applyTheme(currentTheme(), false);
 const stageEl = $(".stage");
 function setSky(on: boolean): void {
@@ -316,7 +320,7 @@ const onboarding = new Onboarding({
       panel?.querySelectorAll("details").forEach((d) => { d.open = true; });
       focused = panel ?? el;
       focused.classList.add("focus");
-      el.scrollIntoView({ behavior: "smooth", block: el === panel ? "start" : "center" });     // a row to the centre; a whole panel (the Sky) from its top, diagram and strip together
+      el.scrollIntoView({ behavior: REDUCE_MOTION.matches ? "auto" : "smooth", block: el === panel ? "start" : "center" });     // a row to the centre; a whole panel (the Sky) from its top, diagram and strip together
     }
   },
   jumpNextLunarEclipse: () => {
@@ -332,7 +336,7 @@ const onboarding = new Onboarding({
 });
 addEventListener("keydown", (e) => {                                   // space turns the crank, unless a field has focus
   const t = e.target as HTMLElement | null;
-  if (e.key !== " " || (t && /^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(t.tagName))) return;
+  if (e.key !== " " || (t && /^(INPUT|SELECT|TEXTAREA|BUTTON|SUMMARY|A)$/.test(t.tagName))) return;
   e.preventDefault();
   setPlaying(!playing);
 });
@@ -354,19 +358,32 @@ shareBtn.addEventListener("click", async () => {
   }
 });
 let chart: Chart | undefined;
-
-/** The accuracy chart's series: 80 years sampled daily takes a few hundred ms, so it is computed once per epoch when the page is idle. */
+/**
+ * The accuracy panel: 80 years sampled daily and three Saros audited against the canon take the
+ * main thread for a second or more on a phone, and Chart.js is a third of the bundle, so none of it
+ * is done until a visitor opens the panel (or the walkthrough opens it for them). After that it
+ * follows the epoch as before.
+ */
+const accuracyPanel = $<HTMLCanvasElement>("#chart-moon").closest("details") as HTMLDetailsElement;
+accuracyPanel.addEventListener("toggle", () => { if (accuracyPanel.open) refreshAnalytics(); });
 let bands: { epochJdn: number; data: ErrorBands } | null = null;
 const idle = (fn: () => void): void => {
   const w = window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
-  if (w.requestIdleCallback) w.requestIdleCallback(fn, { timeout: 3000 }); else setTimeout(fn, 250);
+  if (w.requestIdleCallback) w.requestIdleCallback(fn, { timeout: 1000 }); else setTimeout(fn, 50);
 };
+let audited = -1;                                                     // the epoch the audit rows were last written for
 function refreshAnalytics(): void {
+  if (!accuracyPanel.open) return;
   const cv = $<HTMLCanvasElement>("#chart-moon");
-  const draw = () => { if (cv && bands && bands.epochJdn === epoch.jdn) chart = drawErrorChart(cv, bands.data, chart); };
+  const draw = () => {
+    if (!bands || bands.epochJdn !== epoch.jdn) return;
+    const data = bands.data;
+    import("./ui/chart").then(({ drawErrorChart }) => { chart = drawErrorChart(cv, data, chart); });
+  };
   if (bands?.epochJdn === epoch.jdn) draw();
   else { const jdn = epoch.jdn; idle(() => { if (bands?.epochJdn !== jdn) bands = { epochJdn: jdn, data: errorBands(jdn, mechCalibration(), -40, 40) }; draw(); }); }
-  if (!canon) return;
+  if (!canon || audited === epoch.jdn) return;
+  audited = epoch.jdn;
   const a = auditSaros(epoch.jdn, calib.sarosMonth0, canon, 669);
   setDl($("#audit-dl"), [
     ["months audited", `${a.months} (3 Saros, 54 yr)`],
@@ -395,13 +412,13 @@ const GLOSS: Record<string, string> = {
   "Exeligmos": "three Saros cycles (54 years); the small dial adds 0, 8 or 16 hours to the glyph's eclipse time",
   "Metonic": "the Metonic cycle: 235 lunar months equal 19 solar years; the upper back spiral counts them",
   "Callippic": "four Metonic cycles less one day, 76 years",
-  "Games": "the four-year round of the Panhellenic games (Olympia, Nemea, Isthmia, Delphi)",
-  "Dragon hand": "the pointer that tracks the Moon's nodes, where eclipses can happen (18.6-year cycle)",
-  "Egyptian date": "the 365-day Egyptian civil calendar on the front ring: 12 months of 30 days and 5 extra days",
+  "Games": "the four-year round of the games (Isthmia, Olympia, Nemea, Pythia, with the lesser Naa and Halieia)",
+  "Dragon hand": "the pointer that tracks the Moon's nodes, where eclipses can happen (18.6-year cycle; reconstructed, nothing of it survives)",
+  "Egyptian date": "the Egyptian calendar on the front ring, drawn with 365 days: 12 months of 30 and 5 extra (a 2024 hole count suggests the ring had 354)",
   "Sun (mean)": "the Sun's average position along the zodiac; the true Sun pointer adds the yearly wobble",
   "anomaly": "the pin-and-slot correction: the Moon runs fast near perigee and slow near apogee, up to about 6.5 degrees",
   "Julian Day": "the astronomers' day count, one number for any date, so that BC dates need no calendar arithmetic",
-  "Phase": "how much of the Moon's face is lit, shown by the half-silver ball on the front dial",
+  "Phase": "how much of the Moon's face is lit, shown by the half-dark ball on the front dial",
   "parapegma": "the star calendar on the plates above and below the dial: risings and settings of stars, each keyed by a letter to a degree of the zodiac (Bitsakis and Jones 2016)",
 };
 
@@ -719,6 +736,9 @@ requestAnimationFrame(loop);
 // the exhibit off the network: a service worker keeps the model, the textures and the sky data, so
 // a second visit, or a kiosk with nothing to dial out to, opens what it opened before. Nothing of
 // it shows in the room; a browser that will not have one simply goes to the network every time.
-if (import.meta.env.PROD && "serviceWorker" in navigator) {
-  addEventListener("load", () => { navigator.serviceWorker.register("./sw.js").catch(() => { /* no worker, no harm */ }); });
+// It is registered once the machine has assembled, not on load: filling the shelf fetches the
+// model, the fragment and both rooms, and on a first visit that must not compete with the page's
+// own download of the model (the one it fetches is then the browser's cached copy).
+function registerWorker(): void {
+  if (import.meta.env.PROD && "serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => { /* no worker, no harm */ });
 }
