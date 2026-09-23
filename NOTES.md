@@ -573,3 +573,44 @@ See README "Attributions" for licences.
   all failed with UNKNOWN or "unable to append"). `npm ci` rewrote `node_modules`; the four reflogs
   were renamed `*.onedrive-stub` (not deleted) so git could start new ones. Check with
   `attrib` for an `O` flag if a tool fails to read a file for no reason.
+- 2026-09-23, later: **Stewart approved the review's five recommendations**; the ledger is
+  `docs/plans/2026-09-23-review-run.md`.
+  **The "floating crank" was the Sun pointer.** Stewart's side view showed a stack standing far out
+  of the front with a glowing ball at its tip. The crank itself was right (axle from the wall, knob at
+  x 108). `blender/dials.py` placed the tubes, rings and pointers of the three pin-follower carriers
+  (`mercury_ptr` z 10, `venus_ptr` 11.5, `true_sun_ptr` 29.5 in `followers`) as if they sat at zero,
+  because it looked their depth up in the gears alone: the Sun's pointer and ball stood at z 65-71,
+  35 mm off the plate (z 30), and Mercury and Venus 10 mm too far out, out of the intended order.
+  `HOST_Z` now holds gears and followers alike. The stack runs date 33, Saturn 33.8, Jupiter 34.6,
+  Mars 35.4, Sun 36.2, Venus 37, Mercury 37.8, dragon 38.6, Moon 40. Stacked that tight, the old
+  round stones (3.6 mm high on rings 0.8 mm apart) and the Sun's 2.6 mm ball were swept by the
+  pointers above them, so the stones are inlays (scale z 0.22), the ball is r 1.9 inside its
+  pointer's layer, and the dragon's head is flattened to 0.35.
+  **The bronze.** ACES pushed lit bronze to saturated yellow, which is why the gears read as gold
+  foil whatever the albedo; the vitrine now tone-maps with AgX at exposure 0.72, gives colour back
+  with a `saturation` uniform in the final pass (1.15, applied in linear light before the tone map),
+  and the gear bronze is 0.8 of its exported colour with roughness 0.92, the plates' mottle halved
+  (`PLATE_MIX` 0.5, colour 0.62), vignette 0.62, grain 0.024. The manuscript keeps ACES at 1.0:
+  under AgX its parchment went grey, and it was balanced under ACES in the first place. Tuned live
+  through `__viewer.tuning` (the shared shader uniforms) and the materials on `__viewer.root`.
+  **The plinth** is a RoundedBoxGeometry block, a dark shadow gap and an eased top slab with a
+  canvas speckle, so the spot rolls along its edges instead of flaring into a white line.
+  **The spirals** are cut as slots in `tools/gen_dial_textures.py`: 0.8 mm of `SLOT` ink, bump depth
+  8, with one more turn drawn as a rule to close the outside; at 2048 px the old 0.2 mm hairline had
+  vanished. The model grew from 10.3 to 11.0 MB with the busier normal maps.
+  **Only what survives** (Exhibit menu, `?survives=1`) isolates the 30 gears whose `am_status` is
+  `surviving`; `Viewer.onIsolate` hands back the very array passed to `isolate`, so a train a
+  visitor clicks unticks the box by itself. **Front and Back** stand at 670 mm aimed at y -32: at
+  560 the case top sat under the view bar. **A phone's portrait stage** keeps only 0.9 of the 6:5
+  width of view (`keep` in `resize`), so the machine fills the height. **The colophon** says the
+  Halieia points to Rhodes and the months to Epirus (Iversen 2017), and names no maker.
+  **SEO and sharing:** a descriptive `<title>`, canonical, robots, `og:site_name`, `og:locale`,
+  `og:image:type`, `twitter:image:alt`, a JSON-LD WebApplication, `robots.txt` and `sitemap.xml`
+  (the root only: `?theme=manuscript` canonicalises to it). The share image is recut from new hero
+  renders under `og.jpg?v=2`, since Facebook and the rest cache by address. Share uses
+  `navigator.share` where the pointer is coarse (phones, tablets) and the clipboard elsewhere.
+  **The hero renders run headless** now: `blender -b build/antikythera.blend --python
+  blender/hero_render.py` (all five views in under four minutes on this machine), then
+  `python tools/gen_icons.py`. **viewer.ts** is 962 lines: the room, the shaders and the material
+  dressing moved to `room.ts`, `shaders.ts` and `materials.ts`; interaction and animation stay in
+  the class, whose state they share.
