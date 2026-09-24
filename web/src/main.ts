@@ -187,6 +187,16 @@ loadCanon().then((c) => { canon = c; update(); refreshAnalytics(); });
 // ---- the sky it tracks: the small diagram in the column and the same thing over the stage
 const cosmos = new Cosmos([$<HTMLCanvasElement>("#cosmos"), $<HTMLCanvasElement>("#cosmos-stage")]);
 (window as unknown as { __cosmos: Cosmos }).__cosmos = cosmos;      // alongside __viewer, for timing the sky from the console
+// and the few controls a script needs to film the exhibit deterministically (the project page's clips):
+// the crank stopped, the date stepped by hand, the walkthrough opened at a given leaf
+(window as unknown as { __app: object }).__app = {
+  setPlaying: (on: boolean, spd?: number) => setPlaying(on, spd),
+  setYears: (y: number) => setYears(y, true),
+  get years() { return years; },
+  get playing() { return playing; },
+  onboarding: () => onboarding,
+  setSky: (on: boolean) => setSky(on),
+};
 const retro = $<HTMLCanvasElement>("#retro");
 
 function buildLegend(): void {
@@ -592,7 +602,9 @@ function applyVisibility(): void {
   const g = viewer.graph;
   if (!g) return;
   const apart = $<HTMLInputElement>("#apart").checked;
-  const inside = $<HTMLInputElement>("#xray").checked || viewer.fragmentShown || apart;
+  // wheels shown alone (a train, or only what survives) need the case open too, or unticking "taken apart"
+  // under them would close it over the very wheels on show
+  const inside = $<HTMLInputElement>("#xray").checked || viewer.fragmentShown || apart || viewer.isolatedTrain.length > 0;
   const caseBox = $<HTMLInputElement>("#case");
   viewer.setCase(caseBox.checked);
   viewer.setApart(apart);
