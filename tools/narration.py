@@ -123,8 +123,17 @@ def api(path, data=None, raw=False):
         return r.read() if raw else json.loads(r.read().decode())
 
 
+# Arthur ("Classic, British and Steady"), an older British documentary voice from the ElevenLabs
+# library, chosen by Stewart on 2026-09-24 from four auditions; added to the account's library, so
+# it is found by id. The fallbacks below only matter if it is ever removed.
+VOICE_ID = "8ZBQD0m1R6EIchgSltwB"
+
+
 def pick_voice():
     voices = api("/v1/voices")["voices"]
+    for v in voices:
+        if v["voice_id"] == VOICE_ID:
+            return v
     prefs = ("George", "Daniel", "Brian", "Adam", "Bill")
     for name in prefs:
         for v in voices:
