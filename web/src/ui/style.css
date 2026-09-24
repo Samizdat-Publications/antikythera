@@ -24,7 +24,7 @@ html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); 
 button, input, select { font-family: inherit; font-size: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-#app { display: flex; flex-direction: column; height: 100%; }
+#app { display: flex; flex-direction: column; height: 100%; height: 100dvh; }   /* dvh: the height a phone's toolbars leave */
 
 /* ---------- top bar: the exhibit title */
 .topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; gap: var(--space-lg); padding: 14px 22px 10px; border-bottom: 1px solid var(--line-soft); background: var(--bg); }
@@ -170,8 +170,11 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
    bar with its title and half its text cut off, and nothing to scroll. Capped here, the head, the
    foot and the progress rule stay put and the prose scrolls inside. `--onboard-bottom` is how far
    the card stands off the foot of the stage, and the narrow and manuscript blocks below reset it. */
-.onboard { position: absolute; left: 22px; right: 22px; bottom: 22px; max-width: 760px; border: 1px solid var(--line-soft); background: oklch(0.19 0.014 62 / 0.96); padding: 9px 18px 0;
-  --onboard-bottom: 22px; max-height: calc(100% - var(--onboard-bottom) - 16px); display: flex; }
+/* a lower third: raised off the foot of the stage, and lifted further by onboarding.ts (--onboard-lift)
+   whenever the stage runs past what the window can show, so back and next are always in reach */
+.onboard { position: absolute; left: 22px; right: 22px; max-width: 760px; border: 1px solid var(--line-soft); background: oklch(0.19 0.014 62 / 0.96); padding: 9px 18px 0;
+  --onboard-bottom: max(22px, 9%); bottom: calc(var(--onboard-bottom) + var(--onboard-lift, 0px));
+  max-height: calc(100% - var(--onboard-bottom) - var(--onboard-lift, 0px) - 16px); display: flex; }
 .onboard[hidden] { display: none; }
 .onboard-card { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
 .onboard-head { display: flex; align-items: center; gap: var(--space-md); color: var(--ink-faint); font-size: 13px; font-variant-numeric: tabular-nums; }
@@ -210,7 +213,7 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
   .chk, .theme-switch button { white-space: nowrap; }
   #date-main { font-size: 19px; }
   #date-sub { display: none; }
-  .onboard { left: 12px; right: 12px; bottom: 12px; max-width: none; --onboard-bottom: 12px; }
+  .onboard { left: 12px; right: 12px; max-width: none; --onboard-bottom: 12px; }
   .onboard-body { font-size: 14.5px; }
 }
 @media (max-width: 480px) {
@@ -279,7 +282,7 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 [data-theme="manuscript"] .plate-caption .plate-no { font-style: normal; font-family: var(--font-display); color: var(--bronze); letter-spacing: 0.1em; margin-right: 8px; }
 [data-theme="manuscript"] .plate-caption .plate-no::after { content: "·"; margin-left: 8px; color: var(--ink-faint); }
 [data-theme="manuscript"] .stage-hud { left: 36px; top: 30px; }
-[data-theme="manuscript"] .onboard { left: 36px; bottom: 60px; --onboard-bottom: 60px; box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--line-soft); }
+[data-theme="manuscript"] .onboard { left: 36px; --onboard-bottom: max(60px, 10%); box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--line-soft); }
 [data-theme="manuscript"] .loading { bottom: 40px; }
 /* the walkthrough's opening letter is a versal in red ochre, as a rubricator would leave it */
 [data-theme="manuscript"] .onboard-body::first-letter { font-family: var(--font-display); font-size: 2.6em; line-height: 0.8; float: left; color: var(--bronze); padding: 0.08em 0.12em 0 0; }
@@ -333,5 +336,5 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
   /* moved down from the block above, where the running-head rules outranked them on source order */
   [data-theme="manuscript"] .stage { padding: 10px 12px 0; }
   [data-theme="manuscript"] .stage-hud { left: 22px; top: 20px; }
-  [data-theme="manuscript"] .onboard { left: 20px; right: 20px; bottom: 44px; --onboard-bottom: 44px; }
+  [data-theme="manuscript"] .onboard { left: 20px; right: 20px; --onboard-bottom: 44px; }
 }

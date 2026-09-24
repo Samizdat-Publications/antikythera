@@ -113,6 +113,7 @@ export class Onboarding {
   private audio = new Audio();
   private files = new Map<string, string>();
   narrate = true;
+  private fitting = false;
   onDone: (() => void) | null = null;
 
   constructor(private hooks: StepHooks, private steps: Step[] = STEPS) {
@@ -168,12 +169,20 @@ export class Onboarding {
   /** Folded: one line (leaf, title, back/next) at the foot of the stage; the narration and the scene carry on. */
   setFolded(on: boolean): void {
     this.el.classList.toggle("folded", on);
+    requestAnimationFrame(() => this.fit());
     (this.el.querySelector(".onboard-min") as HTMLButtonElement).textContent = on ? "+" : "–";
     (this.el.querySelector(".onboard-min") as HTMLButtonElement).title = on ? "open the card" : "fold the card away; the narration goes on";
     try { localStorage.setItem("am_tour_folded", on ? "1" : "0"); } catch { /* ignore */ }
   }
 
   start(at = 0): void {
+    if (!this.fitting) {
+      this.fitting = true;
+      const refit = () => this.fit();
+      addEventListener("resize", refit);
+      window.visualViewport?.addEventListener("resize", refit);
+      window.visualViewport?.addEventListener("scroll", refit);
+    }
     this.el.hidden = false;
     this.index = at - 1;
     this.next();
@@ -213,6 +222,21 @@ export class Onboarding {
     this.el.querySelector(".onboard-next")!.textContent = this.index === this.steps.length - 1 ? "finish" : "next";
     s.run(this.hooks);
     this.speak();
+    this.fit();
+  }
+
+  /**
+   * Keep the whole card on screen. The stage can run past what the window shows (browser toolbars,
+   * a zoomed or embedded page, a phone's address bar), which put back and next out of reach, so the
+   * card is lifted by however much of it would fall below the visible area.
+   */
+  fit(): void {
+    if (this.el.hidden) return;
+    this.el.style.setProperty("--onboard-lift", "0px");
+    const vv = window.visualViewport;
+    const visibleBottom = vv ? vv.offsetTop + vv.height : innerHeight;
+    const over = this.el.getBoundingClientRect().bottom - (visibleBottom - 12);
+    if (over > 0) this.el.style.setProperty("--onboard-lift", `${Math.ceil(over)}px`);
   }
 
   private speak(): void {
