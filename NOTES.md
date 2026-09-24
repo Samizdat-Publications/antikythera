@@ -614,3 +614,21 @@ See README "Attributions" for licences.
   `python tools/gen_icons.py`. **viewer.ts** is 962 lines: the room, the shaders and the material
   dressing moved to `room.ts`, `shaders.ts` and `materials.ts`; interaction and animation stay in
   the class, whose state they share.
+- 2026-09-24: **the walkthrough card, Arthur, and the landing page.** Stewart could not reach the
+  card's back and next: the stage ran past what his window showed and the card was pinned 22 px off
+  the stage's foot. It is a lower third now (`--onboard-bottom: max(22px, 9%)`), and
+  `Onboarding.fit()` lifts it by however much would fall below `visualViewport` on every leaf,
+  resize and fold; `#app` takes `100dvh`. Measured with the page forced 300 px taller than the window:
+  the card still ends at 891 of 903. **Narration** re-recorded in full in Arthur, an older British
+  documentary voice from the ElevenLabs library that Stewart chose from four auditions (George, Liam
+  Dale, AK, Arthur); `narration.py` finds him by id. Imitations of real people were ruled out.
+  **Found while filming:** unticking taken apart under only what survives closed the case over the
+  survivors; `applyVisibility` now keeps it open while any wheels are isolated. **The landing page**
+  (`docs/index.html`) is filmed from the running exhibit, frame by frame off the WebGL canvas with the
+  date stepped by hand (`docs/plans/2026-09-24-landing.md`, `tools/landing_clips.py`), since no ffmpeg
+  was at hand and animated WebP plays in a README too: a hero that scrolls a year of the crank (40
+  frames, with dials for the crank's 4.65 turns against the main wheel's one), the fourteen leaves in
+  a sticky stage whose address bar is a real link to that state and which Arthur reads on request,
+  seven views, the exhibit itself in an iframe on request, and phones. 24 MB of clips, loaded as they
+  come into view. **OneDrive** came back overnight and put stale cloud copies of nine files over the
+  committed ones, keeping ours as `*-StewartPC`; every copy matched HEAD, so HEAD was restored.

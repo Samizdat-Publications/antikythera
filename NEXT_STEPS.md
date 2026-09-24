@@ -54,6 +54,10 @@ needs a paid plan for that. `docs/index.html` is the page, `docs/screens/` the s
   card, the phone's framing, and viewer.ts split. NOTES.md, both 2026-09-23 entries; the ledger is
   `docs/plans/2026-09-23-review-run.md`.
 
+- 2026-09-24: the walkthrough card is a raised lower third that lifts itself to stay on screen, the
+  narration is Arthur's, and the project page is a landing page filmed from the running exhibit
+  (`docs/plans/2026-09-24-landing.md` says how to film it again after a visual change).
+
 ## Maintenance guide (for sessions at any effort level)
 
 **Change copy or a panel.** Edit `web/index.html` (the page), `web/src/ui/onboarding.ts` (the
@@ -72,6 +76,10 @@ no build, no framework, the vitrine's own OKLCH tokens copied into its `:root`. 
 pin the camera (`__viewer.view(name, 0)`, `controls.autoRotate = false`, `lastInput =
 performance.now()`) or the idle orbit will have wandered off, capture at 1600x1000, and save as JPEG
 at quality 84 into `docs/screens/`. Keep the README's captions and the page's in step.
+
+**Refilm the project page.** After a visible change, the clips in `docs/landing/` go stale. The
+recipe, with the capture harness, is `docs/plans/2026-09-24-landing.md`; `tools/landing_clips.py`
+turns the captured frames into the WebP clips and posters.
 
 **Deploy.** `cd web && npm run build && cd .. && npx wrangler deploy --assets web/dist`, then push.
 If the GLB or any texture changed, bump `CACHE` in `web/public/sw.js` first.
