@@ -3,13 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Antikythera Cosmos</title>
-    <meta name="description" content="A working 3D reconstruction of the Antikythera mechanism: all 69 gears of the 2021 Freeth model, built in Blender from one gear table and driven date by date against the real sky." />
+    <title>Antikythera Cosmos: the ancient Greek computer, working</title>
+    <meta name="description" content="A working 3D reconstruction of the Antikythera mechanism: all 69 gears of the 2021 Freeth model, built in Blender from one gear table, turned in the browser and checked against the real sky." />
     <link rel="canonical" href="https://samizdat-publications.github.io/antikythera/" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Antikythera Cosmos" />
-    <meta property="og:description" content="All 69 gears of the 2021 Freeth model, built in Blender from one gear table and driven date by date against the real sky." />
-    <meta property="og:image" content="https://antikythera.stewartgregerson.workers.dev/og.jpg" />
+    <meta property="og:site_name" content="Antikythera Cosmos" />
+    <meta property="og:title" content="Antikythera Cosmos: the ancient Greek computer, working" />
+    <meta property="og:description" content="All 69 gears of the 2021 Freeth model, turned by one crank in the browser and checked against NASA's eclipse canon." />
+    <meta property="og:image" content="https://antikythera.stewartgregerson.workers.dev/og.jpg?v=2" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The reconstruction in its wooden case, seen three-quarter on" />
     <meta property="og:url" content="https://samizdat-publications.github.io/antikythera/" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#17120e" />
@@ -17,10 +21,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+    <link rel="preload" as="image" href="landing/hero/f00.jpg" />
     <style>
-      /* The project page in the exhibit's own idiom: a warm dark gallery, bronze and vellum,
-         inscription for titles and a humanist book face for prose. Colours are the vitrine's
-         OKLCH tokens, unchanged. */
+      /* The project page in the exhibit's own idiom: a gallery at night, bronze and vellum,
+         inscription capitals for titles and a humanist book face for prose. The colours are the
+         vitrine's OKLCH tokens, unchanged; verdigris is kept for what is checked against the sky. */
       :root {
         --bg: oklch(0.15 0.012 62);
         --bg-2: oklch(0.185 0.014 62);
@@ -28,295 +33,579 @@
         --line: oklch(0.34 0.025 68);
         --line-soft: oklch(0.27 0.02 66);
         --ink: oklch(0.91 0.022 82);
-        --ink-dim: oklch(0.68 0.028 78);
-        --ink-faint: oklch(0.52 0.025 74);
+        --ink-dim: oklch(0.70 0.028 78);
+        --ink-faint: oklch(0.60 0.025 74);
         --bronze: oklch(0.74 0.12 72);
+        --bronze-deep: oklch(0.58 0.10 70);
         --accent: oklch(0.85 0.13 80);
         --verdigris: oklch(0.70 0.07 172);
         --display: "Marcellus", "Palatino Linotype", "Book Antiqua", serif;
         --body: "Alegreya", "Palatino Linotype", Georgia, serif;
-        --gutter: 16px;
+        --gutter: clamp(16px, 4vw, 40px);
+        --nav: 58px;
       }
       * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--ink);
-        font-family: var(--body);
-        font-size: 17px;
-        line-height: 1.6;
-        -webkit-font-smoothing: antialiased;
-      }
+      html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav) + 12px); }
+      body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 18px; line-height: 1.62; -webkit-font-smoothing: antialiased; }
       a { color: var(--accent); text-decoration-color: color-mix(in oklch, var(--accent) 40%, transparent); text-underline-offset: 3px; }
       a:hover { text-decoration-color: var(--accent); }
       :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
       img { max-width: 100%; height: auto; display: block; }
-      .wrap { max-width: 1120px; margin: 0 auto; padding: 0 var(--gutter); }
-
-      /* ---------- the title, as a wall label */
-      header.top { border-bottom: 1px solid var(--line-soft); background: linear-gradient(var(--bg-2), var(--bg)); }
-      .top-inner { padding: 64px 0 48px; text-align: center; }
-      h1 {
-        font-family: var(--display);
-        font-weight: 400;
-        font-size: clamp(30px, 6.4vw, 58px);
-        letter-spacing: 0.3em;
-        margin: 0 0 6px;
-        color: var(--bronze);
-        text-indent: 0.3em;                      /* the tracking would otherwise push the word left */
-      }
-      .standfirst { font-style: italic; color: var(--ink-dim); font-size: clamp(16px, 2.4vw, 20px); margin: 0 auto; max-width: 42ch; }
-      .actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 30px; }
-      .btn {
-        font-family: var(--display); letter-spacing: 0.09em; font-size: 15px;
-        padding: 11px 22px; border: 1px solid var(--line); border-radius: 3px;
-        color: var(--ink); text-decoration: none; background: transparent; transition: background 140ms, border-color 140ms, color 140ms;
-      }
-      .btn:hover { border-color: var(--bronze); color: var(--accent); background: oklch(0.22 0.02 66); }
-      .btn.primary { background: var(--bronze); border-color: var(--bronze); color: oklch(0.16 0.02 62); }
-      .btn.primary:hover { background: var(--accent); border-color: var(--accent); color: oklch(0.16 0.02 62); }
-
-      /* ---------- the hero, and every plate below it */
-      figure { margin: 0 0 8px; }
-      figure img { border: 1px solid var(--line-soft); border-radius: 2px; background: var(--bg-2); }
-      figcaption { color: var(--ink-faint); font-size: 14.5px; font-style: italic; margin-top: 10px; max-width: 62ch; }
-      /* the shorthand would reset .wrap's side gutter to zero, and the hero would run to the edge */
-      .hero { padding-top: 40px; padding-bottom: 8px; }
-
-      section { padding: 44px 0; border-top: 1px solid var(--line-soft); }
-      section:first-of-type { border-top: 0; }
-      h2 {
-        font-family: var(--display); font-weight: 400; font-size: 13px; letter-spacing: 0.24em;
-        text-transform: uppercase; color: var(--bronze); margin: 0 0 20px;
-      }
-      h3 { font-family: var(--display); font-weight: 400; font-size: 19px; letter-spacing: 0.04em; margin: 0 0 4px; color: var(--ink); }
-      p { margin: 0 0 16px; max-width: 68ch; }
-      .lede { font-size: clamp(18px, 2.3vw, 21px); }
+      button { font: inherit; color: inherit; cursor: pointer; }
+      .wrap { max-width: 1240px; margin: 0 auto; padding: 0 var(--gutter); }
+      .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      p { margin: 0 0 16px; }
       .dim { color: var(--ink-dim); }
 
-      /* ---------- the count of things, as a ledger line */
-      .ledger { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 2px; background: var(--line-soft); border: 1px solid var(--line-soft); }
-      .ledger div { background: var(--paper); padding: 18px 16px; }
-      .ledger b { display: block; font-family: var(--display); font-size: 27px; font-variant-numeric: lining-nums tabular-nums; color: var(--accent); font-weight: 400; }
-      .ledger span { display: block; color: var(--ink-dim); font-size: 14px; margin-top: 2px; }
+      /* ---------- the running head */
+      .nav { position: sticky; top: 0; z-index: 20; height: var(--nav); display: flex; align-items: center; background: oklch(0.15 0.012 62 / 0.86); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line-soft); }
+      .nav .wrap { display: flex; align-items: center; gap: 28px; width: 100%; }
+      .mark { font-family: var(--display); letter-spacing: 0.34em; color: var(--bronze); text-decoration: none; font-size: 17px; white-space: nowrap; }
+      .nav ul { display: flex; gap: 22px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+      .nav ul a { color: var(--ink-dim); text-decoration: none; font-size: 16px; }
+      .nav ul a:hover { color: var(--accent); }
+      @media (max-width: 900px) { .nav ul { display: none; } .nav .btn { margin-left: auto; } }
 
-      .plates { display: grid; gap: 34px; }
-      @media (min-width: 860px) { .plates.two { grid-template-columns: 1fr 1fr; } }
+      .btn { display: inline-block; font-family: var(--display); letter-spacing: 0.08em; font-size: 15px; padding: 10px 20px; border: 1px solid var(--line); border-radius: 3px; color: var(--ink); text-decoration: none; background: transparent; transition: background 140ms, border-color 140ms, color 140ms; white-space: nowrap; }
+      .btn:hover { border-color: var(--bronze); color: var(--accent); background: oklch(0.22 0.02 66); }
+      .btn.primary { background: var(--bronze); border-color: var(--bronze); color: oklch(0.16 0.02 62); }
+      .btn.primary:hover { background: var(--accent); border-color: var(--accent); }
+      .btn.small { font-size: 13.5px; padding: 7px 14px; }
 
-      /* ---------- how it is made, as a run of stages */
-      .chain { display: grid; gap: 2px; background: var(--line-soft); border: 1px solid var(--line-soft); }
-      @media (min-width: 760px) { .chain { grid-template-columns: repeat(5, 1fr); } }
-      .chain div { background: var(--paper); padding: 16px; }
-      .chain b { display: block; font-family: var(--display); color: var(--bronze); font-weight: 400; letter-spacing: 0.05em; font-size: 15px; margin-bottom: 4px; }
-      .chain span { color: var(--ink-dim); font-size: 14.5px; }
-      .chain code { font-size: 13px; color: var(--ink-faint); }
+      /* ---------- the hero: scrolling turns the crank. The section is tall; the stage inside it sticks,
+         and how far through the section the page has scrolled is how far through a year the machine is. */
+      .hero { position: relative; height: 290vh; }
+      .hero-stick { position: sticky; top: var(--nav); height: calc(100vh - var(--nav)); height: calc(100dvh - var(--nav)); display: grid; align-items: center; overflow: hidden; }
+      .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: clamp(24px, 4vw, 64px); align-items: center; }
+      h1 { font-family: var(--display); font-weight: 400; margin: 0 0 18px; line-height: 1; color: var(--bronze); }
+      /* sized to its column: eleven capitals tracked at 0.1em run about nine ems */
+      h1 .word { display: block; font-size: clamp(34px, 3.9vw, 64px); letter-spacing: 0.1em; white-space: nowrap; }
+      h1 .sub { display: block; margin-top: 12px; font-size: clamp(16px, 1.6vw, 24px); letter-spacing: 0.5em; color: var(--ink-dim); }
+      .standfirst { font-size: clamp(18px, 1.7vw, 22px); line-height: 1.5; max-width: 30ch; color: var(--ink); }
+      .actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 26px 0 30px; }
+      .scroll-hint { display: flex; align-items: center; gap: 14px; color: var(--ink-faint); font-style: italic; font-size: 16px; }
 
-      ul.checks { list-style: none; padding: 0; margin: 0; }
-      ul.checks li { padding: 14px 0; border-bottom: 1px solid var(--line-soft); max-width: 78ch; }
-      ul.checks li:last-child { border-bottom: 0; }
-      code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 0.86em; color: var(--verdigris); }
+      .vitrine { position: relative; border: 1px solid var(--line); border-radius: 2px; background: #120d09; box-shadow: 0 0 0 6px var(--bg-2), 0 0 0 7px var(--line-soft), 0 40px 80px -40px oklch(0.05 0.01 60 / 0.9); }
+      .vitrine img { width: 100%; aspect-ratio: 880 / 676; object-fit: cover; }
+      .readout { position: absolute; left: 20px; bottom: 16px; right: 20px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; pointer-events: none; }
+      .date { font-family: var(--display); font-size: clamp(22px, 2.6vw, 34px); color: var(--ink); font-variant-numeric: lining-nums tabular-nums; text-shadow: 0 2px 12px oklch(0.1 0.01 60); line-height: 1.1; }
+      .date small { display: block; font-family: var(--body); font-style: italic; font-size: 15px; color: var(--ink-dim); margin-top: 4px; }
+      .dials { display: flex; gap: 14px; }
+      .dial { text-align: center; font-size: 12.5px; color: var(--ink-dim); font-style: italic; width: 74px; }
+      .dial svg { width: 64px; height: 64px; display: block; margin: 0 auto 4px; }
+      .dial .turns { font-style: normal; font-variant-numeric: tabular-nums; color: var(--accent); }
+      @media (max-width: 900px) {
+        .hero { height: 240vh; }
+        .hero-grid { grid-template-columns: 1fr; gap: 18px; }
+        .hero-text { order: 2; }
+        h1 .word { font-size: clamp(32px, 11vw, 56px); }
+        .standfirst { font-size: 17px; max-width: none; }
+        .actions { margin: 16px 0 10px; }
+        .scroll-hint { display: none; }
+        .dial { width: 58px; } .dial svg { width: 44px; height: 44px; }
+        /* on a narrow screen the readout sits under the picture rather than over the machine */
+        .readout { position: static; padding: 10px 14px 12px; border-top: 1px solid var(--line-soft); align-items: center; }
+        .date { font-size: 22px; text-shadow: none; }
+      }
 
-      ul.sources { padding-left: 1.1em; margin: 0; max-width: 78ch; }
+      /* ---------- the ledger of numbers */
+      .ledger { display: grid; grid-template-columns: repeat(6, 1fr); border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+      .ledger div { padding: 26px 18px 22px; border-left: 1px solid var(--line-soft); }
+      .ledger div:first-child { border-left: 0; }
+      .ledger b { display: block; font-family: var(--display); font-weight: 400; font-size: clamp(30px, 3.4vw, 46px); color: var(--accent); font-variant-numeric: lining-nums tabular-nums; line-height: 1.1; }
+      .ledger span { display: block; color: var(--ink-dim); font-size: 15.5px; margin-top: 6px; line-height: 1.35; }
+      @media (max-width: 900px) { .ledger { grid-template-columns: repeat(2, 1fr); } .ledger div { border-left: 0; border-top: 1px solid var(--line-soft); } .ledger div:nth-child(-n+2) { border-top: 0; } .ledger div:nth-child(even) { border-left: 1px solid var(--line-soft); } }
+
+      section.band { padding: clamp(64px, 9vw, 120px) 0; }
+      h2 { font-family: var(--display); font-weight: 400; font-size: clamp(30px, 3.6vw, 48px); line-height: 1.1; margin: 0 0 16px; color: var(--ink); letter-spacing: 0.02em; }
+      .intro { max-width: 60ch; color: var(--ink-dim); font-size: 19px; margin-bottom: 40px; }
+
+      /* ---------- the walkthrough: the leaves scroll, the stage stays */
+      .walk { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr); gap: clamp(28px, 4vw, 64px); }
+      .leaves { list-style: none; margin: 0; padding: 0; }
+      .leaf { min-height: 64vh; display: flex; flex-direction: column; justify-content: center; padding: 24px 0; opacity: 0.38; transition: opacity 300ms; }
+      .leaf.is-active { opacity: 1; }
+      .leaf .num { font-family: var(--display); color: var(--bronze); font-size: 22px; letter-spacing: 0.06em; }
+      .leaf .num small { font-family: var(--body); font-style: italic; color: var(--ink-faint); font-size: 14px; letter-spacing: 0; margin-left: 10px; }
+      .leaf h3 { font-family: var(--display); font-weight: 400; font-size: clamp(24px, 2.4vw, 32px); margin: 4px 0 10px; line-height: 1.15; }
+      .leaf p { color: var(--ink-dim); max-width: 44ch; }
+      .leaf .tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+      .listen { display: inline-flex; align-items: center; gap: 9px; background: none; border: 1px solid var(--line); border-radius: 3px; padding: 7px 13px; font-size: 15px; color: var(--ink); }
+      .listen:hover { border-color: var(--bronze); color: var(--accent); }
+      .listen svg { width: 14px; height: 14px; fill: currentColor; }
+      .listen[aria-pressed="true"] { border-color: var(--bronze); color: var(--accent); }
+      .leaf .inline { display: none; }
+
+      .stage { position: sticky; top: calc(var(--nav) + 5vh); align-self: start; }
+      .screen { border: 1px solid var(--line); border-radius: 3px; overflow: hidden; background: var(--bg-2); box-shadow: 0 40px 80px -40px oklch(0.05 0.01 60 / 0.9); }
+      .address { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line-soft); background: var(--paper); font-size: 14px; }
+      .address a { color: var(--ink-dim); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; font-variant-numeric: tabular-nums; }
+      .address a b { color: var(--ink); font-weight: 400; }
+      .address a:hover { color: var(--accent); }
+      .address .go { flex: none; font-style: italic; color: var(--bronze); }
+      .frame { position: relative; aspect-ratio: 1200 / 750; background: #120d09; }
+      .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .frame img.clip { opacity: 0; transition: opacity 220ms; }
+      .frame img.clip.on { opacity: 1; }
+      .rail { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+      .ticks { display: grid; grid-template-columns: repeat(14, 1fr); gap: 4px; flex: 1; }
+      .ticks button { background: none; border: 0; border-top: 2px solid var(--line-soft); padding: 7px 0 0; font-family: var(--display); font-size: 13px; color: var(--ink-faint); }
+      .ticks button:hover { color: var(--ink); }
+      .ticks button[aria-current="true"] { border-top-color: var(--bronze); color: var(--accent); }
+      .now { margin-top: 8px; color: var(--ink-dim); font-style: italic; font-size: 15px; min-height: 1.6em; }
+      @media (max-width: 1023px) {
+        .walk { grid-template-columns: 1fr; }
+        .stage { display: none; }
+        .leaf { min-height: 0; opacity: 1; padding: 30px 0; border-top: 1px solid var(--line-soft); }
+        .leaf .inline { display: block; margin: 14px 0 16px; border: 1px solid var(--line); border-radius: 3px; overflow: hidden; }
+        .leaf .inline .frame { aspect-ratio: 1200 / 750; }
+      }
+
+      /* ---------- the views, as a cabinet of plates of different sizes */
+      .cabinet { display: grid; grid-template-columns: repeat(6, 1fr); gap: clamp(16px, 2vw, 28px); }
+      .plate { margin: 0; grid-column: span 2; }
+      .plate.wide { grid-column: span 3; }
+      .plate.hero-plate { grid-column: span 4; grid-row: span 2; }
+      .plate .frame { aspect-ratio: 800 / 615; border: 1px solid var(--line-soft); border-radius: 2px; overflow: hidden; }
+      .plate figcaption { margin-top: 12px; }
+      .plate figcaption b { display: block; font-family: var(--display); font-weight: 400; font-size: 20px; color: var(--ink); letter-spacing: 0.02em; }
+      .plate figcaption span { display: block; color: var(--ink-dim); font-size: 16px; line-height: 1.45; margin: 3px 0 6px; }
+      .plate figcaption a { font-size: 15px; font-style: italic; }
+      @media (max-width: 900px) { .cabinet { grid-template-columns: 1fr; } .plate, .plate.wide, .plate.hero-plate { grid-column: auto; grid-row: auto; } }
+
+      /* ---------- the exhibit itself, loaded into the page on request */
+      .live { border: 1px solid var(--line); border-radius: 3px; overflow: hidden; background: var(--bg-2); }
+      .live .frame { aspect-ratio: 16 / 10; max-height: 82vh; width: 100%; }
+      .live iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+      .live .cover { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; background: center / cover no-repeat url("screens/vitrine.jpg"); }
+      .live .cover::before { content: ""; position: absolute; inset: 0; background: oklch(0.12 0.01 62 / 0.62); }
+      .live .cover div { position: relative; padding: 0 20px; }
+      .live .cover p { color: var(--ink-dim); font-style: italic; margin: 12px 0 0; }
+
+      /* ---------- on a phone */
+      .phones { display: flex; justify-content: center; gap: clamp(16px, 3vw, 40px); flex-wrap: wrap; }
+      .phone { margin: 0; width: min(280px, 80vw); }
+      .phone .shell { border: 10px solid oklch(0.1 0.008 60); border-radius: 34px; overflow: hidden; box-shadow: 0 0 0 1px var(--line), 0 30px 60px -30px oklch(0.05 0.01 60 / 0.9); background: #000; }
+      .phone img { width: 100%; aspect-ratio: 390 / 844; object-fit: cover; }
+      .phone figcaption { text-align: center; color: var(--ink-dim); font-style: italic; font-size: 16px; margin-top: 12px; }
+
+      /* ---------- how it is checked, how it is built */
+      .two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 56px; }
+      @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+      .check { padding: 22px 0; border-top: 1px solid var(--line-soft); }
+      .check h3 { font-family: var(--display); font-weight: 400; font-size: 21px; margin: 0 0 6px; display: flex; gap: 12px; align-items: baseline; }
+      .check h3::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--verdigris); transform: translateY(-2px); }
+      .check p { color: var(--ink-dim); margin: 0; }
+      .chain { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--line-soft); }
+      .chain li { padding: 22px 18px 20px 0; position: relative; }
+      .chain li + li { padding-left: 18px; border-left: 1px solid var(--line-soft); }
+      .chain b { display: block; font-family: var(--display); font-weight: 400; color: var(--bronze); font-size: 18px; margin-bottom: 4px; }
+      .chain span { color: var(--ink-dim); font-size: 16px; line-height: 1.45; display: block; }
+      .chain code { display: block; margin-top: 8px; }
+      @media (max-width: 900px) { .chain { grid-template-columns: 1fr; } .chain li + li { padding-left: 0; border-left: 0; border-top: 1px solid var(--line-soft); } }
+      code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 0.84em; color: var(--verdigris); }
+      .prose { max-width: 66ch; }
+      .prose p { color: var(--ink-dim); }
+
+      ul.sources { padding-left: 1.1em; margin: 0; max-width: 80ch; }
       ul.sources li { margin-bottom: 10px; color: var(--ink-dim); }
-      ul.sources li cite { color: var(--ink); font-style: italic; }
+      ul.sources cite { color: var(--ink); }
 
-      footer { border-top: 1px solid var(--line-soft); padding: 34px 0 60px; color: var(--ink-faint); font-size: 14.5px; }
-      footer p { max-width: 74ch; }
-      .hedera { text-align: center; color: var(--line); font-size: 15px; padding: 6px 0 0; }
-      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+      footer { border-top: 1px solid var(--line-soft); padding: 40px 0 70px; color: var(--ink-faint); font-size: 16px; }
+      footer p { max-width: 78ch; }
+      .hedera { text-align: center; color: var(--line); font-size: 18px; padding: 8px 0 0; }
+
+      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .leaf, .frame img.clip { transition: none; } }
     </style>
   </head>
   <body>
-    <header class="top">
-      <div class="wrap top-inner">
-        <h1>ANTIKYTHERA</h1>
-        <p class="standfirst">A working model of the cosmos, after Freeth et al. 2021: all sixty-nine gears, turned by one crank.</p>
-        <div class="actions">
-          <a class="btn primary" href="https://antikythera.stewartgregerson.workers.dev">Open the exhibit</a>
-          <a class="btn" href="https://github.com/Samizdat-Publications/antikythera">The code</a>
-          <a class="btn" href="#how">How it is built</a>
+    <nav class="nav" aria-label="page">
+      <div class="wrap">
+        <a class="mark" href="#top">ANTIKYTHERA</a>
+        <ul>
+          <li><a href="#walkthrough">The walkthrough</a></li>
+          <li><a href="#views">The views</a></li>
+          <li><a href="#checked">How it is checked</a></li>
+          <li><a href="#built">How it is built</a></li>
+        </ul>
+        <a class="btn primary small" href="https://antikythera.stewartgregerson.workers.dev">Open the exhibit</a>
+      </div>
+    </nav>
+
+    <header class="hero" id="top">
+      <div class="hero-stick">
+        <div class="wrap hero-grid">
+          <div class="hero-text">
+            <h1><span class="word">ANTIKYTHERA</span><span class="sub">COSMOS</span></h1>
+            <p class="standfirst">The oldest geared computer in the world, rebuilt from its tooth counts and turned by one crank in your browser.</p>
+            <div class="actions">
+              <a class="btn primary" href="https://antikythera.stewartgregerson.workers.dev">Open the exhibit</a>
+              <a class="btn" href="https://github.com/Samizdat-Publications/antikythera">Read the source</a>
+            </div>
+            <p class="scroll-hint">
+              <svg width="30" height="30" viewBox="-15 -15 30 30" aria-hidden="true"><g id="hint-crank"><circle r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M0 0 L0 -11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cy="-11" r="2.6" fill="currentColor"/></g></svg>
+              Scroll, and the crank turns
+            </p>
+          </div>
+          <div class="vitrine">
+            <img id="hero-frame" src="landing/hero/f00.jpg" width="880" height="676" alt="The reconstruction with its case and plates lifted away, the gearwork turning through a year as the page scrolls" fetchpriority="high" />
+            <div class="readout" aria-live="off">
+              <div class="date"><span id="hero-date">12 May 205 BC</span><small id="hero-years">0.00 years since the epoch</small></div>
+              <div class="dials" aria-hidden="true">
+                <div class="dial">
+                  <svg viewBox="-32 -32 64 64"><circle r="27" fill="none" stroke="oklch(0.34 0.025 68)" stroke-width="1.5"/><g id="crank-dial"><path d="M0 0 L0 -21" stroke="oklch(0.85 0.13 80)" stroke-width="2.4" stroke-linecap="round"/><circle cy="-21" r="3.6" fill="oklch(0.85 0.13 80)"/></g><circle r="3" fill="oklch(0.74 0.12 72)"/></svg>
+                  the crank<br /><span class="turns" id="crank-turns">0.0</span> turns
+                </div>
+                <div class="dial">
+                  <svg viewBox="-32 -32 64 64"><circle r="27" fill="none" stroke="oklch(0.74 0.12 72)" stroke-width="3" stroke-dasharray="2.2 1.2"/><g id="wheel-dial"><path d="M0 0 L0 -20" stroke="oklch(0.85 0.13 80)" stroke-width="2" stroke-linecap="round"/></g><circle r="3" fill="oklch(0.74 0.12 72)"/></svg>
+                  the main wheel<br /><span class="turns" id="wheel-turns">0.00</span> turns
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </header>
 
-    <div class="wrap hero">
-      <figure>
-        <img src="renders/iso.jpg" alt="The front dial of the reconstruction, seen three-quarter on with the crank at the side, rendered in Cycles" width="1600" height="900" />
-        <figcaption>The front dial and the crank that drives it, rendered in Blender. Every wheel in the picture is cut from the same gear table the browser turns.</figcaption>
-      </figure>
+    <div class="wrap">
+      <div class="ledger" id="ledger">
+        <div><b data-to="69">69</b><span>gears, every one cut from a single table</span></div>
+        <div><b data-to="30">30</b><span>of them survive in the bronze fragments</span></div>
+        <div><b data-to="223">223</b><span>teeth on the main wheel, one turn a year</span></div>
+        <div><b>254/19</b><span>the Moon's ratio, exact in the gearing</span></div>
+        <div><b data-to="51">51</b><span>eclipse glyphs, checked against NASA</span></div>
+        <div><b data-to="14">14</b><span>narrated leaves in the walkthrough</span></div>
+      </div>
     </div>
 
-    <main class="wrap">
-      <section>
-        <p class="lede">
-          The Antikythera mechanism is a geared astronomical calculator recovered from a Roman-era
-          shipwreck in 1901, and the most sophisticated object surviving from the ancient world.
-          This is a reconstruction of it that actually works: turn the crank and all sixty-nine
-          wheels turn with it, at the exact ratios their tooth counts give. Thirty of those wheels survive
-          in the fragments and thirty-nine are the 2021 model's, and the pointers go where that model
-          says the bronze would have put them.
-        </p>
-        <p>
-          The machine is built parametrically in Blender from a single gear table, exported as glTF
-          with its driver rules attached, and driven date by date in the browser. Beside it, a panel
-          holds what the machine predicts against what really happened: NASA's eclipse canon for the
-          eclipses, a modern ephemeris for the positions. When the machine is wrong, the panel says so.
-        </p>
-        <div class="ledger">
-          <div><b>69</b><span>gears, from one table</span></div>
-          <div><b>17</b><span>named gear trains</span></div>
-          <div><b>23,962</b><span>NASA eclipse records</span></div>
-          <div><b>62</b><span>tests on the arithmetic</span></div>
-          <div><b>2</b><span>versions of the exhibit</span></div>
+    <main>
+      <section class="band" id="about">
+        <div class="wrap prose">
+          <h2>A reconstruction that works</h2>
+          <p>
+            Sponge divers brought the Antikythera mechanism up from a Roman-era wreck in 1901. It is
+            a hand-cranked bronze calculator, made in the second or early first century BC, that
+            predicted the positions of the Sun, the Moon and the planets, the Moon's phase, the
+            calendar and the eclipses. Eighty-two corroded fragments survive, about a third of it.
+          </p>
+          <p>
+            This is a working model of it, after the 2021 reconstruction by Tony Freeth's team at UCL.
+            Thirty of its sixty-nine gears are the ones found in the fragments; the other thirty-nine
+            follow that model. Turn the crank and every wheel turns at the exact ratio its teeth give.
+            Beside the machine, a column holds what it predicts against what really happened: NASA's
+            eclipse canon for the eclipses, a modern ephemeris for the positions. When the machine is
+            wrong, the column says so.
+          </p>
         </div>
       </section>
 
-      <section>
-        <h2>The exhibit</h2>
-        <div class="plates">
-          <figure>
-            <img src="screens/vitrine.jpg" alt="The dashboard: the case on a plinth in a dark gallery, with the crank, eclipse and Moon panels to the right" width="1600" height="1000" loading="lazy" />
-            <figcaption>The vitrine, the default version: a museum gallery at night, the machine lit like the exhibit it is, the catalogue column beside it. Here it stands at the epoch, the full moon of 12 May 205 BC.</figcaption>
-          </figure>
+      <section class="band" id="walkthrough" style="padding-top: 0">
+        <div class="wrap">
+          <h2>The walkthrough, leaf by leaf</h2>
+          <p class="intro">
+            The exhibit opens with fourteen narrated leaves, each setting the machine to show one idea.
+            Each one below is the exhibit as it stands at that leaf. The address above it opens the
+            exhibit in the same state, and Arthur reads the leaf aloud if you ask him.
+          </p>
+          <div class="walk">
+            <ol class="leaves" id="leaves"></ol>
+            <div class="stage" aria-label="the exhibit at the current leaf">
+              <div class="screen">
+                <div class="address"><a id="stage-url" href="https://antikythera.stewartgregerson.workers.dev/"></a><span class="go">opens the exhibit</span></div>
+                <div class="frame"><img id="stage-poster" alt="" width="1200" height="750" /><img id="stage-clip" class="clip" alt="" aria-hidden="true" width="1200" height="750" /></div>
+              </div>
+              <div class="rail"><div class="ticks" id="ticks"></div></div>
+              <p class="now" id="stage-now" aria-live="polite"></p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section>
-        <h2>The dials</h2>
-        <div class="plates two">
-          <figure>
-            <img src="screens/front.jpg" alt="The front dial, with the zodiac ring, the calendar ring and the planetary pointers" width="1600" height="1000" loading="lazy" />
-            <figcaption><b>The front.</b> The zodiac inside, the Egyptian calendar outside (drawn with 365 days; a 2024 hole count suggests 354), the Sun, the Moon and the five planets each on their own pointer, and the parapegma plates above and below listing the risings and settings of stars.</figcaption>
-          </figure>
-          <figure>
-            <img src="screens/back.jpg" alt="The back dials: the Metonic spiral above and the Saros spiral below" width="1600" height="1000" loading="lazy" />
-            <figcaption><b>The back.</b> The Metonic spiral, 235 months in five turns of nineteen years, with the Callippic and Games sub-dials inside it; below, the Saros spiral of 223 months, with Exeligmos counting its eight-hour corrections.</figcaption>
-          </figure>
+      <section class="band" id="views" style="padding-top: 0">
+        <div class="wrap">
+          <h2>Seven ways to look at it</h2>
+          <p class="intro">Every view is a switch in the exhibit, and every one can be sent as a link. These are filmed from the running page.</p>
+          <div class="cabinet" id="cabinet"></div>
         </div>
       </section>
 
-      <section>
-        <h2>Opening it up</h2>
-        <div class="plates two">
-          <figure>
-            <img src="screens/inside.jpg" alt="The case and plates lifted away, the gearwork turning in the air" width="1600" height="1000" loading="lazy" />
-            <figcaption><b>Inside.</b> The case and the plates lift away and the gearwork is left turning, lit from within. The ledger has a Saros glyph coming round, and NASA's canon records the lunar eclipse of 20 May 203 BC.</figcaption>
-          </figure>
-          <figure>
-            <img src="screens/apart.jpg" alt="All sixty-nine wheels spread out along their arbors, still turning" width="1600" height="1000" loading="lazy" />
-            <figcaption><b>Taken apart.</b> Every wheel slides out along its arbor and keeps turning, so the trains that share the great b1 wheel can be told apart by eye.</figcaption>
-          </figure>
+      <section class="band" id="try" style="padding-top: 0">
+        <div class="wrap">
+          <h2>Or turn it here</h2>
+          <p class="intro">The exhibit itself, loaded into this page. Drag to orbit, scroll to zoom, and press the space bar to turn the crank. It needs a browser with WebGL.</p>
+          <div class="live">
+            <div class="frame" id="live-frame">
+              <div class="cover">
+                <div>
+                  <button class="btn primary" id="live-load" type="button">Load the exhibit into the page</button>
+                  <p>About 15 MB, most of it the machine. Or <a href="https://antikythera.stewartgregerson.workers.dev">open it in its own tab</a>.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section>
-        <h2>The sky, and the arithmetic</h2>
-        <div class="plates two">
-          <figure>
-            <img src="screens/sky.jpg" alt="The Sky view: each body on its epicycle, drawing retrograde loops inside the zodiac ring" width="1600" height="1000" loading="lazy" />
-            <figcaption><b>Sky.</b> The machine's own cosmos, each body where its pin-and-slot puts it, with the retrograde loops it draws. Bronze is what the machine shows; verdigris is the real sky.</figcaption>
-          </figure>
-          <figure>
-            <img src="screens/train.jpg" alt="One gear train lit and the rest of the machine ghosted, with the ratio column beside it" width="1600" height="1000" loading="lazy" />
-            <figcaption><b>The trains.</b> Click a wheel, or a row in the column, and the rest of the machine ghosts out, leaving one train lit with its ratio written as the papers write it: the Saros at 940/4237.</figcaption>
-          </figure>
+      <section class="band" id="phones" style="padding-top: 0">
+        <div class="wrap">
+          <h2>On a phone</h2>
+          <p class="intro">The same exhibit, fitted to a hand: the stage above, the catalogue below, the walkthrough as a card you can fold away.</p>
+          <div class="phones">
+            <figure class="phone"><div class="shell"><img src="landing/phones/machine.jpg" width="390" height="844" loading="lazy" alt="The exhibit on a phone: the case on its plinth, the crank controls below" /></div><figcaption>The machine, three-quarter on</figcaption></figure>
+            <figure class="phone"><div class="shell"><img src="landing/phones/walkthrough.jpg" width="390" height="844" loading="lazy" alt="The walkthrough card on a phone, on the leaf about the Moon" /></div><figcaption>A walkthrough leaf</figcaption></figure>
+            <figure class="phone"><div class="shell"><img src="landing/phones/sky.jpg" width="390" height="844" loading="lazy" alt="The Sky view on a phone, the planets drawing their loops" /></div><figcaption>The sky it tracks</figcaption></figure>
+          </div>
         </div>
       </section>
 
-      <section>
-        <h2>The second version</h2>
-        <figure>
-          <img src="screens/manuscript.jpg" alt="The manuscript version: the same exhibit drawn on parchment in iron-gall ink" width="1600" height="1000" loading="lazy" />
-          <figcaption>
-            The same exhibit as a leaf from a scholar's copy of Ptolemy: parchment and iron-gall ink,
-            rubrics in red ochre, gold leaf for the Sun, the Moon drawn with pen hatching, the stage a
-            numbered plate captioned beneath. Here the Saros cell reads an attested glyph, H, against
-            NASA's partial solar eclipse of 9 October 193 BC. Both versions carry every feature;
-            only the room, the page and the inks differ.
-          </figcaption>
-        </figure>
-      </section>
-
-      <section id="how">
-        <h2>How it is built</h2>
-        <p>
-          One file is the source of truth. <code>data/gears.json</code> holds every wheel: its teeth,
-          its module, the arbor it rides, the layer it sits in and what it meshes with. Nothing
-          downstream invents a number, and no third-party geometry is imported.
-        </p>
-        <div class="chain">
-          <div><b>The table</b><span>69 gears with their teeth, arbors and couplings</span><br /><code>data/gears.json</code></div>
-          <div><b>The solver</b><span>every rate as an exact fraction, and the arbor layout</span><br /><code>python/mech/</code></div>
-          <div><b>The machine</b><span>wheels, plates, dials and pointers cut and driven</span><br /><code>blender/</code></div>
-          <div><b>The export</b><span>one glTF carrying each driver rule as node extras</span><br /><code>export_glb.py</code></div>
-          <div><b>The exhibit</b><span>three.js turning it from the same arithmetic</span><br /><code>web/</code></div>
+      <section class="band" id="checked" style="padding-top: 0">
+        <div class="wrap">
+          <h2>How it is checked</h2>
+          <p class="intro">Nothing on screen is taken on trust. The arithmetic is tested, the build checks itself, and the predictions are held against the real sky.</p>
+          <div class="two-col">
+            <div class="check"><h3>Every rate as a fraction</h3><p>The tests derive each pointer's rate from the tooth counts alone and assert it exactly: 254/19 for the Moon, 940/4237 for the Saros, −5/93 for the regressing lunar nodes, 1513/480 for Mercury. No decimals, no tolerances.</p></div>
+            <div class="check"><h3>The rig against the solver</h3><p>The Blender build drives the finished rig through a year, reads every gear back, and checks each pin-and-slot swing against asin(d/r). A wheel that does not turn at the rate the table gives fails the build.</p></div>
+            <div class="check"><h3>The glyphs against the bronze</h3><p>The eclipse-year model reproduces the glyph counts of Freeth 2014, and every glyph read on the surviving cells of the Saros dial.</p></div>
+            <div class="check"><h3>The predictions against NASA</h3><p>Every month the machine predicts is held against the Five Millennium Canon of Solar and Lunar Eclipses, and the exhibit says hit, miss or false alarm in plain words.</p></div>
+          </div>
         </div>
-        <p style="margin-top: 22px">
-          Rates are rotations per year of the main wheel, clockwise seen from the front positive. That
-          rule is written three times, in Python, in the Blender drivers and in the web gear graph, and
-          the tests hold the three together. Time is Julian Day throughout, on the proleptic Julian
-          calendar for BC dates, with astronomical years: nothing in the exhibit uses a JavaScript
-          <code>Date</code>, which cannot be trusted before 1582.
-        </p>
-        <p>
-          How the last of it was made is on the record as well. The
-          <a href="plans/2026-09-17-final.md">plan for version 1.0</a> and the
-          <a href="plans/2026-09-17-final-ledger.md">ledger of the rulings made against it</a> are
-          working documents, kept here as they were written.
-        </p>
       </section>
 
-      <section>
-        <h2>How the numbers are checked</h2>
-        <ul class="checks">
-          <li>
-            <h3>Every rate as a fraction</h3>
-            <p class="dim">The ratio tests derive each pointer's rate from the tooth counts alone and assert it exactly: 254/19 for the sidereal Moon, 940/4237 for the Saros, −5/93 for the regressing lunar nodes, 1513/480 for Mercury. No decimals, no tolerances.</p>
-          </li>
-          <li>
-            <h3>The rig checked against the solver</h3>
-            <p class="dim">The Blender build drives the finished rig through a year and reads every gear back, and checks each pin-and-slot amplitude against asin(d/r). A wheel that does not turn at the rate the table gives fails the build.</p>
-          </li>
-          <li>
-            <h3>The glyphs against the bronze</h3>
-            <p class="dim">The eclipse-year model reproduces the 51, 38 and 28 glyph counts of Freeth 2014, and every glyph observed on the surviving cells of the Saros dial.</p>
-          </li>
-          <li>
-            <h3>The predictions against NASA</h3>
-            <p class="dim">Each month the machine predicts is held against the Five Millennium Canon of Solar and Lunar Eclipses. The panel reports a hit, a miss or a false alarm in plain words, and the accuracy chart shows how the error grows the further the crank is turned from the epoch.</p>
-          </li>
-        </ul>
+      <section class="band" id="built" style="padding-top: 0">
+        <div class="wrap">
+          <h2>How it is built</h2>
+          <p class="intro">One file is the source of truth. <code>data/gears.json</code> holds every wheel: its teeth, its module, the arbor it rides and what it meshes with. Nothing downstream invents a number, and no third-party geometry is imported.</p>
+          <ol class="chain">
+            <li><b>The table</b><span>Sixty-nine gears with their teeth, arbors and couplings.</span><code>data/gears.json</code></li>
+            <li><b>The solver</b><span>Every rate as an exact fraction, and the arbor layout.</span><code>python/mech/</code></li>
+            <li><b>The machine</b><span>Wheels, plates, dials and pointers cut and driven in Blender.</span><code>blender/</code></li>
+            <li><b>The export</b><span>One glTF carrying each driver rule on its nodes.</span><code>export_glb.py</code></li>
+            <li><b>The exhibit</b><span>three.js turning it from the same arithmetic.</span><code>web/</code></li>
+          </ol>
+          <div class="prose" style="margin-top: 32px">
+            <p>
+              Time is Julian Day throughout, on the proleptic Julian calendar for dates BC, with
+              astronomical years: nothing in the exhibit trusts a JavaScript <code>Date</code> before
+              1582. Rates are turns per year of the main wheel, and the same rule is written three
+              times, in Python, in the Blender drivers and in the web, with tests holding the three
+              together. The decisions, and the reasons for them, are kept in
+              <a href="https://github.com/Samizdat-Publications/antikythera/blob/main/NOTES.md">NOTES.md</a>.
+            </p>
+          </div>
+        </div>
       </section>
 
-      <section>
-        <h2>Sources</h2>
-        <ul class="sources">
-          <li>Freeth, Higgon, Dacanalis, MacDonald, Georgakopoulou and Wojcik, <cite>A Model of the Cosmos in the ancient Greek Antikythera Mechanism</cite>, Scientific Reports 11:5821 (2021), CC BY 4.0, and the earlier Antikythera Mechanism Research Project papers of 2006, 2008, 2012 and 2014.</li>
-          <li>Eclipse predictions by Fred Espenak and Jean Meeus (NASA's Goddard Space Flight Center), <cite>Five Millennium Canon of Solar and Lunar Eclipses</cite>.</li>
-          <li>Positions in the real sky: astronomy-engine (Don Cross, MIT).</li>
-          <li>Parapegma and front dial inscriptions: Bitsakis and Jones, <cite>The Front Dial and Parapegma Inscriptions</cite>, Almagest 7.1 (2016), CC BY-NC 4.0.</li>
-          <li>Epochs: Carman and Evans 2014 (the full moon of 12 May 205 BC); Voulgaris, Mouratidis and Vossinakis 2023 (22 December 178 BC).</li>
-          <li>The Moon's face: NASA's CGI Moon Kit, the LROC colour mosaic, public domain. Rooms: Poly Haven HDRIs, CC0.</li>
-        </ul>
+      <section class="band" id="sources" style="padding-top: 0">
+        <div class="wrap">
+          <h2>Sources</h2>
+          <ul class="sources">
+            <li>Freeth, Higgon, Dacanalis, MacDonald, Georgakopoulou and Wojcik, <cite>A Model of the Cosmos in the ancient Greek Antikythera Mechanism</cite>, Scientific Reports 11:5821 (2021), CC BY 4.0, and the earlier Antikythera Mechanism Research Project papers of 2006, 2008, 2012 and 2014.</li>
+            <li>Eclipses: Fred Espenak and Jean Meeus, NASA Goddard, <cite>Five Millennium Canon of Solar and Lunar Eclipses</cite>. Positions: astronomy-engine (Don Cross).</li>
+            <li>Parapegma and front dial inscriptions: Bitsakis and Jones, <cite>The Front Dial and Parapegma Inscriptions</cite>, Almagest 7.1 (2016).</li>
+            <li>Epochs: Carman and Evans 2014 (the full moon of 12 May 205 BC); Voulgaris, Mouratidis and Vossinakis 2023 (22 December 178 BC).</li>
+            <li>The games and the calendar: Iversen 2017, Hesperia 86. The calendar ring's holes: Woan and Bayley 2024. The teeth: Szigety and Arenas 2025 (a preprint).</li>
+            <li>Fragment A's CT scan: Ashkan Pakzad, CC BY 4.0. The Moon's face: NASA's CGI Moon Kit (LROC), public domain. Rooms: Poly Haven HDRIs, CC0. Narration: ElevenLabs, the voice "Arthur".</li>
+          </ul>
+        </div>
       </section>
     </main>
 
-    <div class="hedera">&#10086;</div>
-
+    <div class="hedera" aria-hidden="true">&#10086;</div>
     <footer>
       <div class="wrap">
         <p>
-          Built by Stewart Gregerson with Claude Code. The parapegma's Greek wording and the Saros
-          glyph hours beyond the surviving cells are schematic reconstructions; the index letters
-          stand where Bitsakis and Jones place them. Where the exhibit shows something the bronze
-          does not preserve, it says so.
+          Built by Stewart Gregerson with Claude Code. Where the exhibit shows something the bronze does
+          not preserve, it says so: thirty-nine of the gears, the planetary display, the dragon hand and
+          most of the lettering are reconstructions.
         </p>
-        <p>
-          <a href="https://antikythera.stewartgregerson.workers.dev">The exhibit</a> &middot;
-          <a href="https://github.com/Samizdat-Publications/antikythera">The repository</a>
-        </p>
+        <p><a href="https://antikythera.stewartgregerson.workers.dev">The exhibit</a>, <a href="https://github.com/Samizdat-Publications/antikythera">the repository</a>, <a href="https://github.com/Samizdat-Publications/antikythera#readme">the README</a>.</p>
       </div>
     </footer>
+
+    <script>
+    (function () {
+      var EXHIBIT = "https://antikythera.stewartgregerson.workers.dev/";
+      var RM = matchMedia("(prefers-reduced-motion: reduce)");
+      var conn = navigator.connection || {};
+      var lowData = !!conn.saveData;
+      var still = function () { return RM.matches || lowData; };
+      var $ = function (s, r) { return (r || document).querySelector(s); };
+
+      /* ---------- the hero: scroll position is the date */
+      var DATES = ["21 May 205 BC","30 May 205 BC","8 Jun 205 BC","18 Jun 205 BC","27 Jun 205 BC","6 Jul 205 BC","15 Jul 205 BC","24 Jul 205 BC","2 Aug 205 BC","11 Aug 205 BC","20 Aug 205 BC","30 Aug 205 BC","8 Sep 205 BC","17 Sep 205 BC","26 Sep 205 BC","5 Oct 205 BC","14 Oct 205 BC","23 Oct 205 BC","1 Nov 205 BC","11 Nov 205 BC","20 Nov 205 BC","29 Nov 205 BC","8 Dec 205 BC","17 Dec 205 BC","26 Dec 205 BC","4 Jan 204 BC","14 Jan 204 BC","23 Jan 204 BC","1 Feb 204 BC","10 Feb 204 BC","19 Feb 204 BC","28 Feb 204 BC","9 Mar 204 BC","18 Mar 204 BC","28 Mar 204 BC","6 Apr 204 BC","15 Apr 204 BC","24 Apr 204 BC","3 May 204 BC","12 May 204 BC"];
+      var N = DATES.length;
+      var frames = [];
+      function preload() {
+        for (var i = 0; i < N; i++) { var im = new Image(); im.decoding = "async"; im.src = "landing/hero/f" + String(i).padStart(2, "0") + ".jpg"; frames.push(im); }
+      }
+      if ("requestIdleCallback" in window) requestIdleCallback(preload, { timeout: 1200 }); else setTimeout(preload, 300);
+      var hero = $(".hero"), heroImg = $("#hero-frame"), heroDate = $("#hero-date"), heroYears = $("#hero-years");
+      var crank = $("#crank-dial"), wheel = $("#wheel-dial"), hint = $("#hint-crank"), crankT = $("#crank-turns"), wheelT = $("#wheel-turns");
+      var shown = -1, ticking = false;
+      function scrub() {
+        ticking = false;
+        var r = hero.getBoundingClientRect();
+        var span = hero.offsetHeight - innerHeight;
+        var p = Math.min(1, Math.max(0, -r.top / Math.max(1, span)));
+        var years = p;                                           // the section is exactly one turn of the main wheel
+        var turns = years * 223 / 48;                            // and four and two-thirds turns of the crank
+        crank.setAttribute("transform", "rotate(" + (turns * 360).toFixed(1) + ")");
+        hint.setAttribute("transform", "rotate(" + (turns * 360).toFixed(1) + ")");
+        wheel.setAttribute("transform", "rotate(" + (years * 360).toFixed(1) + ")");
+        crankT.textContent = turns.toFixed(1);
+        wheelT.textContent = years.toFixed(2);
+        var f = Math.min(N - 1, Math.round(p * (N - 1)));
+        if (f !== shown) {
+          shown = f;
+          heroImg.src = "landing/hero/f" + String(f).padStart(2, "0") + ".jpg";
+          heroDate.textContent = p === 0 ? "12 May 205 BC" : DATES[f];
+        }
+        heroYears.textContent = years.toFixed(2) + " years since the epoch";
+      }
+      addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(scrub); } }, { passive: true });
+      addEventListener("resize", scrub);
+      scrub();
+
+      /* ---------- the ledger counts up once, when it is first seen */
+      var counted = false;
+      new IntersectionObserver(function (es, obs) {
+        if (!es[0].isIntersecting || counted) return;
+        counted = true; obs.disconnect();
+        if (still()) return;
+        document.querySelectorAll("#ledger b[data-to]").forEach(function (el) {
+          var to = +el.dataset.to, t0 = performance.now(), dur = 1400;
+          (function step(t) {
+            var q = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - q, 4);
+            el.textContent = Math.round(to * e);
+            if (q < 1) requestAnimationFrame(step);
+          })(t0);
+        });
+      }, { threshold: 0.4 }).observe($("#ledger"));
+
+      /* ---------- the walkthrough */
+      var GREEK = ["Αʹ","Βʹ","Γʹ","Δʹ","Εʹ","Ϛʹ","Ζʹ","Ηʹ","Θʹ","Ιʹ","ΙΑʹ","ΙΒʹ","ΙΓʹ","ΙΔʹ"];
+      var LEAVES = [
+        ["A machine that models the sky", "Sixty-nine gears on one crank. Thirty survive in the fragments; the other thirty-nine follow the 2021 model by Tony Freeth's team.", "welcome", 41, ""],
+        ["What the divers found", "A lump of bronze from a Roman-era wreck, 1901. This is Fragment A, the largest piece, from a CT scan of the original.", "discovery", 43, "?view=front-close"],
+        ["Seeing inside the corrosion", "The 2005 X-ray scan made the teeth countable. Here the reconstruction is laid inside the scan, so the wheels show through.", "xray", 29, "?view=front-close&inside=1"],
+        ["One crank, one year", "A 48-tooth crown wheel against the 223-tooth main wheel: about four and two-thirds turns of the crank make a year.", "crank", 25, "?view=crank"],
+        ["Why everything is counted from an epoch", "The machine has no clock. It was set once, by hand, and scholars infer the day from the pattern of its eclipse glyphs.", "epoch", 60, "?view=front"],
+        ["The front dial is the sky", "The zodiac inside, the Egyptian calendar outside, and the parapegma plates listing the risings and settings of stars.", "zodiac", 49, "?view=front-close"],
+        ["The Moon and its phase", "Three pairs of gears give exactly 254/19, and a little ball, half pale and half dark, turns once a month to show the phase.", "moon", 42, "?view=front-close"],
+        ["The pin and slot", "Two 50-tooth gears on axes 1.1 mm apart make the Moon speed up and slow down, as the real one does near perigee.", "pinslot", 42, "?view=pinslot&inside=1"],
+        ["The calendars on the back", "The Metonic spiral, 235 months in five turns, with the four-year games and the 76-year Callippic cycle inside it.", "backdials", 44, "?view=back-upper"],
+        ["Predicting eclipses", "The Saros spiral of 223 months. Fifty-one cells carry glyphs, and each one is held against NASA's catalogue.", "saros", 39, "?view=back-lower"],
+        ["The planets", "Rings for Mercury, Venus, Mars, Jupiter and Saturn, each with its own epicyclic gearing and a coloured stone.", "cosmos", 38, "?view=front-close"],
+        ["The sky it tracks", "The machine drawn as a sky: each body on its epicycle, looping backwards as the Earth overtakes it.", "sky", 36, "?sky=1"],
+        ["How good was it?", "The Moon stays within about two degrees; and the perfect wheels here were filed by hand in bronze.", "accuracy", 51, "?view=front"],
+        ["Explore", "Drag, zoom, click a gear to see its train, wind the crank by hand, or send the view you have set up as a link.", "explore", 41, ""]
+      ];
+      var list = $("#leaves"), ticks = $("#ticks");
+      var audio = new Audio(); audio.preload = "none";
+      var playing = null;
+      function stopAudio() { audio.pause(); if (playing) { playing.setAttribute("aria-pressed", "false"); playing.querySelector("span").textContent = playing.dataset.label; } playing = null; }
+      audio.addEventListener("ended", stopAudio);
+      LEAVES.forEach(function (L, i) {
+        var n = String(i + 1).padStart(2, "0");
+        var li = document.createElement("li");
+        li.className = "leaf"; li.dataset.i = i;
+        li.innerHTML =
+          '<div class="num" aria-hidden="true">' + GREEK[i] + '<small>' + (i + 1) + " of 14</small></div>" +
+          '<h3><span class="sr-only">Leaf ' + (i + 1) + ": </span>" + L[0] + "</h3>" +
+          '<div class="inline"><div class="frame"><img class="poster" loading="lazy" width="1200" height="750" alt="The exhibit at this leaf" src="landing/clips/leaf' + n + '.jpg" /></div></div>' +
+          "<p>" + L[1] + "</p>" +
+          '<div class="tools"><button type="button" class="listen" aria-pressed="false" data-label="Hear it read, ' + L[3] + ' s"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2 L14 8 L3 14 Z"/></svg><span>Hear it read, ' + L[3] + " s</span></button>" +
+          '<a class="btn small" href="' + EXHIBIT + L[4] + '">Open this in the exhibit</a></div>';
+        list.appendChild(li);
+        var b = document.createElement("button");
+        b.type = "button"; b.textContent = GREEK[i];
+        b.setAttribute("aria-label", "Leaf " + (i + 1) + ", " + L[0]);
+        b.addEventListener("click", function () { li.scrollIntoView({ block: "center", behavior: RM.matches ? "auto" : "smooth" }); });
+        ticks.appendChild(b);
+        li.querySelector(".listen").addEventListener("click", function (e) {
+          var btn = e.currentTarget;
+          if (playing === btn) { stopAudio(); return; }
+          stopAudio();
+          audio.src = EXHIBIT + "audio/tour_" + L[2] + ".mp3";
+          audio.play().then(function () { playing = btn; btn.setAttribute("aria-pressed", "true"); btn.querySelector("span").textContent = "Stop"; }).catch(function () {});
+        });
+      });
+
+      var stagePoster = $("#stage-poster"), stageClip = $("#stage-clip"), stageUrl = $("#stage-url"), stageNow = $("#stage-now");
+      var active = -1;
+      function setLeaf(i) {
+        if (i === active) return;
+        active = i;
+        var L = LEAVES[i], n = String(i + 1).padStart(2, "0");
+        document.querySelectorAll(".leaf").forEach(function (el, k) { el.classList.toggle("is-active", k === i); });
+        ticks.querySelectorAll("button").forEach(function (b, k) { b.setAttribute("aria-current", k === i ? "true" : "false"); });
+        stagePoster.src = "landing/clips/leaf" + n + ".jpg";
+        stagePoster.alt = "The exhibit at leaf " + (i + 1) + ", " + L[0];
+        stageClip.classList.remove("on");
+        if (!still()) {
+          var want = "landing/clips/leaf" + n + ".webp";
+          var c = new Image();
+          c.onload = function () { if (active === i) { stageClip.src = want; stageClip.classList.add("on"); } };
+          c.src = want;
+        }
+        var host = EXHIBIT.replace(/^https:\/\//, "").replace(/\/$/, "");
+        stageUrl.href = EXHIBIT + L[4];
+        stageUrl.innerHTML = host + "/<b>" + L[4].replace(/&/g, "&amp;") + "</b>";
+        stageNow.textContent = "Leaf " + (i + 1) + " of 14: " + L[0];
+      }
+      var wide = matchMedia("(min-width: 1024px)");
+      var leafObs = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) setLeaf(+e.target.dataset.i); });
+      }, { rootMargin: "-45% 0px -45% 0px" });
+      document.querySelectorAll(".leaf").forEach(function (el) { leafObs.observe(el); });
+      setLeaf(0);
+
+      /* on narrow screens each leaf carries its own picture, which plays while it is on screen */
+      function inlineClips() {
+        document.querySelectorAll(".leaf .inline .poster").forEach(function (img, i) {
+          var n = String(i + 1).padStart(2, "0");
+          clipOnView(img, "landing/clips/leaf" + n + ".webp", "landing/clips/leaf" + n + ".jpg");
+        });
+      }
+      function clipOnView(img, clip, poster) {
+        new IntersectionObserver(function (es) {
+          es.forEach(function (e) {
+            if (still()) return;
+            if (e.isIntersecting) { if (img.dataset.on !== "1") { img.dataset.on = "1"; img.src = clip; } }
+            else if (img.dataset.on === "1") { img.dataset.on = "0"; img.src = poster; }
+          });
+        }, { rootMargin: "80px 0px" }).observe(img);
+      }
+      if (!wide.matches) inlineClips();
+
+      /* ---------- the views */
+      var VIEWS = [
+        ["inside", "Inside", "The case and the plates lift away, and the gearwork turns in the air, lit from within.", "?inside=1", "hero-plate"],
+        ["front", "The front dial", "The zodiac and the calendar, with pointers for the Sun, the Moon and the five planets.", "?view=front", ""],
+        ["back", "The back dials", "The Metonic and Saros spirals, cut as slots for the pointers' pins to ride in.", "?view=back", ""],
+        ["apart", "Taken apart", "Every wheel slides out along its arbor and keeps turning, so the trains can be told apart.", "?apart=1", "wide"],
+        ["survives", "Only what survives", "The thirty gears found in the fragments, solid; the thirty-nine reconstructed ones, as ghosts.", "?survives=1", "wide"],
+        ["sky", "The sky it tracks", "The machine's cosmos drawn from its own gears, with the real sky in verdigris beside it.", "?sky=1", "wide"],
+        ["manuscript", "The manuscript", "The same exhibit as a scholar's copy of Ptolemy: parchment, iron-gall ink and red ochre.", "?theme=manuscript&view=front", "wide"]
+      ];
+      var cab = $("#cabinet");
+      VIEWS.forEach(function (V) {
+        var f = document.createElement("figure");
+        f.className = "plate " + V[4];
+        f.innerHTML = '<div class="frame"><img loading="lazy" width="800" height="615" alt="' + V[1] + ', filmed from the running exhibit" src="landing/clips/view-' + V[0] + '.jpg" /></div>' +
+          "<figcaption><b>" + V[1] + "</b><span>" + V[2] + '</span><a href="' + EXHIBIT + V[3] + '">Open this view</a></figcaption>';
+        cab.appendChild(f);
+        clipOnView(f.querySelector("img"), "landing/clips/view-" + V[0] + ".webp", "landing/clips/view-" + V[0] + ".jpg");
+      });
+
+      /* ---------- the exhibit itself, only when asked for */
+      $("#live-load").addEventListener("click", function () {
+        var fr = document.createElement("iframe");
+        fr.src = EXHIBIT; fr.title = "The Antikythera Cosmos exhibit"; fr.allow = "fullscreen; autoplay; clipboard-write";
+        fr.loading = "eager";
+        var box = $("#live-frame"); box.innerHTML = ""; box.appendChild(fr);
+      });
+    })();
+    </script>
   </body>
 </html>
