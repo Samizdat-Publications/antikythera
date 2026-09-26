@@ -15,7 +15,7 @@ import zipfile
 
 import bpy
 
-REPO = globals().get("REPO", r"C:\Users\stewa\OneDrive\Documents\Claude\Blender Tests\antikythera")
+REPO = globals().get("REPO", r"C:\Users\stewa\Documents\Claude\Blender Tests\antikythera")
 SRC = globals().get("SRC", "")
 TARGET_TRIS = int(globals().get("TARGET_TRIS", "180000"))
 OUT = os.path.join(REPO, "dist", "fragment_a.glb")

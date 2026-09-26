@@ -17,7 +17,7 @@ import math
 import bpy
 from mathutils import Vector
 
-REPO = globals().get("REPO", r"C:\Users\stewa\OneDrive\Documents\Claude\Blender Tests\antikythera")
+REPO = globals().get("REPO", r"C:\Users\stewa\Documents\Claude\Blender Tests\antikythera")
 VIEWS = str(globals().get("VIEWS", "hero,front,back,pinslot,iso")).split(",")
 SAMPLES = int(globals().get("SAMPLES", "256"))
 SIZE = str(globals().get("SIZE", "1920x1200"))

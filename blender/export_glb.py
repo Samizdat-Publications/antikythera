@@ -11,7 +11,7 @@ import os
 
 import bpy
 
-REPO = globals().get("REPO", r"C:\Users\stewa\OneDrive\Documents\Claude\Blender Tests\antikythera")
+REPO = globals().get("REPO", r"C:\Users\stewa\Documents\Claude\Blender Tests\antikythera")
 DIST = os.path.join(REPO, "dist")
 os.makedirs(DIST, exist_ok=True)
 

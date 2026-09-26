@@ -8,7 +8,7 @@ import os
 
 import bpy
 
-REPO = globals().get("REPO", r"C:\Users\stewa\OneDrive\Documents\Claude\Blender Tests\antikythera")
+REPO = globals().get("REPO", r"C:\Users\stewa\Documents\Claude\Blender Tests\antikythera")
 VIEWS = globals().get("VIEWS", "front,back,iso").split(",")
 YEARS = float(globals().get("YEARS", "0.0"))
 OUT = os.path.join(REPO, "build", "renders")

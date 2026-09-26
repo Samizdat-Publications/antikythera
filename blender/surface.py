@@ -24,7 +24,7 @@ import bmesh
 import bpy
 from mathutils import Vector
 
-REPO = globals().get("REPO", r"C:\Users\stewa\OneDrive\Documents\Claude\Blender Tests\antikythera")
+REPO = globals().get("REPO", r"C:\Users\stewa\Documents\Claude\Blender Tests\antikythera")
 TEX = os.path.join(REPO, "assets", "textures")
 BAKE = str(globals().get("BAKE", "1")) not in ("0", "false", "False")
 SAMPLES = int(globals().get("SAMPLES", "256"))

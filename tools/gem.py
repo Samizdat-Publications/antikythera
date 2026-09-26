@@ -6,7 +6,7 @@ import re
 import urllib.error
 import urllib.request
 
-ROOT = r"C:\Users\stewa\OneDrive\Documents\Claude\Blender Tests\antikythera"
+ROOT = r"C:\Users\stewa\Documents\Claude\Blender Tests\antikythera"
 API = "https://generativelanguage.googleapis.com/v1beta"
 
 

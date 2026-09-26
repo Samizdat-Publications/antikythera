@@ -9,7 +9,7 @@ import sys
 
 import bpy
 
-REPO = r"C:\Users\stewa\OneDrive\Documents\Claude\Blender Tests\antikythera"
+REPO = r"C:\Users\stewa\Documents\Claude\Blender Tests\antikythera"
 for p in (REPO + "\\python", REPO + "\\blender"):
     if p not in sys.path:
         sys.path.insert(0, p)

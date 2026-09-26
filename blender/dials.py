@@ -19,7 +19,7 @@ import sys
 import bmesh
 import bpy
 
-REPO = globals().get("REPO", r"C:\Users\stewa\OneDrive\Documents\Claude\Blender Tests\antikythera")
+REPO = globals().get("REPO", r"C:\Users\stewa\Documents\Claude\Blender Tests\antikythera")
 for p in (REPO + "\\python", REPO + "\\blender"):
     if p not in sys.path:
         sys.path.insert(0, p)
