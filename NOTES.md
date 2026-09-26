@@ -632,3 +632,10 @@ See README "Attributions" for licences.
   seven views, the exhibit itself in an iframe on request, and phones. 24 MB of clips, loaded as they
   come into view. **OneDrive** came back overnight and put stale cloud copies of nine files over the
   committed ones, keeping ours as `*-StewartPC`; every copy matched HEAD, so HEAD was restored.
+- 2026-09-26: **moved out of OneDrive.** The project now lives in
+  `C:\Users\stewa\Documents\Claude\Blender Tests\antikythera`; the OneDrive copy is stale (OneDrive
+  rolled its `.git` back to 8ce219c) and is left for Stewart to remove. The new copy was checked against
+  `origin/main`: its "modified" files were line endings only and its eight `*-StewartPC` conflict copies
+  matched HEAD byte for byte, so both were cleared. The nine scripts that defaulted `REPO` or `ROOT` to
+  the OneDrive path now point at the new one. The two audition voices (AK, Liam Dale) were removed from
+  the ElevenLabs library; Arthur is the only one kept.
