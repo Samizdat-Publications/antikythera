@@ -1,0 +1,63 @@
+{
+  "name": "Antikythera Cosmos",
+  "repo": "antikythera",
+  "pitch": "The Antikythera mechanism rebuilt from its tooth counts: 69 gears turned by one crank in your browser.",
+  "status": "v1",
+  "version": "1.1.0",
+  "kind": "reconstruction",
+  "started": "2026-09-12",
+  "updated": "2026-09-24",
+  "tech": [
+    "TypeScript",
+    "Three.js",
+    "Blender",
+    "astronomy-engine"
+  ],
+  "links": {
+    "landing": "https://samizdat-publications.github.io/antikythera/",
+    "play": "https://antikythera.stewartgregerson.workers.dev",
+    "devlog": ""
+  },
+  "hero": {
+    "gif": "docs/landing/clips/view-inside.webp",
+    "poster": "docs/landing/clips/view-inside.jpg",
+    "clip": ""
+  },
+  "credits": [
+    {
+      "what": "Reconstruction model",
+      "who": "Freeth et al., Sci. Rep. 11:5821 (2021)",
+      "licence": "CC BY 4.0"
+    },
+    {
+      "what": "Fragment A CT scan",
+      "who": "Ashkan Pakzad",
+      "licence": "CC BY 4.0"
+    },
+    {
+      "what": "Moon face",
+      "who": "NASA CGI Moon Kit (LROC)",
+      "licence": "Public domain"
+    },
+    {
+      "what": "HDRIs studio_small_09 and artist_workshop",
+      "who": "Poly Haven",
+      "licence": "CC0"
+    },
+    {
+      "what": "Ephemeris (astronomy-engine)",
+      "who": "Don Cross",
+      "licence": "MIT"
+    },
+    {
+      "what": "Layout reference",
+      "who": "Thomas Weibel",
+      "licence": "CC BY"
+    },
+    {
+      "what": "Narration voice Arthur",
+      "who": "ElevenLabs library voice",
+      "licence": "ElevenLabs terms"
+    }
+  ]
+}

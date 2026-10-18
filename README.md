@@ -1,5 +1,7 @@
 # Antikythera Cosmos
 
+![Status: v1.0](https://img.shields.io/badge/status-v1.0-2ea043)
+
 **The oldest geared computer in the world, rebuilt from its tooth counts and turned by one crank in
 your browser.**
 
@@ -170,3 +172,7 @@ order and the conventions that must not drift.
 The parapegma's Greek wording and the Saros glyph hours beyond the surviving cells are schematic
 reconstructions; the index letters stand where Bitsakis and Jones 2016 place them (see NOTES.md).
 Built by Stewart Gregerson with Claude Code.
+
+## Licence
+
+Code is MIT (see [LICENSE](LICENSE)). Third-party assets listed above keep their own licences.
