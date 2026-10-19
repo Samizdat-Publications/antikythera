@@ -58,9 +58,11 @@ TOUR = [
     ("moon", "front",
      "The moon pointer is driven through three pairs of gears: sixty-four on thirty-eight, forty-eight on twenty-four, "
      "and a hundred and twenty-seven on thirty-two. "
-     "Multiplied out, they give exactly 254 over 19: in nineteen years the Moon circles the zodiac 254 times, the Metonic relation. "
-     "The little ball, half pale and half dark, turns once a lunar month, driven by the difference between the mean Sun, taken off the main wheel, and the Moon, "
-     "and shows the phase. Watch it now, at a month a second. The Moon in the column is lit the way the ball is."),
+     "Multiplied out, they give exactly two hundred and fifty-four over nineteen: in nineteen years the Moon circles the zodiac "
+     "two hundred and fifty-four times, the Metonic relation. "
+     "The little ball, half pale and half dark, turns once a lunar month. It is driven by the difference between the Moon "
+     "and the mean Sun, which is taken off the main wheel, and so it shows the phase. "
+     "Watch it now, at a month a second. The Moon in the column is lit the way the ball is."),
     ("pinslot", "back",
      "Hidden at the back is the machine's most astonishing device. Two fifty-tooth gears sit face to face on axes offset by "
      "just over a millimetre, a pin on one riding in a slot on the other. As they turn, the slotted gear speeds up and slows down "
