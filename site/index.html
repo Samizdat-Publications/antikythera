@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Antikythera Cosmos: an exhibit in five rooms</title>
-<meta name="description" content="A museum-style exhibit of the Antikythera mechanism: 69 gears rebuilt from the real tooth counts, turning by one crank in your browser.">
+<meta name="description" content="A museum-style exhibit of the Antikythera mechanism: the 69 gears of the 2021 Freeth et al. reconstruction, 30 of them surviving in the bronze, turning by one crank in your browser.">
 <meta name="theme-color" content="#120e0b">
 <meta property="og:title" content="Antikythera Cosmos">
-<meta property="og:description" content="A museum-style exhibit of the Antikythera mechanism: 69 gears rebuilt from the real tooth counts, turning by one crank in your browser.">
+<meta property="og:description" content="A museum-style exhibit of the Antikythera mechanism: the 69 gears of the 2021 Freeth et al. reconstruction, 30 of them surviving in the bronze, turning by one crank in your browser.">
 <meta property="og:image" content="media/og.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -45,7 +45,7 @@
   <div class="entrance-wall">
     <p class="kicker">An exhibit in five rooms</p>
     <h1 id="title">Antikythera<br><span>Cosmos</span></h1>
-    <p class="wall-text">A museum-style exhibit of the Antikythera mechanism: 69 gears rebuilt from the real tooth counts, turning by one crank in your browser.</p>
+    <p class="wall-text">A museum-style exhibit of the Antikythera mechanism: the 69 gears of the 2021 Freeth et al. reconstruction, 30 of them surviving in the bronze, turning by one crank in your browser.</p>
     <p class="status"><span class="dot" aria-hidden="true"></span>Status: v1, finished and on view</p>
     <div class="actions">
       <a class="btn btn-bronze" href="https://antikythera.stewartgregerson.workers.dev">Turn the crank: open the live exhibit</a>
@@ -133,7 +133,7 @@
   </header>
   <div class="room-text">
     <p>In 2005 an eight-tonne X-ray machine was shipped to Athens and scanned the fragments slice by slice. Inside the crust were the gears, their teeth countable where the rims survive, and thousands of letters of Greek, many of them read for the first time since antiquity.</p>
-    <p>Thirty of the gears survive in the fragments, most with their tooth counts estimated from broken rims. The other thirty-nine follow the model Tony Freeth's team at UCL published in 2021. Two of the planetary periods come straight off the bronze: 462 years for Venus and 442 for Saturn, read on the cover inscription.</p>
+    <p>Thirty of the gears survive in the fragments, most with their tooth counts estimated from broken rims. The other thirty-nine follow the model Tony Freeth's team at UCL published in 2021. Two numbers in the planetary periods come straight off the bronze: 462 years for Venus and 442 for Saturn, read on the front cover inscription. The rest of those two periods, and the periods of the other planets, are the 2021 team's derivation.</p>
   </div>
   <div class="pair">
     <figure class="exhibit">
@@ -183,7 +183,7 @@
     <h2 id="r3-title">The gear trains</h2>
   </header>
   <div class="room-text">
-    <p>Every pointer on the machine is geared off one rotation. In this copy each rate is an exact fraction of the main wheel's turn, worked out from the tooth counts alone: 254/19 for the Moon, 940/4237 for the Saros, &minus;5/93 for the regressing lunar nodes, 1513/480 for Mercury. The back of the machine carries two great spirals, one for the calendar and one for eclipses.</p>
+    <p>Every pointer on the machine is geared off one rotation. In this copy each rate is an exact fraction of the main wheel's turn, worked out from the tooth counts alone: 254/19 for the Moon, 940/4237 for the Saros, &minus;5/93 for the regressing lunar nodes, 1513/480 for Mercury's epicycle. The back of the machine carries two great spirals, one for the calendar and one for eclipses.</p>
   </div>
 
   <div class="cases">
@@ -300,13 +300,13 @@
       <p class="obj">Front dial</p>
       <dl>
         <dt>Rings</dt><dd>Zodiac; Egyptian calendar (drawn with 365 days)</dd>
-        <dt>Pointers</dt><dd>Date, Sun, Moon with phase ball, and rings for Mercury, Venus, Mars, Jupiter and Saturn</dd>
+        <dt>Pointers</dt><dd>Date, Sun, Moon with phase ball, the dragon hand for the lunar nodes, and rings for Mercury, Venus, Mars, Jupiter and Saturn</dd>
         <dt>Plates</dt><dd>The parapegma, star risings and settings keyed to letters on the dial</dd>
         <dt>After</dt><dd>Freeth et al. 2021; Bitsakis and Jones 2016; Woan and Bayley 2024</dd>
       </dl>
     </figcaption>
   </figure>
-  <p class="caveat">The planetary rings, their epicyclic gearing and their coloured stones are the 2021 team's reconstruction; only the Venus and Saturn periods are read on the bronze.</p>
+  <p class="caveat">The planetary rings, their epicyclic gearing and their coloured stones are the 2021 team's reconstruction; only the numbers 462 for Venus and 442 for Saturn are read on the bronze. The dragon hand is hypothetical even in the 2021 paper, which says there is no direct physical evidence for it.</p>
 </section>
 
 <!-- ============ ROOM V ============ -->
@@ -389,6 +389,16 @@
       <div>
         <h3>Bronze and reconstruction</h3>
         <p>Where the exhibit shows something the bronze does not preserve, it says so. Thirty-nine of the gears, the planetary display, the dragon hand and most of the lettering are reconstructions. The parapegma's Greek wording and the Saros glyph hours beyond the surviving cells are schematic. The decisions, and the reasons for them, are kept in the repository's <a href="https://github.com/Samizdat-Publications/antikythera/blob/main/NOTES.md">NOTES.md</a>.</p>
+      </div>
+      <div class="wide">
+        <h3>Where this copy departs from the 2021 paper</h3>
+        <p>Every tooth count, gear train, pin-and-slot offset and pin distance follows Freeth et al. 2021 (Fig. 3 and Supplementary Tables S8 and S9). These parts are this copy's own choices:</p>
+        <ul>
+          <li><b>A simpler front display.</b> In the paper the true Sun and the date are rings, the Sun's ring carries an Age of the Moon scale and eclipse-limit marks, and the planet rings carry opposition markers and proposed index letters. Here the Sun and the date are plain pointers, and none of those scales, marks or letters are drawn.</li>
+          <li><b>The size of the Sun's anomaly.</b> The paper gives the true Sun's gearing (56, 52, 56 and a follower) but not its dimensions. This copy sets the pin for an eccentricity of 1/24, the ancient value that Ptolemy gives from Hipparchus.</li>
+          <li><b>How the pointers are set.</b> The paper says each anomaly device was set against observations on chosen dates. This copy sets each pin's starting phase, and each pointer's zero at the epoch, by fitting a modern ephemeris (astronomy-engine), which no ancient maker could have done. The 2021 paper does not choose an epoch; the two offered here come from Carman and Evans and from Voulgaris and colleagues.</li>
+          <li><b>Geometry, not ratios.</b> The reconstructed wheels are cut at a module of 0.5 where the paper adjusts a few (about 0.53 and 0.54 for the 51 and 44 of the Venus train, 0.521 for its 34 and 26); arbor angles and layer depths are this copy's own; and two surviving lunar wheels, e6 and k2, are cut at a module of 0.534 rather than the measured 0.536 and 0.541 so the train closes on its axis. None of this changes a tooth count or a rate.</li>
+        </ul>
       </div>
     </div>
   </div>

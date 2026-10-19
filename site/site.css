@@ -206,6 +206,8 @@ h1 span { color: var(--bronze-hi); letter-spacing: 0.3em; font-size: 0.62em; }
 .notes h2, .biblio h2 { font-family: var(--display); font-weight: 400; font-size: clamp(30px, 2.6vw + 14px, 46px); margin: 6px 0 36px; }
 .notes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 36px 56px; }
 .notes-grid > div { border-top: 1px solid var(--rule); padding-top: 18px; }
+.notes-grid > .wide { grid-column: 1 / -1; }
+.notes .wide li { max-width: 62rem; }
 .notes h3 { font-family: var(--display); font-weight: 400; font-size: 22px; color: var(--bronze-hi); margin: 0 0 10px; }
 .notes p, .notes li { color: var(--ink-dim); }
 .notes p { margin: 0 0 1em; }

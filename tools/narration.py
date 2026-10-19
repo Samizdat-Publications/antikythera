@@ -59,7 +59,7 @@ TOUR = [
      "The moon pointer is driven through three pairs of gears: sixty-four on thirty-eight, forty-eight on twenty-four, "
      "and a hundred and twenty-seven on thirty-two. "
      "Multiplied out, they give exactly 254 over 19: in nineteen years the Moon circles the zodiac 254 times, the Metonic relation. "
-     "The little ball, half pale and half dark, turns once a lunar month, driven by the difference between the sun and moon pointers, "
+     "The little ball, half pale and half dark, turns once a lunar month, driven by the difference between the mean Sun, taken off the main wheel, and the Moon, "
      "and shows the phase. Watch it now, at a month a second. The Moon in the column is lit the way the ball is."),
     ("pinslot", "back",
      "Hidden at the back is the machine's most astonishing device. Two fifty-tooth gears sit face to face on axes offset by "

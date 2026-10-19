@@ -65,7 +65,7 @@ export const STEPS: Step[] = [
   },
   {
     id: "moon", title: "The Moon and its phase", clip: "moon",
-    body: "The moon pointer is driven through three pairs of gears, 64 on 38, 48 on 24 and 127 on 32, whose counts multiply out to exactly 254/19: in nineteen years the Moon circles the zodiac 254 times, the Metonic relation. The little ball, half pale and half dark, turns once a lunar month, driven by a differential between the sun and moon pointers, showing the phase. Watch it now at a month per second. The Moon in the column is lit the way the ball is; its face is the near side as NASA's LROC cameras mapped it.",
+    body: "The moon pointer is driven through three pairs of gears, 64 on 38, 48 on 24 and 127 on 32, whose counts multiply out to exactly 254/19: in nineteen years the Moon circles the zodiac 254 times, the Metonic relation. The little ball, half pale and half dark, turns once a lunar month, driven by a differential between the mean Sun, taken off the main wheel, and the Moon, showing the phase. Watch it now at a month per second. The Moon in the column is lit the way the ball is; its face is the near side as NASA's LROC cameras mapped it.",
     run: (h) => { h.view("front-close"); h.play(true, 0.0821918); h.focus("#moon"); },
   },
   {

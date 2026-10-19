@@ -639,3 +639,14 @@ See README "Attributions" for licences.
   matched HEAD byte for byte, so both were cleared. The nine scripts that defaulted `REPO` or `ROOT` to
   the OneDrive path now point at the new one. The two audition voices (AK, Liam Dale) were removed from
   the ElevenLabs library; Arthur is the only one kept.
+- 2026-10-18: **accuracy pass against Freeth et al. 2021** (paper, SI and Fig. 3 read directly; full
+  table in `docs/ACCURACY-2026-10-18.md`). Every tooth count, train, period relation (Mercury 1513/480,
+  Venus 289/462, Mars 133/284, Jupiter 315/344, Saturn 427/442, nodes -5/93), Table S8 count and Table S9
+  offset matches. Fixed: leaf 7 said the phase ball differences the sun and moon *pointers*, but the
+  2021 model (and this app) feeds it the mean Sun through b0 (narration script updated, the clip still
+  needs re-recording); the landing page no longer says the 69 gears are "rebuilt from the real tooth
+  counts", says only the numbers 462 and 442 are read, calls 1513/480 Mercury's epicycle, lists the
+  dragon hand as hypothetical in the paper itself, and gains a "Where this copy departs from the 2021
+  paper" note (display simplified, true-Sun eccentricity 1/24 our choice, pointers fitted to a modern
+  ephemeris, module and layout geometry). The SI caption to Fig. S22(e) says 40 ~ 24 for Mercury where
+  Fig. 3e says 40 ~ 20; the app follows 20.
