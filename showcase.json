@@ -1,12 +1,12 @@
 {
   "name": "Antikythera Cosmos",
   "repo": "antikythera",
-  "pitch": "The Antikythera mechanism rebuilt from its tooth counts: 69 gears turned by one crank in your browser.",
+  "pitch": "A museum-style exhibit of the Antikythera mechanism: 69 gears rebuilt from the real tooth counts, turning by one crank in your browser.",
   "status": "v1",
   "version": "1.1.0",
   "kind": "reconstruction",
   "started": "2026-09-12",
-  "updated": "2026-09-24",
+  "updated": "2026-10-18",
   "tech": [
     "TypeScript",
     "Three.js",
@@ -14,14 +14,14 @@
     "astronomy-engine"
   ],
   "links": {
-    "landing": "https://samizdat-publications.github.io/antikythera/",
+    "landing": "https://antikythera-5fq.pages.dev",
     "play": "https://antikythera.stewartgregerson.workers.dev",
     "devlog": ""
   },
   "hero": {
     "gif": "docs/landing/clips/view-inside.webp",
-    "poster": "docs/landing/clips/view-inside.jpg",
-    "clip": ""
+    "poster": "site/media/hero.jpg",
+    "clip": "site/media/hero.mp4"
   },
   "credits": [
     {
@@ -58,6 +58,16 @@
       "what": "Narration voice Arthur",
       "who": "ElevenLabs library voice",
       "licence": "ElevenLabs terms"
+    },
+    {
+      "what": "Parapegma and front dial inscriptions",
+      "who": "Bitsakis and Jones, Almagest 7.1 (2016)",
+      "licence": "CC BY-NC 4.0"
+    },
+    {
+      "what": "Eclipse canon",
+      "who": "Fred Espenak and Jean Meeus (NASA's GSFC)",
+      "licence": "Credit line: Eclipse Predictions by Fred Espenak and Jean Meeus (NASA's GSFC)"
     }
   ]
 }

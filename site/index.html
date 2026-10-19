@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Antikythera Cosmos: an exhibit in five rooms</title>
+<meta name="description" content="A museum-style exhibit of the Antikythera mechanism: 69 gears rebuilt from the real tooth counts, turning by one crank in your browser.">
+<meta name="theme-color" content="#120e0b">
+<meta property="og:title" content="Antikythera Cosmos">
+<meta property="og:description" content="A museum-style exhibit of the Antikythera mechanism: 69 gears rebuilt from the real tooth counts, turning by one crank in your browser.">
+<meta property="og:image" content="media/og.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23120e0b'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23c99a5b' stroke-width='2.5' stroke-dasharray='2.2 1.4'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23c99a5b'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+SC:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<a class="skip" href="#plan">Skip to the plan of the gallery</a>
+
+<header class="bar">
+  <a class="bar-mark" href="#top" aria-label="Antikythera Cosmos, back to the entrance">Antikythera</a>
+  <nav class="bar-links" aria-label="Rooms">
+    <a href="#room-1"><span>I</span> The find</a>
+    <a href="#room-2"><span>II</span> The scans</a>
+    <a href="#room-3"><span>III</span> The gears</a>
+    <a href="#room-4"><span>IV</span> The front dial</a>
+    <a href="#room-5"><span>V</span> Turn it</a>
+  </nav>
+  <a class="bar-cta" href="https://antikythera.stewartgregerson.workers.dev">Enter the exhibit</a>
+</header>
+
+<main id="top">
+
+<!-- ============ ENTRANCE: the title wall ============ -->
+<section class="entrance" aria-labelledby="title">
+  <div class="entrance-media">
+    <video id="hero-video" autoplay muted loop playsinline preload="auto" poster="media/hero.jpg"
+      aria-label="The reconstruction with its case lifted away, spot-lit on a dark gallery wall, every gear turning as the crank winds through a year">
+      <source src="media/hero.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="entrance-wall">
+    <p class="kicker">An exhibit in five rooms</p>
+    <h1 id="title">Antikythera<br><span>Cosmos</span></h1>
+    <p class="wall-text">A museum-style exhibit of the Antikythera mechanism: 69 gears rebuilt from the real tooth counts, turning by one crank in your browser.</p>
+    <p class="status"><span class="dot" aria-hidden="true"></span>Status: v1, finished and on view</p>
+    <div class="actions">
+      <a class="btn btn-bronze" href="https://antikythera.stewartgregerson.workers.dev">Turn the crank: open the live exhibit</a>
+      <a class="btn btn-line" href="https://github.com/Samizdat-Publications/antikythera">Source on GitHub</a>
+    </div>
+  </div>
+  <aside class="label label-entrance" aria-label="Object label">
+    <p class="acc">Cat. 0</p>
+    <p class="obj">The Antikythera mechanism, reconstructed</p>
+    <dl>
+      <dt>Original</dt><dd>Bronze, hand-cranked; made in the second or early first century BC</dd>
+      <dt>Found</dt><dd>1901, by sponge divers, in a Roman-era wreck off Antikythera</dd>
+      <dt>Survives</dt><dd>82 fragments, about a third of the machine; National Archaeological Museum, Athens</dd>
+      <dt>This copy</dt><dd>69 gears after Freeth et al. 2021, cut in Blender, turned by three.js</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ============ the dedication: the numbers, cut like an inscription ============ -->
+<section class="inscription" aria-label="The machine in six numbers">
+  <ul>
+    <li><b>69</b> gears, every one cut from a single table</li>
+    <li><b>30</b> of them survive in the bronze fragments</li>
+    <li><b>223</b> teeth on the main wheel, one turn a year</li>
+    <li><b>254/19</b> the Moon's ratio, exact in the gearing</li>
+    <li><b>51</b> eclipse glyphs, held against NASA's canon</li>
+    <li><b>14</b> narrated leaves in the walkthrough</li>
+  </ul>
+</section>
+
+<!-- ============ the plan of the gallery ============ -->
+<section class="plan" id="plan" aria-labelledby="plan-title">
+  <div class="plan-inner">
+    <h2 id="plan-title" class="small-caps">Plan of the gallery</h2>
+    <ol class="directory">
+      <li><a href="#room-1"><span class="num">I</span><span class="name">The wreck and the find</span><span class="lead" aria-hidden="true"></span><span class="what">Fragment A</span></a></li>
+      <li><a href="#room-2"><span class="num">II</span><span class="name">Reading through the corrosion</span><span class="lead" aria-hidden="true"></span><span class="what">The X-ray scans</span></a></li>
+      <li><a href="#room-3"><span class="num">III</span><span class="name">The gear trains</span><span class="lead" aria-hidden="true"></span><span class="what">Metonic, Saros, pin and slot</span></a></li>
+      <li><a href="#room-4"><span class="num">IV</span><span class="name">The front dial</span><span class="lead" aria-hidden="true"></span><span class="what">Zodiac and calendar</span></a></li>
+      <li><a href="#room-5"><span class="num">V</span><span class="name">Turn it yourself</span><span class="lead" aria-hidden="true"></span><span class="what">The live reconstruction</span></a></li>
+    </ol>
+    <p class="plan-note">Every clip in these rooms was filmed frame by frame from the running exhibit, not rendered for show. What the bronze preserves and what is reconstruction is marked as you go.</p>
+  </div>
+</section>
+
+<!-- ============ ROOM I ============ -->
+<section class="room" id="room-1" aria-labelledby="r1-title">
+  <header class="room-head">
+    <span class="room-num" aria-hidden="true">I</span>
+    <p class="small-caps">Room I</p>
+    <h2 id="r1-title">The wreck and the find</h2>
+  </header>
+  <div class="room-text">
+    <p>In 1901 sponge divers working a Roman-era wreck off Antikythera brought up a corroded lump of bronze. It lay unregarded until May 1902, when the archaeologist Valerios Stais saw a gearwheel in it. The ship had gone down around 70 to 60 BC.</p>
+    <p>What survives today is 82 fragments, about a third of the machine, in the National Archaeological Museum in Athens. On the plinth is the largest of them. Two thousand years of seawater have turned the metal to a crust of corrosion, but the four spokes of the main wheel still show through it.</p>
+  </div>
+  <figure class="exhibit">
+    <div class="vitrine">
+      <video data-inview muted loop playsinline preload="none" poster="media/fragment.jpg"
+        aria-label="Fragment A, a corroded slab of bronze shown from a CT scan, turning slowly under a spotlight">
+        <source src="media/fragment.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="plinth" aria-hidden="true"></div>
+    <figcaption class="label">
+      <p class="acc">Cat. I.1</p>
+      <p class="obj">Fragment A</p>
+      <dl>
+        <dt>Material</dt><dd>Bronze, corroded to a crust; shown here from a CT scan of the original</dd>
+        <dt>Date</dt><dd>Made in the second or early first century BC; lost at sea about 70 to 60 BC</dd>
+        <dt>Findspot</dt><dd>Roman-era wreck off Antikythera; recovered 1901</dd>
+        <dt>Fragment</dt><dd>A, the largest of the 82</dd>
+        <dt>Scan</dt><dd>Ashkan Pakzad, CC BY 4.0</dd>
+      </dl>
+    </figcaption>
+  </figure>
+</section>
+
+<!-- ============ ROOM II ============ -->
+<section class="room" id="room-2" aria-labelledby="r2-title">
+  <header class="room-head">
+    <span class="room-num" aria-hidden="true">II</span>
+    <p class="small-caps">Room II</p>
+    <h2 id="r2-title">Reading through the corrosion</h2>
+  </header>
+  <div class="room-text">
+    <p>In 2005 an eight-tonne X-ray machine was shipped to Athens and scanned the fragments slice by slice. Inside the crust were the gears, their teeth countable where the rims survive, and thousands of letters of Greek, many of them read for the first time since antiquity.</p>
+    <p>Thirty of the gears survive in the fragments, most with their tooth counts estimated from broken rims. The other thirty-nine follow the model Tony Freeth's team at UCL published in 2021. Two of the planetary periods come straight off the bronze: 462 years for Venus and 442 for Saturn, read on the cover inscription.</p>
+  </div>
+  <div class="pair">
+    <figure class="exhibit">
+      <div class="vitrine">
+        <video data-inview muted loop playsinline preload="none" poster="media/xray.jpg"
+          aria-label="The reconstruction laid inside the CT scan of Fragment A, the bronze wheels turning through the half-transparent corrosion">
+          <source src="media/xray.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="plinth" aria-hidden="true"></div>
+      <figcaption class="label">
+        <p class="acc">Cat. II.1</p>
+        <p class="obj">The reconstruction inside the scan</p>
+        <dl>
+          <dt>Shown</dt><dd>Fragment A at partial opacity over the 69-gear model, the crank turning</dd>
+          <dt>Scan</dt><dd>Ashkan Pakzad, CC BY 4.0</dd>
+          <dt>Model</dt><dd>After Freeth et al., Sci. Rep. 11:5821 (2021)</dd>
+        </dl>
+      </figcaption>
+    </figure>
+    <figure class="exhibit">
+      <div class="vitrine">
+        <video data-inview muted loop playsinline preload="none" poster="media/survives.jpg"
+          aria-label="Only the thirty surviving gears shown solid, the thirty-nine reconstructed ones as faint ghosts, the whole turning slowly">
+          <source src="media/survives.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="plinth" aria-hidden="true"></div>
+      <figcaption class="label">
+        <p class="acc">Cat. II.2</p>
+        <p class="obj">Only what survives</p>
+        <dl>
+          <dt>Solid</dt><dd>The thirty gears found in the fragments</dd>
+          <dt>Ghosts</dt><dd>The thirty-nine that follow the 2021 model</dd>
+          <dt>Note</dt><dd>Most surviving tooth counts are estimates from broken rims</dd>
+        </dl>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ ROOM III ============ -->
+<section class="room" id="room-3" aria-labelledby="r3-title">
+  <header class="room-head">
+    <span class="room-num" aria-hidden="true">III</span>
+    <p class="small-caps">Room III</p>
+    <h2 id="r3-title">The gear trains</h2>
+  </header>
+  <div class="room-text">
+    <p>Every pointer on the machine is geared off one rotation. In this copy each rate is an exact fraction of the main wheel's turn, worked out from the tooth counts alone: 254/19 for the Moon, 940/4237 for the Saros, &minus;5/93 for the regressing lunar nodes, 1513/480 for Mercury. The back of the machine carries two great spirals, one for the calendar and one for eclipses.</p>
+  </div>
+
+  <div class="cases">
+    <figure class="exhibit case">
+      <p class="case-tag small-caps">Case A · The Metonic calendar</p>
+      <div class="vitrine">
+        <video data-inview muted loop playsinline preload="none" poster="media/backupper.jpg"
+          aria-label="The upper back dial: the Metonic spiral with its pointer sweeping round as the years pass">
+          <source src="media/backupper.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="case-text">
+        <p>The upper spiral is the Metonic calendar: 235 months in five turns, nineteen years. Its month names belong to a Corinthian family of calendars, most likely that of Epirus in north-west Greece. Inside it one small dial counts the 76-year Callippic period and another the four-year cycle of the games: the Isthmia, Olympia, Nemea and Pythia, and two lesser games, the Naa at Dodona and the Halieia of Rhodes. The pointer carries a pin that slides outward along the groove as the years pass.</p>
+      </div>
+      <figcaption class="label">
+        <p class="acc">Cat. III.1</p>
+        <p class="obj">Back dial, upper</p>
+        <dl>
+          <dt>Dials</dt><dd>Metonic (19 years), Callippic (76 years), games (4 years)</dd>
+          <dt>Speed</dt><dd>About half a year a second</dd>
+          <dt>After</dt><dd>Freeth et al.; Iversen 2017</dd>
+        </dl>
+      </figcaption>
+    </figure>
+
+    <figure class="exhibit case">
+      <p class="case-tag small-caps">Case B · The Saros and the Exeligmos</p>
+      <div class="vitrine">
+        <video data-inview muted loop playsinline preload="none" poster="media/backlower.jpg"
+          aria-label="The lower back dial: the Saros spiral with its pointer moving cell by cell past the eclipse glyphs">
+          <source src="media/backlower.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="case-text">
+        <p>The lower spiral is the Saros: 223 months, after which eclipses repeat. Fifty-one of its cells carry glyphs, &Sigma; for a lunar eclipse and &Eta; for a solar one, with the hour. A Saros is a third of a day longer than 6,585 days, so the small Exeligmos dial adds 0, 8 or 16 hours. The exhibit holds every glyph against NASA's catalogue of real eclipses, and says plainly when the machine is wrong.</p>
+      </div>
+      <figcaption class="label">
+        <p class="acc">Cat. III.2</p>
+        <p class="obj">Back dial, lower</p>
+        <dl>
+          <dt>Dials</dt><dd>Saros (223 months); Exeligmos (adds 0, 8 or 16 hours)</dd>
+          <dt>Glyphs</dt><dd>51, after Freeth 2014</dd>
+          <dt>Checked</dt><dd>Against Espenak and Meeus, NASA</dd>
+        </dl>
+      </figcaption>
+    </figure>
+
+    <figure class="exhibit case">
+      <p class="case-tag small-caps">Case C · The pin and slot</p>
+      <div class="vitrine">
+        <video data-inview muted loop playsinline preload="none" poster="media/pinslot.jpg"
+          aria-label="Close on the lunar train with the case open: two gears face to face, one pin riding in the other's slot, turning unevenly">
+          <source src="media/pinslot.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="case-text">
+        <p>Hidden at the back are two 50-tooth gears face to face on axes offset by 1.1 mm, a pin on one riding in a slot on the other. As they turn, the slotted gear speeds up and slows down by &plusmn;6.5&deg;: the Moon's own acceleration near perigee. The pair rides on a 223-tooth platform that creeps round once in nine years, so the swing follows the slowly turning lunar orbit. Nothing this intricate survives from the next thousand years.</p>
+      </div>
+      <figcaption class="label">
+        <p class="acc">Cat. III.3</p>
+        <p class="obj">The lunar anomaly</p>
+        <dl>
+          <dt>Gears</dt><dd>Two of 50 teeth, 1.1 mm off axis</dd>
+          <dt>Swing</dt><dd>&plusmn;6.5&deg;, checked against asin(d/r)</dd>
+          <dt>Shown</dt><dd>The lunar train alone, case open</dd>
+        </dl>
+      </figcaption>
+    </figure>
+
+    <figure class="exhibit case">
+      <p class="case-tag small-caps">Case D · Taken apart</p>
+      <div class="vitrine">
+        <video data-inview muted loop playsinline preload="none" poster="media/apart.jpg"
+          aria-label="All 69 wheels spread out along their arbors like an exploded drawing, still turning, the camera circling them">
+          <source src="media/apart.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="case-text">
+        <p>Every wheel slides out along its arbor and keeps turning, so the trains that share the great main wheel can be told apart. Nothing here is decorative: each of the 69 is cut from one gear table with its teeth, module, arbor and couplings, and no third-party geometry is imported.</p>
+      </div>
+      <figcaption class="label">
+        <p class="acc">Cat. III.4</p>
+        <p class="obj">The whole train, exploded</p>
+        <dl>
+          <dt>Wheels</dt><dd>69, from data/gears.json</dd>
+          <dt>Modules</dt><dd>Freeth 2021, Table S8</dd>
+        </dl>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ ROOM IV ============ -->
+<section class="room" id="room-4" aria-labelledby="r4-title">
+  <header class="room-head">
+    <span class="room-num" aria-hidden="true">IV</span>
+    <p class="small-caps">Room IV</p>
+    <h2 id="r4-title">The front dial</h2>
+  </header>
+  <div class="room-text">
+    <p>The front is the sky. The inner ring is the zodiac, twelve signs of 30&deg;. The outer ring names the months of the Egyptian calendar, drawn here with its 365 days as the 2021 model has it; the owner could slip it round a day every four years. A 2024 recount of the holes beneath the ring points to 354, a lunar year, so how it was kept in step is still argued over.</p>
+    <p>The date pointer reads the calendar; the true-sun pointer with its golden ball reads the zodiac. The moon pointer is driven through three pairs of gears, 64 on 38, 48 on 24 and 127 on 32, whose counts multiply out to exactly 254/19: in nineteen years the Moon circles the zodiac 254 times. A little ball, half pale and half dark, turns once a lunar month to show its phase.</p>
+  </div>
+  <figure class="exhibit exhibit-wide">
+    <div class="vitrine">
+      <video data-inview muted loop playsinline preload="none" poster="media/front.jpg"
+        aria-label="The front dial close up: the zodiac and calendar rings, with the Sun, Moon and planet pointers turning at a little under a month a second">
+        <source src="media/front.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="plinth" aria-hidden="true"></div>
+    <figcaption class="label">
+      <p class="acc">Cat. IV.1</p>
+      <p class="obj">Front dial</p>
+      <dl>
+        <dt>Rings</dt><dd>Zodiac; Egyptian calendar (drawn with 365 days)</dd>
+        <dt>Pointers</dt><dd>Date, Sun, Moon with phase ball, and rings for Mercury, Venus, Mars, Jupiter and Saturn</dd>
+        <dt>Plates</dt><dd>The parapegma, star risings and settings keyed to letters on the dial</dd>
+        <dt>After</dt><dd>Freeth et al. 2021; Bitsakis and Jones 2016; Woan and Bayley 2024</dd>
+      </dl>
+    </figcaption>
+  </figure>
+  <p class="caveat">The planetary rings, their epicyclic gearing and their coloured stones are the 2021 team's reconstruction; only the Venus and Saturn periods are read on the bronze.</p>
+</section>
+
+<!-- ============ ROOM V ============ -->
+<section class="room room-last" id="room-5" aria-labelledby="r5-title">
+  <header class="room-head">
+    <span class="room-num" aria-hidden="true">V</span>
+    <p class="small-caps">Room V</p>
+    <h2 id="r5-title">Turn it yourself</h2>
+  </header>
+  <div class="room-text">
+    <p>Everything starts at the crank on the right. It turns a 48-tooth crown wheel against the 223-tooth main wheel: about four and two-thirds turns of the crank move the main wheel once round, which is one year.</p>
+    <p>The machine has no clock inside it. It was set by hand once, on one particular day, and after that it only counts turns. Nothing on the bronze states that day, so scholars inferred it from the eclipse glyphs: Carman and Evans found the full moon of 12 May 205 BC; Voulgaris and colleagues argue for 22 December 178 BC. The exhibit lets you switch between them, and every dial re-sets.</p>
+  </div>
+  <figure class="exhibit exhibit-wide">
+    <div class="vitrine">
+      <video data-inview muted loop playsinline preload="none" poster="media/crank.jpg"
+        aria-label="The gearwork from the front right with the case open, the crank handle on its arm and every wheel turning together">
+        <source src="media/crank.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="plinth" aria-hidden="true"></div>
+    <figcaption class="label">
+      <p class="acc">Cat. V.1</p>
+      <p class="obj">The crank and the main wheel</p>
+      <dl>
+        <dt>Gearing</dt><dd>48-tooth crown wheel on the 223-tooth main wheel</dd>
+        <dt>Ratio</dt><dd>223/48 turns of the crank to the year</dd>
+        <dt>Epoch</dt><dd>12 May 205 BC (Carman and Evans), or 22 Dec 178 BC (Voulgaris)</dd>
+      </dl>
+    </figcaption>
+  </figure>
+
+  <div class="visit">
+    <div class="visit-still">
+      <img src="media/cased.jpg" width="1280" height="720" loading="lazy"
+        alt="The reconstruction in its wooden case on a plinth, spot-lit in a dark gallery, as the live exhibit opens">
+      <p class="still-cap"><span class="small-caps">Cat. V.2</span> The vitrine: the case on its plinth, as the live exhibit opens.</p>
+    </div>
+    <div class="visit-text">
+      <h3>In the live exhibit you can</h3>
+      <ul class="can">
+        <li>Turn the crank at a day, a month, a year or ten years a second, drag the handle to wind it by hand, or press the space bar.</li>
+        <li>Jump to the next eclipse, type a year, or press <i>today</i> and see how far twenty-two centuries have carried the pointers.</li>
+        <li>Hover a gear for its tooth count and rate; click it to see its train alone.</li>
+        <li>Lift the plates away, take the machine apart, show only what survives, or crossfade to the CT scan of the real bronze.</li>
+        <li>Draw the machine's own sky, retrograde loops and all, beside the true one.</li>
+        <li>Follow a narrated walkthrough of fourteen leaves, then share any view as a link.</li>
+      </ul>
+      <a class="btn btn-bronze" href="https://antikythera.stewartgregerson.workers.dev">Enter the exhibit</a>
+      <p class="fine">Needs a browser with WebGL. About 15 MB, most of it the machine. It installs as an app and, once visited, opens offline.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ conservation notes: how it was made and checked ============ -->
+<section class="notes" id="making" aria-labelledby="notes-title">
+  <div class="notes-inner">
+    <p class="small-caps">From the conservation file</p>
+    <h2 id="notes-title">How it was made</h2>
+    <div class="notes-grid">
+      <div>
+        <h3>One table, three engines</h3>
+        <p>One file is the source of truth: <code>data/gears.json</code> holds every wheel, its teeth, its module, the arbor it rides and what it meshes with. A Python solver turns it into exact rational rates and an arbor layout; Blender 5.1 cuts the wheels, plates, dials, pointers and case parametrically and exports a glTF that carries each driver rule on its nodes; the browser turns the machine with three.js from the same arithmetic Blender used.</p>
+        <p>Time is Julian Day throughout, on the proleptic Julian calendar for dates BC with astronomical years (205 BC is &minus;204). Nothing in the exhibit trusts a JavaScript date.</p>
+      </div>
+      <div>
+        <h3>How the numbers are checked</h3>
+        <ul>
+          <li>The tests derive every pointer's rate from the tooth counts and assert it as an exact fraction. No decimals, no tolerances.</li>
+          <li>The Blender build drives the finished rig, reads every gear back, and checks each pin-and-slot swing against asin(d/r).</li>
+          <li>The eclipse-year model reproduces the 51 / 38 / 28 glyph counts and every glyph read on the surviving Saros cells (Freeth 2014).</li>
+          <li>Each month the machine predicts is held against 23,962 rows of NASA's Five Millennium Canon.</li>
+          <li>70 tests in all: 36 in Python, 34 in the web exhibit.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>How good was it?</h3>
+        <p>Against a modern ephemeris the mean Sun drifts a fraction of a degree per century. The Moon, thanks to the pin and slot, stays within about two degrees. One caution: these wheels are cut perfectly, and the originals were filed by hand. A 2025 preprint argues that teeth as uneven as those measured would have jammed, so either the maker worked finer than the corroded remains now show, or it never ran this smoothly.</p>
+      </div>
+      <div>
+        <h3>Bronze and reconstruction</h3>
+        <p>Where the exhibit shows something the bronze does not preserve, it says so. Thirty-nine of the gears, the planetary display, the dragon hand and most of the lettering are reconstructions. The parapegma's Greek wording and the Saros glyph hours beyond the surviving cells are schematic. The decisions, and the reasons for them, are kept in the repository's <a href="https://github.com/Samizdat-Publications/antikythera/blob/main/NOTES.md">NOTES.md</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ bibliography and credits ============ -->
+<section class="biblio" id="sources" aria-labelledby="biblio-title">
+  <div class="biblio-inner">
+    <p class="small-caps">Further reading</p>
+    <h2 id="biblio-title">Sources and credits</h2>
+    <ol class="refs">
+      <li>Freeth, Higgon, Dacanalis, MacDonald, Georgakopoulou and Wojcik, <i>A Model of the Cosmos in the ancient Greek Antikythera Mechanism</i>, Scientific Reports 11:5821 (2021), CC BY 4.0. The reconstruction this exhibit follows, with the earlier Antikythera Mechanism Research Project papers of 2006, 2008, 2012 and 2014 (Freeth 2014 for the eclipse glyphs).</li>
+      <li>Fred Espenak and Jean Meeus (NASA Goddard), <i>Five Millennium Canon of Solar and Lunar Eclipses</i>: the eclipse ground truth.</li>
+      <li>Bitsakis and Jones, <i>The Front Dial and Parapegma Inscriptions</i>, Almagest 7.1 (2016), CC BY-NC 4.0.</li>
+      <li>Iversen 2017, Hesperia 86: the games and the calendar. Woan and Bayley 2024: the calendar ring's holes. Szigety and Arenas 2025 (a preprint): the teeth.</li>
+      <li>Carman and Evans 2014: the epoch of 12 May 205 BC. Voulgaris, Mouratidis and Vossinakis, Almagest 14.1 (2023): 22 December 178 BC.</li>
+    </ol>
+    <table class="credits">
+      <caption class="small-caps">Third-party material in the exhibit</caption>
+      <thead><tr><th scope="col">What</th><th scope="col">Who</th><th scope="col">Licence</th></tr></thead>
+      <tbody>
+        <tr><td>Fragment A CT scan</td><td>Ashkan Pakzad</td><td>CC BY 4.0</td></tr>
+        <tr><td>Ephemeris (astronomy-engine)</td><td>Don Cross</td><td>MIT</td></tr>
+        <tr><td>Reconstruction model</td><td>Freeth et al., Sci. Rep. 11:5821 (2021)</td><td>CC BY 4.0</td></tr>
+        <tr><td>Parapegma and front dial inscriptions</td><td>Bitsakis and Jones, Almagest 7.1 (2016)</td><td>CC BY-NC 4.0</td></tr>
+        <tr><td>Eclipse canon</td><td>Espenak and Meeus, NASA GSFC</td><td>Credited as "Eclipse Predictions by Fred Espenak and Jean Meeus (NASA's GSFC)"</td></tr>
+        <tr><td>Moon face</td><td>NASA CGI Moon Kit (LROC colour mosaic)</td><td>Public domain</td></tr>
+        <tr><td>Room lighting (HDRIs studio_small_09, artist_workshop)</td><td>Poly Haven</td><td>CC0</td></tr>
+        <tr><td>Layout reference</td><td>Thomas Weibel</td><td>CC BY</td></tr>
+        <tr><td>Narration voice "Arthur"</td><td>ElevenLabs library voice</td><td>ElevenLabs terms</td></tr>
+        <tr><td>Typefaces Marcellus and Alegreya</td><td>Google Fonts</td><td>SIL Open Font Licence</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <p class="hedera" aria-hidden="true">&#10086;</p>
+  <p>Built by Stewart Gregerson with Claude Code. Code MIT; third-party material keeps its own licence.</p>
+  <p class="foot-links">
+    <a href="https://antikythera.stewartgregerson.workers.dev">The live exhibit</a>
+    <a href="https://github.com/Samizdat-Publications/antikythera">Source on GitHub</a>
+    <a href="https://github.com/Samizdat-Publications/antikythera#readme">README</a>
+  </p>
+</footer>
+
+<script src="site.js" defer></script>
+</body>
+</html>

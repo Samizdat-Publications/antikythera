@@ -32,3 +32,6 @@ assets/textures/_*
 shot_*.png
 # plugin scratch data
 .claude/data/
+
+# landing page build output (copied from site/ and finished for Cloudflare Pages)
+site-dist/

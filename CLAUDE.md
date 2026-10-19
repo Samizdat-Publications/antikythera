@@ -52,7 +52,9 @@ URL switches: `?theme=manuscript`, `?view=&years=&epoch=&inside=1&apart=1&sky=1&
 `?fps=1`, `?quality=low|medium|high`, `?trails=0`, `?hdri=0`, `?webgl=0` (the no-WebGL still).
 → https://antikythera.stewartgregerson.workers.dev (Cloudflare Workers static assets).
 Source: github.com/Samizdat-Publications/antikythera (public since 2026-09-18).
-Project page: https://samizdat-publications.github.io/antikythera/ (Pages, from `main` and `/docs`).
+Landing page: https://antikythera-5fq.pages.dev (Cloudflare Pages project `antikythera`, from `site/`; built into the
+gitignored `site-dist/`). The older project page https://samizdat-publications.github.io/antikythera/ (GitHub Pages,
+`main` `/docs`) still serves but is no longer linked from showcase.json or the README.
 
 ## Conventions that must not drift
 

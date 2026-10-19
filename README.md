@@ -6,7 +6,7 @@
 your browser.**
 
 [**Open the exhibit**](https://antikythera.stewartgregerson.workers.dev) ·
-[The project page](https://samizdat-publications.github.io/antikythera/) ·
+[Landing page](https://antikythera-5fq.pages.dev) ·
 [How it is built](#how-it-is-built) ·
 [How the numbers are checked](#how-the-numbers-are-checked)
 
@@ -36,8 +36,7 @@ dataset it came from. When the machine is wrong, the exhibit says so.
 ## The walkthrough
 
 The exhibit opens with fourteen leaves, narrated by Arthur, each setting the machine to show one
-idea. The [project page](https://samizdat-publications.github.io/antikythera/#walkthrough) plays
-each one as it runs; here they are as stills.
+idea. Here they are as stills.
 
 | | |
 |---|---|
@@ -110,7 +109,8 @@ blender/dials.py         plates, dials, pointers, rings, tubes, case, crank
 blender/surface.py       UVs, textured bronze, baked ambient occlusion
 blender/export_glb.py    static GLB with the driver rules as node extras
 web/                     Vite + TypeScript + three.js exhibit
-docs/                    the project page, renders, screenshots, clips, plans and research digests
+site/                    the landing page: a museum exhibit in five rooms (Cloudflare Pages)
+docs/                    the older project page, renders, screenshots, clips, plans and research digests
 ```
 
 Rates are rotations per year of b1, clockwise seen from the front positive. The same rule is written
@@ -147,7 +147,9 @@ Hero renders (Cycles): `blender -b build/antikythera.blend --python blender/hero
 
 Deploy: `cd web && npm run build && cd .. && npx wrangler deploy --assets web/dist`. If the GLB or a
 texture changed, bump `CACHE` in `web/public/sw.js` first so the service worker lets the new copy
-through. The project page is `docs/index.html`, served by GitHub Pages from `main` `/docs`.
+through. The landing page is `site/` (https://antikythera-5fq.pages.dev): copy it to `site-dist/`, run the
+showcase kit's `finish-site.mjs`, then `npx wrangler@4 pages deploy site-dist --project-name antikythera --branch main`.
+The older project page, `docs/index.html`, is still served by GitHub Pages from `main` `/docs` but is no longer linked.
 
 `NEXT_STEPS.md` is the maintenance guide, `NOTES.md` the decisions in order, `CLAUDE.md` the rebuild
 order and the conventions that must not drift.
