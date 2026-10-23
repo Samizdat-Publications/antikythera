@@ -115,6 +115,8 @@ export class Onboarding {
   narrate = true;
   private fitting = false;
   onDone: (() => void) | null = null;
+  /** told how far the card reaches over the stage canvas, halved: the viewer moves the picture that far right */
+  onLayout: ((shiftPx: number) => void) | null = null;
 
   constructor(private hooks: StepHooks, private steps: Step[] = STEPS) {
     this.el = document.createElement("div");
@@ -184,6 +186,7 @@ export class Onboarding {
       window.visualViewport?.addEventListener("scroll", refit);
     }
     this.el.hidden = false;
+    document.getElementById("begin")?.setAttribute("hidden", "");     // however it was started, the invitation has done its job
     this.index = at - 1;
     this.next();
   }
@@ -200,9 +203,10 @@ export class Onboarding {
     this.show();
   }
 
-  /** Closing keeps the scene as it is: a visitor who stops at the pin and slot stays there. */
+  /** Closing ends the walkthrough (main.ts puts the whole machine back); folding the card keeps the scene. */
   close(): void {
     this.el.hidden = true;
+    this.onLayout?.(0);
     this.audio.pause();
     this.hooks.focus(null);
     try { localStorage.setItem("am_onboarded", "1"); } catch { /* ignore */ }
@@ -232,11 +236,23 @@ export class Onboarding {
    */
   fit(): void {
     if (this.el.hidden) return;
+    // a wide stage takes the card as a column down its left, so the prose never sits over the machine;
+    // a narrow one (a phone, a small window) keeps it as a lower third
+    const stage = this.el.parentElement;
+    const canvas = stage?.querySelector("canvas") ?? null;
+    const docked = !!stage && stage.clientWidth >= 840 && stage.clientHeight >= 500;
+    this.el.classList.toggle("docked", docked);
     this.el.style.setProperty("--onboard-lift", "0px");
     const vv = window.visualViewport;
     const visibleBottom = vv ? vv.offsetTop + vv.height : innerHeight;
     const over = this.el.getBoundingClientRect().bottom - (visibleBottom - 12);
     if (over > 0) this.el.style.setProperty("--onboard-lift", `${Math.ceil(over)}px`);
+    let shift = 0;
+    if (docked && canvas && !this.el.classList.contains("folded")) {
+      const r = this.el.getBoundingClientRect(), c = canvas.getBoundingClientRect();
+      shift = Math.max(0, r.right - c.left) / 2;
+    }
+    this.onLayout?.(shift);
   }
 
   private speak(): void {

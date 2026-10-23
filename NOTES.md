@@ -710,3 +710,15 @@ See README "Attributions" for licences.
   ("two hundred and five BC"; v3 read 205 as "two-oh-five"). All fourteen clips transcript-checked by
   Gemini; loudness -16 to -18 LUFS. The Arthur clips are not kept in the repo (git has them).
   Fragment A's stray rod and hairline are in the scan mesh itself; NEXT_STEPS has how to cut them.
+- 2026-10-23, last: **the walkthrough card stands beside the machine, and the end of the tour puts the
+  machine back.** On a stage at least 840 by 500 px the card is a column down the left (`.onboard.docked`,
+  chosen in `Onboarding.fit`), and `Viewer.setFrameShift` moves the picture right by half the width the card
+  covers, with `camera.setViewOffset`, so nothing moves in the scene and the machine is simply drawn centred
+  in the space beside the card; the Sky's 2D canvas follows by `--tour-shift`. Smaller stages (phones) keep the
+  lower third. Finishing or closing the walkthrough now runs `resetExhibit()` (the whole machine, closed, at
+  the three-quarter view, turning); folding the card still keeps the scene. **A real bug under the "plate
+  left off" report:** the pin-and-slot leaf lifts the plates and isolates a train in the same moment, and the
+  two each recorded the other's temporary material, so after the train was let go nine parts of b1's frame
+  (the circular plate, strap, pillars and calendar ring) wore a disposed lift copy at 0 % opacity. `isolate`
+  now keeps the part's own material when it is mid-lift, `finishReveal` leaves a ghost a ghost, and a mesh
+  nested in two lifted roles is cloned once. Starting the walkthrough by any route hides the invitation.

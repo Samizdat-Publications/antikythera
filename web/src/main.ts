@@ -295,6 +295,22 @@ tour.load();
 $("#sfx").addEventListener("change", (e) => tour.setSfx((e.target as HTMLInputElement).checked));
 let lastSarosCell = -1;
 
+// ---- the exhibit as it stands when a visitor walks up: the whole machine, closed, on the room's light
+function resetExhibit(): void {
+  viewer.setMood("room");
+  viewer.isolate([]);
+  showFragment(0);
+  setSky(false);
+  setSurvives(false);
+  $<HTMLInputElement>("#xray").checked = false;
+  $<HTMLInputElement>("#apart").checked = false;
+  $<HTMLInputElement>("#expose").checked = false;
+  cosmos.setExposure(false);
+  applyVisibility();
+  setPlaying(false, 1);
+  viewer.view("iso");
+}
+
 // ---- onboarding walkthrough
 let focused: HTMLElement | null = null;
 function setPlaying(on: boolean, spd?: number): void {
@@ -347,7 +363,7 @@ const onboarding = new Onboarding({
   fragment: showFragment,
   sky: setSky,
   mood: (m) => viewer.setMood(m),
-  reset: () => { viewer.setMood("room"); viewer.isolate([]); showFragment(0); setSky(false); $<HTMLInputElement>("#xray").checked = false; $<HTMLInputElement>("#apart").checked = false; $<HTMLInputElement>("#expose").checked = false; cosmos.setExposure(false); applyVisibility(); setPlaying(false, 1); viewer.view("iso"); },
+  reset: resetExhibit,
 });
 addEventListener("keydown", (e) => {                                   // space turns the crank, unless a field has focus
   const t = e.target as HTMLElement | null;
@@ -356,7 +372,13 @@ addEventListener("keydown", (e) => {                                   // space 
   setPlaying(!playing);
 });
 onboarding.load();
-onboarding.onDone = () => viewer.setMood("room");
+// the walkthrough over (finished or closed), the visitor gets the whole machine back, closed and turning,
+// rather than whatever the last leaf left (a train alone, the plates lifted): folding the card keeps the scene
+onboarding.onLayout = (px) => { viewer.setFrameShift(px); stageEl.style.setProperty("--tour-shift", `${px}px`); };
+onboarding.onDone = () => {
+  resetExhibit();
+  if (!REDUCE_MOTION.matches) setPlaying(true, 0.0821918);
+};
 viewer.holdOrbit = () => onboarding.active;                    // closing keeps the scene, but the room lights come back up
 $("#tour-btn").addEventListener("click", () => onboarding.start());
 // the address for the state on screen, put on the clipboard so a visitor can send what they have set up

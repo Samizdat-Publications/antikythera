@@ -524,6 +524,7 @@ export class Viewer {
     const keep = aspect >= 1.2 ? 1.2 : 0.9 + 0.3 * Math.min(1, Math.max(0, (aspect - 0.75) / 0.45));
     this.camera.fov = aspect >= 1.2 ? 38 : Math.min(72, (2 * Math.atan((Math.tan((38 / 2) * Math.PI / 180) * keep) / aspect) * 180) / Math.PI);
     this.camera.updateProjectionMatrix();
+    this.applyShift();
     const pr = this.renderer.getPixelRatio();
     this.composer?.setSize(w, h);
     this.bloomComposer?.setSize(w, h);
@@ -532,6 +533,26 @@ export class Viewer {
   }
 
   private snapshotting = false;
+
+  /**
+   * Move the picture sideways without moving the camera: the walkthrough card stands as a column down
+   * the left of a wide stage, and the machine is drawn centred in the space beside it instead of behind
+   * it. `px` is in CSS pixels; the shift eases in over a few frames.
+   */
+  setFrameShift(px: number): void { this.shiftTarget = px; }
+  private shiftTarget = 0;
+  private shiftNow = 0;
+  private stepShift(): void {
+    const d = this.shiftTarget - this.shiftNow;
+    if (Math.abs(d) < 0.5) { if (this.shiftNow !== this.shiftTarget) { this.shiftNow = this.shiftTarget; this.applyShift(); } return; }
+    this.shiftNow += REDUCE_MOTION.matches ? d : d * 0.14;
+    this.applyShift();
+  }
+  private applyShift(): void {
+    const c = this.opts.canvas, w = c.clientWidth || 800, h = c.clientHeight || 600;
+    if (Math.abs(this.shiftNow) < 0.5) this.camera.clearViewOffset();
+    else this.camera.setViewOffset(w, h, -this.shiftNow, 0, w, h);
+  }
 
   /**
    * One frame of the stage as a PNG, drawn at `scale` times the screen's resolution.
@@ -781,7 +802,9 @@ export class Viewer {
     const ghost = (o: THREE.Object3D, rootNode: THREE.Object3D): void => {
       if (o !== rootNode && typeof o.userData.am_id === "string") return;    // another node: its own turn
       const m = o as THREE.Mesh;
-      if (m.isMesh) { this.ghosted.push([m, m.material]); m.material = this.ghostMat; m.castShadow = false; }   // a ghost throws no shadow
+      // a ghost throws no shadow; a part mid-lift is wearing the lift's fading copy, so its own material is
+      // the one kept for later (keeping the copy left it invisible once the lift had ended and disposed it)
+      if (m.isMesh) { this.ghosted.push([m, (m.userData.am_restore as THREE.Material | undefined) ?? m.material]); m.material = this.ghostMat; m.castShadow = false; }
       for (const c of o.children) ghost(c, rootNode);
     };
     for (const n of this.graph.nodes.values()) if (!keep.has(n.id)) ghost(n.object, n.object);
@@ -818,6 +841,10 @@ export class Viewer {
         o.traverse((c) => {
           const m = c as THREE.Mesh;
           if (!m.isMesh) return;
+          // a plate can sit inside another plate (the strap and circular plate on b1's frame): cloned once
+          // already, it must not be cloned again, or its restore points at the first clone and it is left
+          // a transparent copy, stuck at whatever opacity the last fade ended on
+          if (m.userData.am_restore) return;
           m.castShadow = !on;                                       // lifted plates fade, and fading plates must not shadow the gears
           const src = Array.isArray(m.material) ? m.material : [m.material];
           const clones = src.map((s) => { const k = s.clone(); k.transparent = true; k.opacity = on ? 1 : 0; return k; });
@@ -859,7 +886,10 @@ export class Viewer {
       it.o.position.copy(it.p0);
       it.o.traverse((c) => {
         const m = c as THREE.Mesh;
-        if (m.isMesh && m.userData.am_restore) { m.material = m.userData.am_restore as THREE.Material; delete m.userData.am_restore; }
+        if (m.isMesh && m.userData.am_restore) {
+          if (m.material !== this.ghostMat) m.material = m.userData.am_restore as THREE.Material;   // a ghost stays a ghost until isolate lets it go
+          delete m.userData.am_restore;
+        }
       });
       for (const m of it.mats) m.dispose();
       const role = it.o.userData.am_role as string;
@@ -950,6 +980,7 @@ export class Viewer {
     this.stepApart(now);
     this.stepReveal(now);
     this.stepLights(now);
+    this.stepShift();
     this.trails?.step(now, this.theme);
     // a visitor left alone drifts slowly round the case, unless they have asked the page to keep still
     if (!REDUCE_MOTION.matches && !this.tween && !this.reveal && !this.apartTween && !this.controls.autoRotate && !this.holdOrbit() && now - this.lastInput > 12000 && ["iso", "front", "back", "free"].includes(this.currentView)) this.controls.autoRotate = true;

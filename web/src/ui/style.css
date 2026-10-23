@@ -196,6 +196,17 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 .onboard.folded .onboard-foot { padding: 0 0 6px; margin-top: -22px; justify-content: flex-end; pointer-events: none; }
 .onboard.folded .onboard-foot .btns { margin-right: 58px; pointer-events: auto; }
 .onboard-foot .btns { margin-left: auto; }
+/* a wide stage: the card is a column down the left, under the view buttons, and the picture moves right
+   to stand clear of it (Viewer.setFrameShift; the Sky's 2D canvas follows by --tour-shift) */
+.onboard.docked { left: 22px; right: auto; top: 62px; bottom: auto; width: clamp(280px, 28%, 400px); max-width: none;
+  max-height: calc(100% - 62px - 22px - var(--onboard-lift, 0px)); }
+.onboard.docked .onboard-body { font-size: 15px; line-height: 1.55; max-width: none; }
+.onboard.docked .onboard-title { font-size: 21px; line-height: 1.2; margin: 6px 0 10px; }
+.onboard.docked .onboard-foot { padding-top: 8px; border-top: 1px solid var(--line-soft); }
+.onboard.docked.folded { top: auto; bottom: calc(22px + var(--onboard-lift, 0px)); width: auto; max-width: 560px; }
+.onboard.docked.folded .onboard-foot { border-top: 0; padding-top: 0; }
+#cosmos-stage { transform: translateX(var(--tour-shift, 0px)); transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1); }
+@media (prefers-reduced-motion: reduce) { #cosmos-stage { transition: none; } }
 .onboard-keys { color: var(--ink-faint); }
 .onboard-progress { display: block; height: 1px; background: var(--line-soft); margin: 0 -18px; }
 .onboard-progress i { display: block; height: 1px; background: var(--bronze); transition: width 400ms cubic-bezier(0.22, 1, 0.36, 1); }
@@ -288,6 +299,8 @@ input[type=range] { width: 100%; accent-color: var(--bronze); }
 /* the walkthrough's opening letter is a versal in red ochre, as a rubricator would leave it */
 [data-theme="manuscript"] .onboard-body::first-letter { font-family: var(--font-display); font-size: 2.6em; line-height: 0.8; float: left; color: var(--bronze); padding: 0.08em 0.12em 0 0; }
 [data-theme="manuscript"] .onboard-step { font-variant-numeric: normal; }
+[data-theme="manuscript"] .onboard.docked { left: 36px; top: 72px; bottom: auto; max-height: calc(100% - 72px - 60px - var(--onboard-lift, 0px)); }
+[data-theme="manuscript"] .onboard.docked.folded { top: auto; bottom: calc(60px + var(--onboard-lift, 0px)); }
 [data-theme="manuscript"] #moon { background: var(--paper); border: 1px solid var(--line); }
 [data-theme="manuscript"] .cosmos-panel { background: var(--paper); background-image: var(--parchment-fibre); border-color: var(--line); }
 [data-theme="manuscript"] .cosmos-stage { background: var(--bg); background-image: var(--parchment-fibre); }
