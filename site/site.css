@@ -146,6 +146,13 @@ figcaption { margin-top: 0.8em; font-size: 0.95rem; font-style: italic; color: v
 .proof-figures dd { margin: 0.6em 0 0; color: #d8cbb2; font-size: 1rem; }
 .proof-foot { max-width: var(--measure); margin: 48px auto 0; color: var(--ash); font-size: 1rem; }
 
+/* ---- where this copy departs: a plain list, set like the catalogue's notes ---- */
+.departs { max-width: var(--measure); margin: 0 auto; padding: clamp(72px, 12vh, 140px) var(--gutter) 0; }
+.departs h2 { margin-bottom: 0.6em; }
+.departs ul { padding-left: 1.1em; margin: 0; color: #d8cbb2; }
+.departs li { margin-bottom: 0.9em; }
+.departs b { color: var(--vellum); font-weight: 600; }
+
 /* ---- the two editions ---- */
 .editions { padding: clamp(80px, 14vh, 160px) var(--gutter); max-width: 1440px; margin: 0 auto; }
 .editions h2 { max-width: var(--measure); margin: 0 auto 40px; }
