@@ -46,7 +46,7 @@ idea. Here they are as stills.
 | ![7](docs/landing/clips/leaf07.jpg) **7. The Moon and its phase.** Exactly 254/19, and a half-dark ball that turns once a month. | ![8](docs/landing/clips/leaf08.jpg) **8. The pin and slot.** Two gears 1.1 mm off axis make the Moon speed up and slow down. |
 | ![9](docs/landing/clips/leaf09.jpg) **9. The calendars on the back.** The Metonic spiral, the games, the Callippic cycle. | ![10](docs/landing/clips/leaf10.jpg) **10. Predicting eclipses.** The Saros spiral, its glyphs checked against NASA. |
 | ![11](docs/landing/clips/leaf11.jpg) **11. The planets.** Five rings, each with its own epicyclic gearing and a coloured stone. | ![12](docs/landing/clips/leaf12.jpg) **12. The sky it tracks.** Each body on its epicycle, looping backwards. |
-| ![13](docs/landing/clips/leaf13.jpg) **13. How good was it?** The Moon within about two degrees, and the caveat about hand-filed teeth. | ![14](docs/landing/clips/leaf14.jpg) **14. Explore.** Drag, zoom, click a gear, wind the crank, send the view as a link. |
+| ![13](docs/landing/clips/leaf13.jpg) **13. How good was it?** The Moon within about three and a half degrees near the epoch, its slow drift, and the caveat about hand-filed teeth. | ![14](docs/landing/clips/leaf14.jpg) **14. Explore.** Drag, zoom, click a gear, wind the crank, send the view as a link. |
 
 ## Seven ways to look at it
 
@@ -55,7 +55,7 @@ running page; each opens the exhibit in that view.
 
 | | |
 |---|---|
-| [![The front dial](docs/landing/clips/view-front.webp)](https://antikythera.stewartgregerson.workers.dev/?view=front) **The front dial.** The zodiac, the Egyptian calendar (drawn with 365 days; a 2024 hole count suggests 354), and pointers for the Sun, the Moon and the five planets. | [![The back dials](docs/landing/clips/view-back.webp)](https://antikythera.stewartgregerson.workers.dev/?view=back) **The back dials.** The Metonic and Saros spirals, cut as slots for the pointers' pins to ride in, with the games, Callippic and Exeligmos dials. |
+| [![The front dial](docs/landing/clips/view-front.webp)](https://antikythera.stewartgregerson.workers.dev/?view=front) **The front dial.** The zodiac, the Egyptian calendar (drawn with 365 days; the holes beneath it suggest 354), and pointers for the Sun, the Moon and the five planets. | [![The back dials](docs/landing/clips/view-back.webp)](https://antikythera.stewartgregerson.workers.dev/?view=back) **The back dials.** The Metonic and Saros spirals, cut as slots for the pointers' pins to ride in, with the games, Callippic and Exeligmos dials. |
 | [![Taken apart](docs/landing/clips/view-apart.webp)](https://antikythera.stewartgregerson.workers.dev/?apart=1) **Taken apart.** Every wheel slides out along its arbor and keeps turning, so the trains that share the great b1 wheel can be told apart. | [![Only what survives](docs/landing/clips/view-survives.webp)](https://antikythera.stewartgregerson.workers.dev/?survives=1) **Only what survives.** The thirty gears found in the fragments, solid; the thirty-nine reconstructed ones as ghosts. |
 | [![The sky it tracks](docs/landing/clips/view-sky.webp)](https://antikythera.stewartgregerson.workers.dev/?sky=1) **The sky it tracks.** The machine's cosmos drawn from its own gears; bronze is what the machine shows, verdigris the real sky. | [![The manuscript](docs/landing/clips/view-manuscript.webp)](https://antikythera.stewartgregerson.workers.dev/?theme=manuscript&view=front) **The manuscript.** The same exhibit as a scholar's copy of Ptolemy: parchment, iron-gall ink, red ochre, gold leaf for the Sun. |
 
@@ -119,7 +119,7 @@ together by the tests: the glTF carries every driver rule as `am_*` node extras,
 the machine from the same arithmetic Blender did.
 
 Time is Julian Day throughout, on the proleptic Julian calendar for BC dates and astronomical years
-(205 BC is −204). The epoch is the full moon of 12 May 205 BC (Carman & Evans), with 22 Dec 178 BC
+(205 BC is −204). The epoch is the full moon of 12 May 205 BC (Carman & Evans; Freeth, both 2014), with 22 Dec 178 BC
 (Voulgaris) as a switch; nothing in the exhibit uses a JavaScript `Date`.
 
 ## Running
@@ -163,9 +163,10 @@ order and the conventions that must not drift.
   Millennium Canon of Solar and Lunar Eclipses. Ephemeris: astronomy-engine (Don Cross, MIT).
 * Parapegma and front dial inscriptions: Bitsakis and Jones, "The Front Dial and Parapegma
   Inscriptions", Almagest 7.1 (2016), CC BY-NC 4.0.
-* The games and the calendar: Iversen 2017, Hesperia 86. The calendar ring's holes: Woan & Bayley 2024.
-  The teeth: Szigety & Arenas 2025 (a preprint).
-* Epochs: Carman & Evans 2014 (12 May 205 BC); Voulgaris, Mouratidis & Vossinakis 2023 (22 Dec 178 BC).
+* The games and the calendar: Iversen 2017, Hesperia 86. The calendar ring's holes: Budiselic et al. 2020 (the
+  measurements) and Woan & Bayley 2024 (their statistical analysis). The teeth: Edmunds 2011 (JHA 42) and
+  Szigety & Arenas 2025 (a preprint simulating his error estimates).
+* Epochs: Carman & Evans 2014 and Freeth 2014 (12 May 205 BC); Voulgaris, Mouratidis & Vossinakis 2023 (22 Dec 178 BC).
 * Fragment A's CT scan: Ashkan Pakzad, CC BY 4.0. The Moon's face: NASA's CGI Moon Kit (LROC colour
   mosaic), public domain. Rooms: Poly Haven HDRIs `studio_small_09` and `artist_workshop`, CC0.
   Layout reference: Thomas Weibel's CC BY reconstruction (thomasweibel.ch).

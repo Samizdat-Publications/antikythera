@@ -45,13 +45,15 @@ TOUR = [
      "The machine has no clock inside it. It was set by hand once, on one particular day, and after that it only ever counts turns. "
      "That day is the epoch. Nothing on the bronze states it, so scholars worked it out from the eclipse glyphs on the Saros dial: "
      "the pattern of fifty-one glyphs fits only certain starting months. "
-     "Carman and Evans found the full moon of the twelfth of May, 205 BC; Voulgaris and his colleagues argue for the eclipse of December 178 BC. "
+     "Carman and Evans, and Tony Freeth, both in 2014, put the first month of the Saros dial at the full moon of the twelfth of May, 205 BC; "
+     "Voulgaris and his colleagues argue for the eclipse of the twenty-second of December, 178 BC. "
      "Switch between them, and every dial re-sets. The epoch is a setting, not the day it was made: the wreck went down around 70 to 60 BC. "
      "Because the machine only knows turns, dates here are written as years since the epoch, and its errors grow the further you crank from it."),
     ("zodiac", "front",
      "The front dial is the sky. The inner ring is the zodiac, twelve signs of thirty degrees. "
      "The outer ring names the months of the Egyptian calendar, drawn here with its 365 days as the 2021 model has it, "
-     "so the owner could slip it round a day every four years. A 2024 recount of the holes beneath the ring points to 354, a lunar year, "
+     "so the owner could slip it round a day every four years. The holes beneath the ring, measured in 2020 and analysed statistically in 2024, "
+     "suggest 354, a lunar year, "
      "so how it was kept in step is still argued over. "
      "The date pointer reads this ring; the true-sun pointer, with its golden ball, reads the zodiac. "
      "The plates above and below carry the parapegma, a list of star risings and settings, keyed to letters on the dial."),
@@ -92,12 +94,16 @@ TOUR = [
      "These are the loops a Greek epicycle predicts, the geometry of Apollonius and Hipparchus that Ptolemy later refined. "
      "The green ticks on the rim are the true sky, so you can see for yourself how close the bronze comes."),
     ("accuracy", "front",
-     "How good was it? Against a modern ephemeris the mean Sun drifts a fraction of a degree a century. "
-     "The Moon, thanks to the pin and slot, stays within about two degrees. "
+     "How good was it? Here a turn of the crank is a tropical year, so the mean Sun keeps time by construction, "
+     "and its band on the chart is only the real Sun's yearly swing about its mean. "
+     "The Moon, thanks to the pin and slot, stays within about three and a half degrees for some years either side of the epoch. "
+     "What remains is the evection and the variation, which the machine does not model, and a slow drift of about a degree "
+     "every eighteen years, because two hundred and fifty-four turns in nineteen years is not quite the Moon's true rate. "
      "Over three Saros cycles most of the lunar glyphs land on real eclipses, and every solar glyph falls in a month with an "
      "eclipse of the Sun somewhere on Earth, though many could not have been seen from Greece. "
      "One caution. These wheels are cut perfectly, and the originals were filed by hand. "
-     "A 2025 study argues that teeth as uneven as those measured would have jammed, so either the maker worked finer than "
+     "A 2025 simulation, using the tooth errors Mike Edmunds estimated in 2011, argues that errors that large would have jammed it, "
+     "so either the maker worked finer than "
      "the corroded remains now show, or it never ran this smoothly."),
     ("explore", "iso",
      "That is the machine. Drag to orbit, scroll to zoom, hover any gear for its tooth count and rate, and click it to see its train alone. "

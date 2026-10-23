@@ -42,7 +42,7 @@ export function drawErrorChart(canvas: HTMLCanvasElement, bands: ErrorBands, exi
       datasets: [
         ...band("Moon, with the pin-and-slot", bands.moonMax, bands.moonMin, DARK.moon, 0.9, 0.38),
         ...band("Moon, mean motion only", bands.meanMax, bands.meanMin, DARK.moonMean, 0.5, 0.16),
-        ...band("Sun", bands.sunMax, bands.sunMin, DARK.sun, 0.9, 0.3),
+        ...band("mean Sun", bands.sunMax, bands.sunMin, DARK.sun, 0.9, 0.3),
       ],
     },
     options: {

@@ -1,8 +1,8 @@
 import { Viewer, REDUCE_MOTION, type Theme } from "./scene/viewer";
-import { EPOCHS, mechanismState, type MechanismState, type Calibration } from "./mech/mechanism";
+import { EPOCHS, mechanismState, zodiacAt, type MechanismState, type Calibration } from "./mech/mechanism";
 import { civilToJdn, formatJd, TROPICAL_YEAR } from "./astro/jd";
 import { drawMoon } from "./ui/moon";
-import { calibrate, type CalibrationSet } from "./astro/calibration";
+import { calibrate, CELL_FULL_MOON, type CalibrationSet } from "./astro/calibration";
 import { loadCanon, nextEclipse, prevEclipse, eclipsesBetween, describeType, skyState, moonLibration, type EclipseRow } from "./astro/truth";
 import { glyphByMonth, OBSERVED_HOURS } from "./astro/eym";
 import { parapegmaAt } from "./astro/parapegma";
@@ -307,12 +307,17 @@ function setPlaying(on: boolean, spd?: number): void {
   last = performance.now();
   if (!playing) update(true);
 }
+/** This Saros cell's full moon and new moon (machine time): 17 and 36 of its 38 EYu (Freeth 2014). */
+function cellMoons(s: MechanismState): [number, number] {
+  const SYN = TROPICAL_YEAR / (235 / 19);
+  const fm = s.jd + (CELL_FULL_MOON - (s.sarosMonthsElapsed % 1)) * SYN;
+  return [fm, fm + (19 / 38) * SYN];
+}
 /** True when the glyph in this Saros cell lands on a real eclipse in NASA's canon (penumbral-only does not count). */
 function glyphHit(s: MechanismState): boolean {
   const g = GLYPHS.get(s.sarosCell);
   if (!g || !canon) return false;
-  const SYN = TROPICAL_YEAR / (235 / 19);
-  const fmJd = s.jd - (s.sarosMonthsElapsed % 1) * SYN, nmJd = fmJd + (19 / 38) * SYN;
+  const [fmJd, nmJd] = cellMoons(s);
   const lun = g.lunar && eclipsesBetween(canon.lunar, fmJd - 1.6, fmJd + 1.6).some((r) => r.type[0] !== "N");
   const sol = g.solar && eclipsesBetween(canon.solar, nmJd - 1.6, nmJd + 1.6).length > 0;
   return !!(lun || sol);
@@ -353,7 +358,8 @@ addEventListener("keydown", (e) => {                                   // space 
   setPlaying(!playing);
 });
 onboarding.load();
-onboarding.onDone = () => viewer.setMood("room");                    // closing keeps the scene, but the room lights come back up
+onboarding.onDone = () => viewer.setMood("room");
+viewer.holdOrbit = () => onboarding.active;                    // closing keeps the scene, but the room lights come back up
 $("#tour-btn").addEventListener("click", () => onboarding.start());
 // the address for the state on screen, put on the clipboard so a visitor can send what they have set up
 const shareBtn = $<HTMLButtonElement>("#share-btn");
@@ -437,8 +443,9 @@ const GLOSS: Record<string, string> = {
   "Callippic": "four Metonic cycles less one day, 76 years",
   "Games": "the four-year round of the games (Isthmia, Olympia, Nemea, Pythia, with the lesser Naa and Halieia)",
   "Dragon hand": "the pointer that tracks the Moon's nodes, where eclipses can happen (18.6-year cycle; reconstructed, nothing of it survives)",
-  "Egyptian date": "the Egyptian calendar on the front ring, drawn with 365 days: 12 months of 30 and 5 extra (a 2024 hole count suggests the ring had 354)",
-  "Sun (mean)": "the Sun's average position along the zodiac; the true Sun pointer adds the yearly wobble",
+  "Egyptian date": "the Egyptian calendar on the front ring, drawn with 365 days: 12 months of 30 and 5 extra (the holes under the ring point to 354: Budiselic et al. 2020, Woan and Bayley 2024)",
+  "Sun": "the true-Sun pointer with its golden ball, which reads the zodiac and the parapegma letters; its pin and follower add the yearly wobble",
+  "mean (date)": "the Sun's average place, which the date pointer carries round the Egyptian calendar",
   "anomaly": "the pin-and-slot correction: the Moon runs fast near perigee and slow near apogee, up to about 6.5 degrees",
   "Julian Day": "the astronomers' day count, one number for any date, so that BC dates need no calendar arithmetic",
   "Phase": "how much of the Moon's face is lit, shown by the half-dark ball on the front dial",
@@ -459,7 +466,7 @@ function setDl(el: HTMLElement, rows: [string, string][]): void {
 function mechCalibration(): Partial<Calibration> {
   return {
     sunLon0: calib.sunLon0, moonLon0: calib.moonLon0,
-    apogee0: calib.moonLon0,            // the pin sits at apogee at the epoch (full moon near apogee, Freeth 2014)
+    apogee0: calib.apogee0,             // the e3 platform set to the Moon's apogee on the epoch day
     node0: calib.node0, egyptianDay0: calib.egyptianDay0,
     metonicMonth0: calib.metonicMonth0, metonicYearOffset: calib.metonicYear0 - 1,
     callippicOffset: calib.callippicQuarter0 * 19, sarosMonth0: calib.sarosMonth0,
@@ -477,9 +484,7 @@ function eclipsePanel(s: MechanismState): void {
   const el = $("#eclipse");
   const g = GLYPHS.get(s.sarosCell);
   const parts: string[] = [];
-  const SYN = TROPICAL_YEAR / (235 / 19);
-  const fmJd = s.jd - (s.sarosMonthsElapsed % 1) * SYN;          // this cell's full moon (machine time)
-  const nmJd = fmJd + (19 / 38) * SYN;                            // its new moon, 19 EYu later
+  const [fmJd, nmJd] = cellMoons(s);
   const mech = g
     ? `${g.lunar ? "Σ: a lunar eclipse" : ""}${g.lunar && g.solar ? " · " : ""}${g.solar ? "Η: a solar eclipse" : ""}`
     : "no glyph: the machine expects no eclipse this month";
@@ -517,7 +522,7 @@ function eclipsePanel(s: MechanismState): void {
 }
 
 const PLANET_DRIVERS: [string, string, string][] = [
-  ["Mercury", "mercury", "mercury_ptr"], ["Venus", "venus", "venus_ptr"], ["True Sun", "true_sun", "true_sun_ptr"],
+  ["Mercury", "mercury", "mercury_ptr"], ["Venus", "venus", "venus_ptr"],
   ["Mars", "mars", "ma80b"], ["Jupiter", "jupiter", "ju65b"], ["Saturn", "saturn", "sa86b"],
 ];
 function planetRows(): [string, string][] {
@@ -538,12 +543,15 @@ function update(force = false): void {
   $("#date-sub").textContent = `${years >= 0 ? "" : "−"}${Math.abs(years).toFixed(2)} years since the epoch`;
   caption();
   yearsVal.textContent = years.toFixed(4);
-  const pp = parapegmaAt(s.sunMean);
+  const trueSun = viewer.graph ? viewer.graph.reading("true_sun") : s.sunMean;   // the pointer that reads the zodiac and the parapegma
+  const zod = zodiacAt(trueSun);
+  const pp = parapegmaAt(trueSun);
   const ppRow = pp.ahead === 0
     ? `${pp.letter} · ${pp.event}${pp.status === "restored" ? " (restored)" : ""}${pp.nameRestored ? " (name restored)" : ""}`
     : `${pp.letter} in ${pp.ahead.toFixed(1)}°: ${pp.event}`;
   setDl($("#front-dl"), [
-    ["Sun (mean)", `${fmt(s.sunMean, 1)}° · ${s.zodiacSign.split(" ")[0]} ${fmt(s.zodiacDeg, 1)}°`],
+    ["Sun", `${fmt(trueSun, 1)}° · ${zod.sign.split(" ")[0]} ${fmt(zod.deg, 1)}°`],
+    ["  mean (date)", `${fmt(s.sunMean, 1)}°`],
     ["Moon", `${fmt(s.moon, 1)}°`],
     ["  anomaly", `${signed(s.moonAnomaly)}°`],
     ["Dragon hand", `${fmt(s.nodes, 1)}° (asc. node)`],
@@ -576,7 +584,7 @@ function update(force = false): void {
     const sky = skyState(s.jd);
     setDl($("#sky-dl"), [
       ["Julian Day", s.jd.toFixed(2)],
-      ["Sun true", `${fmt(sky.sunLon, 2)}° · Δ ${signed(wrap180(s.sunMean - sky.sunLon))}°`],
+      ["Sun true", `${fmt(sky.sunLon, 2)}° · Δ ${signed(wrap180(trueSun - sky.sunLon))}°`],
       ["Moon true", `${fmt(sky.moonLon, 2)}° · Δ ${signed(wrap180(s.moon - sky.moonLon))}°`],
       ["Moon mean-only", `Δ ${signed(wrap180(s.moonMean - sky.moonLon))}°`],
       ["Phase true", `${fmt(sky.elongation, 1)}° · Δ ${signed(wrap180(s.elongation - sky.elongation), 1)}°`],
@@ -637,7 +645,7 @@ function fitPhases(): void {
   console.info(`[antikythera] device phases fitted in ${(performance.now() - t0).toFixed(0)} ms: ` +
     phaseReport.map((r) => `${r.display} ${r.phaseDeg.toFixed(1)}° (rms ${r.rmsDeg.toFixed(1)}°, worst ${r.worstDeg.toFixed(1)}°)`).join("; "));
   (window as unknown as { __phases: PhaseFit[] }).__phases = phaseReport;
-  const label: Record<string, string> = { true_sun: "true Sun", mercury: "Mercury", venus: "Venus", mars: "Mars", jupiter: "Jupiter", saturn: "Saturn" };
+  const label: Record<string, string> = { moon: "Moon", true_sun: "true Sun", mercury: "Mercury", venus: "Venus", mars: "Mars", jupiter: "Jupiter", saturn: "Saturn" };
   setDl($("#phase-dl"), phaseReport.map((r) => [label[r.display] ?? r.display, `rms ${r.rmsDeg.toFixed(1)}° · worst ${r.worstDeg.toFixed(1)}°`]));
 }
 $("#epoch-btn").addEventListener("click", () => setYears(0));

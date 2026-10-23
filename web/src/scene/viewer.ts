@@ -60,6 +60,10 @@ const PRESETS: Record<string, Preset> = {
   "back-upper": [[20, 40, -260], [0, 58, -40]],
   "back-lower": [[20, -110, -260], [0, -81, -40]],
   "pinslot": [[75, -70, -150], [28, -32, -25]],
+  // the Saros spiral and the Exeligmos dial held high enough to clear the walkthrough card
+  "saros": [[20, -150, -400], [0, -115, -40]],
+  // the crown wheel against the main wheel's rim, the crank knob beyond: for the input train shown alone
+  "crank-input": [[200, -60, 220], [55, -15, 0]],
   // 1.18x further out than the composition alone wants: at fov 38 the case filled the frame exactly,
   // so the top corner and the plinth were shaved off at every stage wider than 6:5
   "iso": [[354, -260, 496], [0, 0, 0]],
@@ -159,6 +163,8 @@ export class Viewer {
   // camera tween
   private tween: { p0: THREE.Vector3; p1: THREE.Vector3; t0: THREE.Vector3; t1: THREE.Vector3; start: number; ms: number } | null = null;
   currentView = "iso";
+  /** While this says so (the walkthrough is speaking), the idle orbit does not start: it carried the camera round to the case's blank side mid-sentence. */
+  holdOrbit: () => boolean = () => false;
   onView: ((name: string) => void) | null = null;
 
   constructor(private opts: ViewerOptions) {
@@ -946,7 +952,7 @@ export class Viewer {
     this.stepLights(now);
     this.trails?.step(now, this.theme);
     // a visitor left alone drifts slowly round the case, unless they have asked the page to keep still
-    if (!REDUCE_MOTION.matches && !this.tween && !this.reveal && !this.apartTween && !this.controls.autoRotate && now - this.lastInput > 12000 && ["iso", "front", "back", "free"].includes(this.currentView)) this.controls.autoRotate = true;
+    if (!REDUCE_MOTION.matches && !this.tween && !this.reveal && !this.apartTween && !this.controls.autoRotate && !this.holdOrbit() && now - this.lastInput > 12000 && ["iso", "front", "back", "free"].includes(this.currentView)) this.controls.autoRotate = true;
     this.controls.update();
     this.pick(now);
     this.gtao.enabled = this.quality.gtao;

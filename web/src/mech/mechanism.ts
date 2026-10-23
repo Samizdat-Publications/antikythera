@@ -27,8 +27,8 @@ export interface Epoch {
   note: string;
 }
 export const EPOCHS: Epoch[] = [
-  { id: "carman-evans", label: "12 May 205 BC (Carman & Evans 2014)", jdn: 1646679, note: "Full Moon of Saros month 1, Exeligmos at 0" },
-  { id: "voulgaris", label: "22 Dec 178 BC (Voulgaris et al. 2022)", jdn: 1656764, note: "Annular solar eclipse, winter solstice next day" },
+  { id: "carman-evans", label: "12 May 205 BC (Carman & Evans 2014; Freeth 2014)", jdn: 1646679, note: "Full Moon of Saros month 1, Exeligmos at 0" },
+  { id: "voulgaris", label: "22 Dec 178 BC (Voulgaris et al. 2023)", jdn: 1656764, note: "Annular solar eclipse, winter solstice next day" },
 ];
 
 export const CORINTHIAN_MONTHS = [
@@ -74,8 +74,6 @@ export interface MechanismState {
   egyptianDay: number;          // 1..365 on the calendar ring (leap slip ignored)
   egyptianMonth: string;
   egyptianDayOfMonth: number;
-  zodiacSign: string;
-  zodiacDeg: number;
   metonicCell: number;          // 1..235
   metonicYear: number;          // 1..19
   metonicMonthName: string;
@@ -91,6 +89,12 @@ export interface MechanismState {
 }
 
 const mod = (a: number, n: number) => ((a % n) + n) % n;
+
+/** The sign and degree a longitude falls in. On the bronze the true-Sun pointer reads the zodiac (Freeth 2021, SI 6.4). */
+export function zodiacAt(lon: number): { sign: string; deg: number } {
+  const l = mod(lon, 360);
+  return { sign: ZODIAC[Math.floor(l / 30) % 12], deg: l % 30 };
+}
 
 export const PHASE_NAMES = [
   "New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous",
@@ -130,13 +134,11 @@ export function mechanismState(years: number, epochJdn: number, calib: Partial<C
   const sarosCell = Math.floor(sarosIdx) + 1;
   const exSector = Math.floor(mod((c.sarosMonth0 - 1 + months) / 223 + c.exeligmos0, 3));
   const gamesYear = Math.floor(mod(c.gamesYear0 - 1 + years, 4)) + 1;
-  const zodiacDeg = sunMean;
 
   return {
     years, jd, sunMean, moonMean, moon, moonAnomaly: corr, meanAnomaly, apsides, nodes, elongation, illuminated,
     moonAgeDays, phaseName: phaseName(elongation),
     egyptianDay, egyptianMonth: EGYPTIAN_MONTHS[em], egyptianDayOfMonth: egyptianDay - em * 30,
-    zodiacSign: ZODIAC[Math.floor(zodiacDeg / 30) % 12], zodiacDeg: zodiacDeg % 30,
     metonicCell, metonicYear: Math.floor(mod(years + c.metonicYearOffset, 19)) + 1,
     metonicMonthName: CORINTHIAN_MONTHS[(metonicCell - 1 + c.metonicMonthNameOffset) % 12],
     metonicTurn: Math.floor((metonicCell - 1) / 47),

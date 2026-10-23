@@ -60,6 +60,12 @@ needs a paid plan for that. `docs/index.html` is the page, `docs/screens/` the s
   narration is Arthur's, and the project page is a landing page filmed from the running exhibit
   (`docs/plans/2026-09-24-landing.md` says how to film it again after a visual change).
 
+- 2026-10-23: a second accuracy pass with Gemini 4 Argon as referee, on the code and on a narrated screen
+  recording, before writing to the Freeth team. Fixed: the 3D Moon pointer (up to 20° off; the lunar pin was
+  never phase-fitted), the Voulgaris epoch's eclipse audit, the Saros and Metonic month phase, citations
+  (Freeth 2014 for the epoch, Budiselic 2020, Edmunds 2011), leaf 13's accuracy claim, three leaves' staging.
+  `docs/ACCURACY-2026-10-23.md`; NOTES.md, 2026-10-23.
+
 ## Maintenance guide (for sessions at any effort level)
 
 **Change copy or a panel.** Edit `web/index.html` (the page), `web/src/ui/onboarding.ts` (the

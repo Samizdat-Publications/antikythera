@@ -8,7 +8,9 @@ import { mechanismState, type Calibration, RATE } from "../mech/mechanism";
 import { skyState, type EclipseRow, lowerBound } from "../astro/truth";
 import { TROPICAL_YEAR } from "../astro/jd";
 import { glyphByMonth } from "../astro/eym";
+import { CELL_FULL_MOON } from "../astro/calibration";
 
+const mod = (a: number, n: number) => ((a % n) + n) % n;
 const SYN = TROPICAL_YEAR / RATE.moonSynodic;   // the machine's synodic month, days
 const GLYPHS = glyphByMonth();
 
@@ -94,10 +96,11 @@ function within(rows: EclipseRow[], jd: number, tol: number): EclipseRow | undef
 export function auditSaros(epochJdn: number, sarosMonth0: number, canon: { solar: EclipseRow[]; lunar: EclipseRow[] }, months = 223): Audit {
   const a: Audit = { months, lunar: { predicted: 0, hits: 0, falseAlarms: 0, missed: 0, penumbralOnly: 0 },
     solar: { predicted: 0, hits: 0, falseAlarms: 0, missed: 0 }, rows: [] };
+  const into = mod(sarosMonth0 - 1, 1);               // how far into its cell the epoch falls
   for (let m = 0; m < months; m++) {
-    const cell = ((sarosMonth0 - 1 + m) % 223 + 223) % 223 + 1;
+    const cell = Math.floor(mod(sarosMonth0 - 1 + m, 223)) + 1;
     const g = GLYPHS.get(cell);
-    const fm = epochJdn + m * SYN;                    // full moon of this month (machine time)
+    const fm = epochJdn + (m - into + CELL_FULL_MOON) * SYN;   // full moon of this month (machine time)
     const nm = fm + (19 / 38) * SYN;                  // new moon, 19 EYu later (Freeth 2014)
     const realL = within(canon.lunar, fm, 1.6);
     const realS = within(canon.solar, nm, 1.6);

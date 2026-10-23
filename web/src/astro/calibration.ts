@@ -11,15 +11,21 @@ import * as Astronomy from "astronomy-engine";
 import { timeFromJd, moonApogeeLon, moonNodeLon } from "./truth";
 import { julianToJdn } from "./jd";
 import { RATE } from "../mech/mechanism";
+import { EYU_PER_MONTH, FULL_MOON_OFFSET, NEW_MOON_OFFSET } from "./eym";
+
+/** Where the full moon falls in a Saros cell (Freeth 2014: a month opens at the first crescent, 0 EYu; full moon 17; new moon 36). */
+export const CELL_FULL_MOON = FULL_MOON_OFFSET / EYU_PER_MONTH;
+/** How far past a new moon a month opens: the first crescent, 2 EYu after the previous month's new moon at 36. */
+const CRESCENT_AFTER_NEW = (EYU_PER_MONTH - NEW_MOON_OFFSET) / EYU_PER_MONTH;
 
 export interface CalibrationSet {
   /** dial angles at the epoch, degrees clockwise from the zodiac zero (Aries 0) */
   pointers: Record<string, number>;
-  metonicMonth0: number;   // 1..235
+  metonicMonth0: number;   // 1..236, fractional: the pointer's place in its cell
   metonicYear0: number;    // 1..19
   callippicQuarter0: number;
   gamesYear0: number;      // 1..4
-  sarosMonth0: number;     // 1..223
+  sarosMonth0: number;     // 1..224, fractional
   exeligmos0: number;      // 0..2
   egyptianDay0: number;    // 1..365
   sunLon0: number; moonLon0: number; apogee0: number; node0: number;
@@ -49,14 +55,16 @@ export function calibrate(epochJdn: number, sarosEpochJdn = 1646679): Calibratio
     jupiter: geoLon(Astronomy.Body.Jupiter, t),
     saturn: geoLon(Astronomy.Body.Saturn, t),
   };
-  // Saros dial: month 1 at the Carman & Evans full moon; other epochs count on from it
-  const monthsSinceSaros = (epochJdn - sarosEpochJdn) / SYNODIC_DAYS;
-  const sarosIdx = mod(Math.round(monthsSinceSaros), 223);
-  const exeligmos0 = Math.floor(mod(Math.round(monthsSinceSaros) / 223, 3));
-  // Metonic: cycle 1 began at the new moon of 27 June 432 BC (Meton); 235 months per cycle
+  // Saros dial: Carman & Evans and Freeth (both 2014) put the full moon of month 1 at 12 May 205 BC, with the
+  // Exeligmos at 0. The glyphs stay where they put them for any epoch; the epoch only says where the pointer
+  // stands, as a fraction of a cell, so an epoch at a new moon (Voulgaris) lands late in its month, not on a boundary.
+  const sarosPos = (epochJdn - sarosEpochJdn) / SYNODIC_DAYS + CELL_FULL_MOON;   // cells since cell 1 opened
+  const sarosIdx = mod(sarosPos, 223);
+  const exeligmos0 = mod(Math.floor(sarosPos / 223), 3);
+  // Metonic: cycle 1 began at the new moon of 27 June 432 BC (Meton); 235 months per cycle, each opening at the crescent
   const metonStart = julianToJdn(-431, 6, 27);
-  const metMonths = (epochJdn - metonStart) / SYNODIC_DAYS;
-  const metonicIdx = mod(Math.round(metMonths), 235);
+  const metMonths = (epochJdn - metonStart) / SYNODIC_DAYS - CRESCENT_AFTER_NEW;
+  const metonicIdx = mod(metMonths, 235);
   const metonicYear0 = Math.floor(mod((epochJdn - metonStart) / 365.25, 19)) + 1;
   // Callippic: 76-year period from 28 June 330 BC
   const callStart = julianToJdn(-329, 6, 28);

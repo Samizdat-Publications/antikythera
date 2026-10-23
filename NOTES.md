@@ -650,3 +650,29 @@ See README "Attributions" for licences.
   paper" note (display simplified, true-Sun eccentricity 1/24 our choice, pointers fitted to a modern
   ephemeris, module and layout geometry). The SI caption to Fig. S22(e) says 40 ~ 24 for Mercury where
   Fig. 3e says 40 ~ 20; the app follows 20.
+- 2026-10-23: **second accuracy pass, with Gemini 4 Argon as a referee** before writing to the Freeth team
+  (`docs/ACCURACY-2026-10-23.md` has the table; `gemini-4-argon` is reachable with this repo's own key, through
+  `tools/gem.py`). Every finding was checked against the code, a measurement or a source first; one was rejected
+  (the claim that 2008 dropped the Callippic dial). **The 3D Moon pointer was up to 20° off the sky**: the lunar
+  pin-and-slot (k1) was never phase-fitted, so its anomaly ran roughly opposite, while the column, computed
+  separately, was right; `phases.ts` now fits k1 with the planets (3D and column agree within 0.75°).
+  **The Voulgaris epoch broke the eclipse audit** (0 hits, 66 false alarms): the Saros and Metonic cells were
+  set as if every epoch were a full moon. `calibrate` keeps the cell as a fraction now, and in Freeth's EYM a cell
+  opens at the first crescent with its full moon at 17/38, so cell 1 opens 17/38 of a month before 12 May 205 BC;
+  the 178 BC epoch lands 0.96 into cell 119, a surviving solar glyph, on NASA's annular eclipse.
+  `calibration.test.ts` pins both epochs' audits and the column Moon. `apogee0` is the ephemeris apogee, not the
+  Moon's own longitude. The front column reads the zodiac and the parapegma off the true-Sun pointer. Copy:
+  12 May 205 BC is credited to Carman and Evans *and* Freeth (both 2014); the calendar ring's 354 is Budiselic
+  et al. 2020's measurements analysed by Woan and Bayley 2024, not a recount; the 2025 jamming preprint simulated
+  Edmunds 2011's error estimates; leaf 13's "within about two degrees" was measured and is now "about three and a
+  half near the epoch, then a degree every eighteen years" (254/19 runs 0.056° a year fast against a tropical
+  year). Narration for leaves 5, 6 and 13 re-recorded in Arthur and checked by transcript (Gemini 3.5 Flash) and
+  loudness (-23 LUFS, as the neighbours). The README's fourteen stills were re-shot from the fixed build: leaf 7
+  still showed the pre-18-October text. **Filming without a browser launch:** this session's sandbox cannot spawn
+  Chromium, but the Playwright MCP can: `page.screenshot` in a loop at ~4 fps off the dev server, then ffmpeg with
+  the leaf's mp3 laid back in, gives a narrated video a model can watch.
+  The video critique moved three leaves: leaf 10 has a `saros` camera above the card, leaf 4 isolates a1 and b1
+  from a `crank-input` camera, and `Viewer.holdOrbit` keeps the idle orbit still while the walkthrough is open
+  (it was carrying the camera round to the case's blank side mid-sentence). Both Gemini runs said 2008 dropped
+  the Callippic dial; it did not (Freeth et al. 2008 SI, "Metonic, Olympiad & Callippic Dials"). Treat a
+  confident repeat from the same model as one claim, not two.

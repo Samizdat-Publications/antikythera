@@ -17,6 +17,7 @@ const TAU = Math.PI * 2;
 
 interface Device { display: string; pin: string; truth: string }
 const DEVICES: Device[] = [
+  { display: "moon", pin: "k1", truth: "moon" },                   // the lunar pin-and-slot: k1's pin against k2's slot on e3
   { display: "true_sun", pin: "su56", truth: "sun" },
   { display: "mercury", pin: "me20", truth: "mercury" },
   { display: "venus", pin: "r1", truth: "venus" },
