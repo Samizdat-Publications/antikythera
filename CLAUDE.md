@@ -24,8 +24,8 @@ blender/build_all.py     gears + drivers; blender/dials.py plates/dials/pointers
 blender/export_glb.py    -> dist/antikythera.glb + dist/gears.json; blender/fragment.py CT scan
 web/                     Vite + TypeScript + three.js dashboard (`npm run dev` on port 5177,
                          `npm run build`, `npx vitest run`)
-docs/index.html          the project page: hand-written, no build, served by GitHub Pages from
-                         `docs/` (preview: the `antikythera-docs` launch entry, port 5178)
+docs/index.html          a redirect to the landing page (GitHub Pages serves `docs/` on `main`, so the old
+                         project address still lands somewhere current)
 docs/screens/            screenshots of the running exhibit, used by the page and the README
 ```
 
@@ -53,8 +53,8 @@ URL switches: `?theme=manuscript`, `?view=&years=&epoch=&inside=1&apart=1&sky=1&
 → https://antikythera.stewartgregerson.workers.dev (Cloudflare Workers static assets).
 Source: github.com/Samizdat-Publications/antikythera (public since 2026-09-18).
 Landing page: https://antikythera-5fq.pages.dev (Cloudflare Pages project `antikythera`, from `site/`; built into the
-gitignored `site-dist/`). The older project page https://samizdat-publications.github.io/antikythera/ (GitHub Pages,
-`main` `/docs`) still serves but is no longer linked from showcase.json or the README.
+gitignored `site-dist/`). The older project page address https://samizdat-publications.github.io/antikythera/ (GitHub Pages,
+`main` `/docs`) now only redirects to the landing page (2026-10-23).
 
 ## Conventions that must not drift
 

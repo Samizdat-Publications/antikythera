@@ -9,9 +9,8 @@ deploy command._
 The exhibit: https://antikythera.stewartgregerson.workers.dev
 The landing page (2026-10-18): https://antikythera-5fq.pages.dev, a museum exhibit in five rooms from `site/`,
 its clips filmed frame by frame off the live exhibit. It replaces the project page below as the public link.
-The older project page, no longer linked: https://samizdat-publications.github.io/antikythera/ (GitHub Pages, served from
-`docs/` on `main`; it needs Pages switched on in the repository settings, and a private repository
-needs a paid plan for that. `docs/index.html` is the page, `docs/screens/` the screenshots.)
+The older project page address, https://samizdat-publications.github.io/antikythera/, now only redirects to the
+landing page (`docs/index.html`, 2026-10-23); the September page is in git history.
 
 - A working 69-gear reconstruction (Freeth et al. 2021) built from one gear table in Blender, exported
   to glTF and driven date by date in three.js; every rate an exact fraction, tested in Python and TS.
@@ -83,12 +82,8 @@ the manuscript rules must come after the vitrine ones in the file (a media query
 `cd python && python -m pytest`. Dev server: the `antikythera-web` entry in `.claude/launch.json`
 (port 5177). Browser-pane gotchas are at the end of NOTES.md's 2026-09-17 entry.
 
-**Change the project page or its screenshots.** `docs/index.html` is hand-written and stands alone:
-no build, no framework, the vitrine's own OKLCH tokens copied into its `:root`. Preview it with the
-`antikythera-docs` entry in `.claude/launch.json` (port 5178). New screenshots: run the dev server,
-pin the camera (`__viewer.view(name, 0)`, `controls.autoRotate = false`, `lastInput =
-performance.now()`) or the idle orbit will have wandered off, capture at 1600x1000, and save as JPEG
-at quality 84 into `docs/screens/`. Keep the README's captions and the page's in step.
+**Change the landing page.** It is `site/` (hand-written, no build), deployed to Cloudflare Pages as the README
+says; its clips are filmed with `tools/landing/` (NOTES.md, 2026-10-23). `docs/index.html` is only a redirect to it.
 
 **Refilm the project page.** After a visible change, the clips in `docs/landing/` go stale. The
 recipe, with the capture harness, is `docs/plans/2026-09-24-landing.md`; `tools/landing_clips.py`
