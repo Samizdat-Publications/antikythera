@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
-<a class="skip" href="#year">Skip to the turning year</a>
+<a class="skip" href="#sea-title">Skip to the exhibit</a>
 
 <header class="top">
   <a class="mark" href="#top">Antikythera Cosmos</a>
@@ -40,31 +40,6 @@
     <div class="actions">
       <a class="btn btn-solid" href="https://antikythera.stewartgregerson.workers.dev">Turn the crank</a>
       <a class="btn btn-line" href="https://github.com/Samizdat-Publications/antikythera">Source on GitHub</a>
-    </div>
-  </div>
-</section>
-
-<section class="year" id="year" aria-labelledby="year-title">
-  <div class="year-intro">
-    <h2 id="year-title">One crank, one year</h2>
-    <p>A hand crank on the side turns a 48-tooth crown wheel against the 223-tooth main wheel. One turn of the main wheel is one year, and every other pointer is geared off it. Scroll down and the crank turns: this is the front dial through the year from 12 May 205 BC, the full moon of the eclipse dial's first month.</p>
-    <p class="key">On the dial, the gold hand with the golden ball is the Sun and the silver hand is the Moon, with its half-dark phase ball riding on it; the small stones on the inner rings are the five planets. As the months pass, the note beside the dial follows the eclipse spiral on the back.</p>
-  </div>
-  <div class="year-track">
-    <div class="year-stage">
-      <canvas class="year-canvas" id="year-canvas" width="1120" height="630" role="img"
-        aria-label="The front dial of the reconstruction, its Sun, Moon and planet pointers moving through one year as you scroll"></canvas>
-      <img class="year-fallback" src="media/scrub/f00.webp" alt="" width="1120" height="630">
-      <div class="year-hud">
-        <svg class="wheel" viewBox="0 0 100 100" aria-hidden="true">
-          <circle class="wheel-track" cx="50" cy="50" r="44"/>
-          <circle class="wheel-turn" id="wheel-turn" cx="50" cy="50" r="44" pathLength="1"/>
-        </svg>
-        <p class="year-date"><span id="year-date">12 May 205 BC</span></p>
-        <p class="year-sub"><span id="year-turn">0.00</span> turns of the main wheel</p>
-        <p class="year-sub" id="year-cell">Saros cell 1</p>
-      </div>
-      <div class="year-note" id="year-note" aria-live="polite"></div>
     </div>
   </div>
 </section>
@@ -154,6 +129,34 @@
   </div>
 </section>
 
+<section class="year" id="year" aria-labelledby="year-title">
+  <div class="year-intro">
+    <h2 id="year-title">One crank, one year</h2>
+    <p>A hand crank on the side turns a 48-tooth crown wheel against the 223-tooth main wheel. One turn of the main wheel is one year, and every other pointer is geared off it. Here the front dial runs through the year from 12 May 205 BC, the full moon of the eclipse dial's first month, and stops at each month whose Saros cell carries an eclipse glyph, so the glyph can be held against NASA's canon.</p>
+    <p class="key">The gold hand with the golden ball is the Sun; the silver hand is the Moon, with its half-dark phase ball riding on it; the small stones on the inner rings are the five planets. Drag the crank below to turn it yourself.</p>
+  </div>
+  <figure class="year-stage">
+    <canvas class="year-canvas" id="year-canvas" width="1120" height="630" role="img"
+      aria-label="The front dial of the reconstruction, its Sun, Moon and planet pointers moving through one year"></canvas>
+    <img class="year-fallback" src="media/scrub/f00.webp" alt="" width="1120" height="630">
+    <div class="year-hud">
+      <svg class="wheel" viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="wheel-track" cx="50" cy="50" r="44"/>
+        <circle class="wheel-turn" id="wheel-turn" cx="50" cy="50" r="44" pathLength="1"/>
+      </svg>
+      <p class="year-date"><span id="year-date">12 May 205 BC</span></p>
+      <p class="year-sub"><span id="year-turn">0.00</span> turns of the main wheel</p>
+      <p class="year-sub" id="year-cell">Saros cell 1 on the back</p>
+    </div>
+    <div class="year-note" id="year-note" aria-live="polite"></div>
+  </figure>
+  <div class="year-controls">
+    <button class="year-play" id="year-play" type="button" aria-pressed="false">Pause</button>
+    <label class="year-label" for="year-slider">Crank</label>
+    <input class="year-slider" id="year-slider" type="range" min="0" max="72" step="1" value="0">
+  </div>
+</section>
+
 <section class="proof" aria-labelledby="proof-title">
   <div class="proof-head">
     <h2 id="proof-title">Checked against the sky</h2>
@@ -221,7 +224,7 @@
       <tr><td>Ephemeris (astronomy-engine)</td><td>Don Cross</td><td>MIT</td></tr>
       <tr><td>Rooms (studio_small_09, artist_workshop)</td><td>Poly Haven</td><td>CC0</td></tr>
       <tr><td>Layout reference</td><td>Thomas Weibel</td><td>CC BY</td></tr>
-      <tr><td>Narration voice, Arthur</td><td>ElevenLabs library</td><td>ElevenLabs terms</td></tr>
+      <tr><td>Narration voice, David (Documentary)</td><td>ElevenLabs library</td><td>ElevenLabs terms</td></tr>
     </tbody>
   </table>
 </section>

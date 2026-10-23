@@ -66,6 +66,11 @@ needs a paid plan for that. `docs/index.html` is the page, `docs/screens/` the s
   (Freeth 2014 for the epoch, Budiselic 2020, Edmunds 2011), leaf 13's accuracy claim, three leaves' staging.
   `docs/ACCURACY-2026-10-23.md`; NOTES.md, 2026-10-23.
 
+- 2026-10-23, later: the exhibit opens on the invitation to the narrated walkthrough on every visit that is
+  not a shared link; the narration is re-recorded in ElevenLabs' "David - Documentary" on the v3 model (the
+  voice picked for Seked); the landing page's year plays by itself with a crank slider instead of taking
+  over the scroll.
+
 ## Maintenance guide (for sessions at any effort level)
 
 **Change copy or a panel.** Edit `web/index.html` (the page), `web/src/ui/onboarding.ts` (the
@@ -148,6 +153,12 @@ the sources or something deliberately out of scope:
 - The one attested parapegma numeral (11) in PP1 col. i is not drawn, because the paper cannot place
   its line. Nothing to fix until someone publishes a placement.
 - Fragment A's position could still be nudged a few mm by eye at full size (a taste call).
+- Fragment A's CT surface carries stray geometry: a thin rod at the lower left and a hairline at the upper
+  left in the front-close view, probably the museum mount or segmentation debris. It is part of the scan
+  mesh itself (nothing else is visible with the fragment alone), and after decimation the mesh is about
+  15,000 disconnected slivers, so the pieces cannot simply be dropped by size. The fix is a spatial cut in
+  Blender on the source scene (`build/fragment/scene.gltf`, gitignored), then `blender/fragment.py`, the
+  gltf-transform steps, and refilming the fragment clips.
 - If a slow GPU ever matters more, the two-round quality guard could be given a third round. (The
   other half of this line was stale: the service worker has precached the model on install since
   version 1.0.)

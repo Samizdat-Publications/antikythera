@@ -74,37 +74,46 @@ h1 { font-size: clamp(3.1rem, 8.4vw, 7.2rem); color: var(--vellum); margin-botto
 .btn-line { border: 1px solid var(--rule); color: var(--vellum); }
 .btn-line:hover { border-color: var(--bronze); color: var(--vellum); }
 
-/* ---- one crank, one year: the scroll is the crank ---- */
-.year-intro { max-width: var(--measure); margin: 0 auto; padding: clamp(80px, 14vh, 160px) var(--gutter) 40px; }
+/* ---- one crank, one year: a stage that turns the year by itself, or by the crank slider ---- */
+.year { padding: clamp(56px, 10vh, 120px) var(--gutter); border-top: 1px solid var(--rule); }
+.year-intro { max-width: var(--measure); margin: 0 auto 36px; }
 .year-intro h2 { margin-bottom: 0.6em; }
 .key { color: var(--ash); font-size: 1rem; }
-.year-track { height: 560vh; position: relative; }
-.year-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; background: #0f0c09; }
+.year-stage { position: relative; max-width: 1200px; margin: 0 auto; aspect-ratio: 16 / 9; overflow: hidden; background: #0f0c09; border-radius: 2px; }
 .year-canvas, .year-fallback { position: absolute; inset: 0; width: 100%; height: 100%; }
 .year-fallback { object-fit: cover; }
 .js .year-fallback { display: none; }
 .year-hud {
-  position: absolute; left: var(--gutter); bottom: clamp(24px, 6vh, 64px);
-  display: grid; grid-template-columns: auto 1fr; column-gap: 18px; align-items: center;
-  padding: 18px 22px 16px 18px; background: rgba(20, 16, 12, 0.78); border-left: 2px solid var(--bronze);
+  position: absolute; left: 20px; bottom: 20px;
+  display: grid; grid-template-columns: auto 1fr; column-gap: 16px; align-items: center;
+  padding: 14px 20px 12px 14px; background: rgba(20, 16, 12, 0.8); border-left: 2px solid var(--bronze);
 }
-.wheel { width: 64px; height: 64px; grid-row: span 3; transform: rotate(-90deg); }
+.wheel { width: 56px; height: 56px; grid-row: span 3; transform: rotate(-90deg); }
 .wheel-track { fill: none; stroke: var(--rule); stroke-width: 6; }
 .wheel-turn { fill: none; stroke: var(--bronze); stroke-width: 6; stroke-dasharray: 1; stroke-dashoffset: 1; }
-.year-date { font-family: var(--display); font-size: clamp(1.7rem, 3.4vw, 2.6rem); line-height: 1; margin: 0; font-variant-numeric: lining-nums; }
-.year-sub { margin: 0.3em 0 0; color: var(--ash); font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.year-date { font-family: var(--display); font-size: clamp(1.5rem, 2.8vw, 2.2rem); line-height: 1; margin: 0; font-variant-numeric: lining-nums; }
+.year-sub { margin: 0.3em 0 0; color: var(--ash); font-size: 0.92rem; font-variant-numeric: tabular-nums; }
 .year-note {
-  position: absolute; right: var(--gutter); bottom: clamp(24px, 6vh, 64px); max-width: 25rem;
-  padding: 16px 20px; background: rgba(20, 16, 12, 0.86); border-left: 2px solid var(--verdigris);
-  font-size: 1rem; line-height: 1.5; opacity: 0; transform: translateY(8px);
+  position: absolute; right: 20px; bottom: 20px; max-width: 24rem;
+  padding: 14px 18px; background: rgba(20, 16, 12, 0.88); border-left: 2px solid var(--verdigris);
+  font-size: 0.98rem; line-height: 1.5; opacity: 0; transform: translateY(8px);
   transition: opacity 0.35s, transform 0.35s;
 }
 .year-note.on { opacity: 1; transform: none; }
 .year-note b { font-weight: 600; color: var(--vellum); }
 .year-note .glyph { font-family: var(--display); font-size: 1.2em; color: var(--bronze-hi); }
 .year-note .sky { color: var(--verdigris); }
+.year-note.quiet { color: var(--ash); border-left-color: var(--rule); }
 .year-note p { margin: 0 0 0.4em; }
 .year-note p:last-child { margin: 0; }
+.year-controls { max-width: 1200px; margin: 16px auto 0; display: flex; align-items: center; gap: 16px; }
+.year-play {
+  font-family: var(--text); font-size: 1rem; font-weight: 500; min-width: 6.5em; padding: 0.5em 1em;
+  background: transparent; color: var(--vellum); border: 1px solid var(--rule); border-radius: 2px; cursor: pointer;
+}
+.year-play:hover { border-color: var(--bronze); }
+.year-label { color: var(--ash); font-size: 1rem; }
+.year-slider { flex: 1; accent-color: var(--bronze); height: 28px; cursor: grab; }
 
 /* ---- rooms: a clip and a wall label ---- */
 .room {
@@ -195,9 +204,11 @@ figcaption { margin-top: 0.8em; font-size: 0.95rem; font-style: italic; color: v
   .editions-pair { grid-template-columns: 1fr; }
   .hero::after { background: linear-gradient(0deg, rgba(20, 16, 12, 0.97) 0%, rgba(20, 16, 12, 0.88) 50%, rgba(20, 16, 12, 0.15) 82%); }
   .hero-video { object-position: 50% 30%; }
-  .year-hud { left: 16px; right: 16px; bottom: auto; top: 16px; padding: 12px 14px; column-gap: 12px; }
+  .year-stage { aspect-ratio: auto; overflow: visible; background: none; }
+  .year-canvas, .year-fallback { position: relative; aspect-ratio: 16 / 9; height: auto; }
+  .year-hud { position: static; margin-top: 12px; padding: 12px 14px; column-gap: 12px; }
   .wheel { width: 44px; height: 44px; }
-  .year-note { left: 16px; right: 16px; bottom: 16px; max-width: none; font-size: 0.95rem; }
+  .year-note { position: static; max-width: none; margin-top: 12px; font-size: 0.95rem; min-height: 7.5em; transform: none; }
 }
 @media (max-width: 520px) {
   body { font-size: 1.06rem; }

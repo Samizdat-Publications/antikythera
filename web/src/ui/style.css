@@ -73,9 +73,10 @@ button { cursor: pointer; }
 .loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--bronze); font-family: var(--font-display); font-size: 20px; letter-spacing: 0.06em; pointer-events: none; text-align: center; padding: 0 24px; }
 .loading .sub { display: block; margin-top: 8px; font-family: var(--font-body); font-size: 14px; letter-spacing: 0; color: var(--ink-dim); font-style: italic; }
 /* first visit: one invitation over the exhibit, nothing else competes */
-.begin { position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.begin { position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+  padding: 18px 26px 16px; background: color-mix(in oklch, var(--paper) 94%, transparent); border: 1px solid var(--line); box-shadow: 0 10px 40px rgb(0 0 0 / 0.35); max-width: calc(100% - 32px); }
 .begin[hidden] { display: none; }
-.begin .primary { font-size: 16px; padding: 11px 24px; }
+.begin .primary { font-size: 17px; padding: 12px 28px; }
 .begin-sub { color: var(--ink-dim); font-size: 13.5px; font-style: italic; }
 .link { background: none; border: 0; padding: 0; color: var(--ink-dim); text-decoration: underline; text-underline-offset: 3px; font-style: italic; }
 .link:hover { color: var(--accent); }

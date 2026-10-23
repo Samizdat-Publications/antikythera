@@ -8,7 +8,7 @@ import { glyphByMonth, OBSERVED_HOURS } from "./astro/eym";
 import { parapegmaAt } from "./astro/parapegma";
 import { auditSaros, errorBands, type ErrorBands } from "./ui/analytics";
 import { Tour } from "./ui/tour";
-import { Onboarding, firstVisit } from "./ui/onboarding";
+import { Onboarding } from "./ui/onboarding";
 import { renderInspector, trainFor, trainsFor, trainRowId, TRAINS } from "./ui/inspector";
 import { Cosmos } from "./ui/cosmos";
 import { canvasToBlob, downloadBlob, snapshotName } from "./ui/snapshot";
@@ -118,12 +118,10 @@ viewer.onAssembled = () => {
   overtureDone = true;
   setTimeout(registerWorker, 3000);
   if (readUrl()) return;                                              // a link to a particular state: show that, and nothing else competes
-  if (firstVisit()) {
-    // no autoplay: the invitation is one label over the exhibit, and narration starts from that click
-    $("#begin").hidden = false;
-  } else if (!REDUCE_MOTION.matches) {
-    setTimeout(() => { if (!playing && !onboarding.active) setPlaying(true, 0.0821918); }, 1600);   // a working model is already turning when you walk up
-  }
+  // every visit that is not a shared link opens on the invitation to the narrated walkthrough: without it
+  // visitors were left at a machine with a column of controls and no idea where to start. No autoplay:
+  // narration starts from that click; "explore on your own" sets the crank turning instead.
+  $("#begin").hidden = false;
 };
 
 // ---- the address carries the exhibit's state, so a view can be sent as a link

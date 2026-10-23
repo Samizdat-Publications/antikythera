@@ -35,7 +35,7 @@ dataset it came from. When the machine is wrong, the exhibit says so.
 
 ## The walkthrough
 
-The exhibit opens with fourteen leaves, narrated by Arthur, each setting the machine to show one
+The exhibit opens with fourteen leaves, narrated by David, each setting the machine to show one
 idea. Here they are as stills.
 
 | | |
@@ -101,7 +101,7 @@ data/eclipses_*.json     NASA Five Millennium Canon (Espenak & Meeus), slimmed
 python/mech/             exact rational ratio solver, arbor layout, tooth outlines,
                          Freeth 2014 eclipse-year glyph model, Julian Day maths  (pytest)
 tools/gen_dial_textures.py   dial faces drawn in millimetres (zodiac, calendar, spirals, glyphs)
-tools/narration.py       the walkthrough's narration (ElevenLabs, the voice "Arthur")
+tools/narration.py       the walkthrough's narration (ElevenLabs, the voice "David - Documentary", v3 model)
 tools/gen_icons.py       launch icons, the share image and the no-WebGL still
 tools/landing_clips.py   the project page's clips, from frames filmed off the running exhibit
 blender/build_all.py     gears + drivers (one master property drives everything)
@@ -170,7 +170,7 @@ order and the conventions that must not drift.
 * Fragment A's CT scan: Ashkan Pakzad, CC BY 4.0. The Moon's face: NASA's CGI Moon Kit (LROC colour
   mosaic), public domain. Rooms: Poly Haven HDRIs `studio_small_09` and `artist_workshop`, CC0.
   Layout reference: Thomas Weibel's CC BY reconstruction (thomasweibel.ch).
-* Narration: ElevenLabs, the library voice "Arthur".
+* Narration: ElevenLabs, the library voice "David - Documentary".
 
 The parapegma's Greek wording and the Saros glyph hours beyond the surviving cells are schematic
 reconstructions; the index letters stand where Bitsakis and Jones 2016 place them (see NOTES.md).

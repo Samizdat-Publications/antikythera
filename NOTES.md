@@ -696,3 +696,17 @@ See README "Attributions" for licences.
   sky's long exposure). The hub was deployed from a build whose page text matched the live one line for
   line; Hearthfall's newer local hub clip (committed, not pushed) was swapped back to the live copy so
   this deploy published nothing of another project's.
+- 2026-10-23, evening: **three changes after Stewart tried it.** (1) The landing page's scroll-driven year
+  read badly in practice: each wheel step only turned the dial, and visitors would not know anything lay
+  below it. It now sits after the back dials as an ordinary 16:9 stage that plays the year by itself while
+  on screen (8 frames a second), holds 4.5 s on each glyph month so its note can be read, and has a pause
+  button and a crank slider; ordinary months show a quiet "no glyph, and NASA has none" line, true of every
+  glyph-less cell that year. (2) The exhibit opens on the invitation to the narrated walkthrough on every
+  visit that is not a shared link (it was first visits only, and returning visitors got lost); the panel
+  has its own ground so it reads over the wood in both themes. (3) The narration is re-recorded in
+  ElevenLabs' "David - Documentary" on `eleven_v3` with Seked's settings (stability 0.5, similarity 0.8,
+  style 0, speaker boost), the voice picked by ear for Seked on 21 October; `pick_voice` asks for the id
+  directly, since a library voice may not be in the account list. Years are spelled out in the epoch leaf
+  ("two hundred and five BC"; v3 read 205 as "two-oh-five"). All fourteen clips transcript-checked by
+  Gemini; loudness -16 to -18 LUFS. The Arthur clips are not kept in the repo (git has them).
+  Fragment A's stray rod and hairline are in the scan mesh itself; NEXT_STEPS has how to cut them.

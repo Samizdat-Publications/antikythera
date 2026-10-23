@@ -45,9 +45,9 @@ TOUR = [
      "The machine has no clock inside it. It was set by hand once, on one particular day, and after that it only ever counts turns. "
      "That day is the epoch. Nothing on the bronze states it, so scholars worked it out from the eclipse glyphs on the Saros dial: "
      "the pattern of fifty-one glyphs fits only certain starting months. "
-     "Carman and Evans, and Tony Freeth, both in 2014, put the first month of the Saros dial at the full moon of the twelfth of May, 205 BC; "
-     "Voulgaris and his colleagues argue for the eclipse of the twenty-second of December, 178 BC. "
-     "Switch between them, and every dial re-sets. The epoch is a setting, not the day it was made: the wreck went down around 70 to 60 BC. "
+     "Carman and Evans, and Tony Freeth, both in 2014, put the first month of the Saros dial at the full moon of the twelfth of May, two hundred and five BC; "
+     "Voulgaris and his colleagues argue for the eclipse of the twenty-second of December, one hundred and seventy-eight BC. "
+     "Switch between them, and every dial re-sets. The epoch is a setting, not the day it was made: the wreck went down around seventy to sixty BC. "
      "Because the machine only knows turns, dates here are written as years since the epoch, and its errors grow the further you crank from it."),
     ("zodiac", "front",
      "The front dial is the sky. The inner ring is the zodiac, twelve signs of thirty degrees. "
@@ -131,13 +131,19 @@ def api(path, data=None, raw=False):
         return r.read() if raw else json.loads(r.read().decode())
 
 
-# Arthur ("Classic, British and Steady"), an older British documentary voice from the ElevenLabs
-# library, chosen by Stewart on 2026-09-24 from four auditions; added to the account's library, so
-# it is found by id. The fallbacks below only matter if it is ever removed.
-VOICE_ID = "8ZBQD0m1R6EIchgSltwB"
+# "David - Documentary", from the ElevenLabs library, on the v3 model: the voice Stewart picked by ear for
+# the Seked project (its scripts/narrate_script.py, 21 October 2026), chosen for this exhibit on 23 October
+# 2026 in place of Arthur. Found by id; the fallbacks below only matter if it is ever removed.
+VOICE_ID = "ppLqTilh7rH7fbUVlXsf"
+MODEL_ID = "eleven_v3"
+VOICE_SETTINGS = {"stability": 0.5, "similarity_boost": 0.8, "style": 0.0, "use_speaker_boost": True}   # as Seked has them
 
 
 def pick_voice():
+    try:
+        return api(f"/v1/voices/{VOICE_ID}")                         # library voices answer here even when not in the list
+    except Exception:
+        pass
     voices = api("/v1/voices")["voices"]
     for v in voices:
         if v["voice_id"] == VOICE_ID:
@@ -169,9 +175,8 @@ def main():
     for key, view, text in TOUR:
         mp3 = os.path.join(OUT, f"tour_{key}.mp3")
         if not os.path.exists(mp3):
-            res = api(f"/v1/text-to-speech/{voice['voice_id']}/with-timestamps",
-                      {"text": text, "model_id": "eleven_multilingual_v2",
-                       "voice_settings": {"stability": 0.55, "similarity_boost": 0.8, "style": 0.25}})
+            res = api(f"/v1/text-to-speech/{voice['voice_id']}/with-timestamps?output_format=mp3_44100_128",
+                      {"text": text, "model_id": MODEL_ID, "voice_settings": VOICE_SETTINGS})
             with open(mp3, "wb") as fh:
                 fh.write(base64.b64decode(res["audio_base64"]))
             al = res["alignment"]

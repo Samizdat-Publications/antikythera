@@ -1,6 +1,6 @@
 // Antikythera Cosmos landing page. Clips play while they are on screen; the turning year is drawn
-// from 73 frames filmed off the running exhibit, one every 1/72 of a turn of the main wheel, and the
-// scroll picks the frame. The dates, Saros cells and eclipse notes were read off the exhibit's own
+// from 73 frames filmed off the running exhibit, one every 1/72 of a turn of the main wheel, played in
+// turn or picked with the crank slider. The dates, Saros cells and eclipse notes were read off the exhibit's own
 // column as each frame was filmed. The page reads without this script; only the motion needs it.
 (function () {
   'use strict';
@@ -37,17 +37,19 @@
     { from: 68, to: 72, html: '<p><b>Saros cell 13</b> carries <span class="glyph">Η</span>, a solar eclipse.</p><p class="sky">NASA\'s canon: a partial solar eclipse on 17 May 204 BC. A hit.</p>' },
   ];
   const N = DATES.length;
-  const track = document.querySelector('.year-track');
+  const stage = document.querySelector('.year-stage');
   const canvas = document.getElementById('year-canvas');
-  if (!track || !canvas) return;
+  if (!stage || !canvas) return;
   const ctx = canvas.getContext('2d');
   const dateEl = document.getElementById('year-date');
   const turnEl = document.getElementById('year-turn');
   const cellEl = document.getElementById('year-cell');
   const wheel = document.getElementById('wheel-turn');
   const noteEl = document.getElementById('year-note');
+  const playBtn = document.getElementById('year-play');
+  const slider = document.getElementById('year-slider');
   const frames = new Array(N);
-  let shown = -1, want = 0, noteOn = -1;
+  let shown = -1, want = 0, noteKey = null;
 
   const load = (i) => {
     if (frames[i]) return frames[i];
@@ -57,28 +59,21 @@
     im.onload = () => { if (i === want || shown < 0) draw(); };
     return (frames[i] = im);
   };
-  // the first frame now, then every eighth, then the rest, so a fast scroll always has something near
-  const warm = () => { for (let s of [8, 4, 2, 1]) for (let i = 0; i < N; i += s) load(i); };
-
+  const warm = () => { for (const s of [8, 4, 2, 1]) for (let i = 0; i < N; i += s) load(i); };
   const nearestLoaded = (i) => {
-    for (let d = 0; d < N; d++) {
-      for (const j of [i - d, i + d]) if (j >= 0 && j < N && frames[j] && frames[j].complete && frames[j].naturalWidth) return j;
-    }
+    for (let d = 0; d < N; d++) for (const j of [i - d, i + d]) if (j >= 0 && j < N && frames[j] && frames[j].complete && frames[j].naturalWidth) return j;
     return -1;
   };
-
   function size() {
     const r = canvas.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
+    canvas.width = Math.max(1, Math.round(r.width * dpr)); canvas.height = Math.max(1, Math.round(r.height * dpr));
     shown = -1; draw();
   }
   function draw() {
     const j = nearestLoaded(want);
-    if (j < 0) return;
-    if (j !== shown) {
+    if (j >= 0 && j !== shown) {
       const im = frames[j], cw = canvas.width, ch = canvas.height;
-      const s = Math.max(cw / im.naturalWidth, ch / im.naturalHeight);
-      const w = im.naturalWidth * s, h = im.naturalHeight * s;
+      const s = Math.max(cw / im.naturalWidth, ch / im.naturalHeight), w = im.naturalWidth * s, h = im.naturalHeight * s;
       ctx.fillStyle = '#0f0c09'; ctx.fillRect(0, 0, cw, ch);
       ctx.drawImage(im, (cw - w) / 2, (ch - h) / 2, w, h);
       shown = j;
@@ -87,32 +82,52 @@
     turnEl.textContent = (want / (N - 1)).toFixed(2);
     cellEl.textContent = 'Saros cell ' + CELLS[want] + ' on the back';
     wheel.style.strokeDashoffset = String(1 - want / (N - 1));
-    // a note lingers a few frames past its month, so a quick scroll still leaves time to read it
-    const k = NOTES.findIndex((n, i) => want >= n.from && want <= Math.min(n.to + 3, (NOTES[i + 1] || { from: N }).from - 1));
-    if (k !== noteOn) {
-      noteOn = k;
-      if (k < 0) noteEl.classList.remove('on');
-      else { noteEl.innerHTML = NOTES[k].html; noteEl.classList.add('on'); }
+    slider.value = String(want);
+    const k = NOTES.findIndex((n) => want >= n.from && want <= n.to);
+    const key = k >= 0 ? 'n' + k : 'c' + CELLS[want];
+    if (key !== noteKey) {
+      noteKey = key;
+      noteEl.classList.toggle('quiet', k < 0);
+      noteEl.innerHTML = k >= 0 ? NOTES[k].html
+        : '<p>Saros cell ' + CELLS[want] + ' has no glyph: the machine expects no eclipse, and NASA\'s canon has none that month.</p>';
+      noteEl.classList.add('on');
     }
   }
-  let ticking = false;
-  function onScroll() {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => {
-      ticking = false;
-      const r = track.getBoundingClientRect(), span = r.height - window.innerHeight;
-      const p = Math.min(1, Math.max(0, -r.top / span));
-      want = Math.round(p * (N - 1));
-      draw();
-    });
+
+  // the crank turns by itself while the stage is on screen, eight frames a second, and stops for a few
+  // seconds on each month that carries a glyph so its note can be read; touching the crank takes over
+  const STEP = 125, HOLD = 4500, END = 1500;
+  let playing = !still, inView = false, timer = 0, heldAt = -1;
+  function setPlaying(on) {
+    playing = on;
+    playBtn.textContent = on ? 'Pause' : 'Play';
+    playBtn.setAttribute('aria-pressed', String(!on));
+    schedule();
   }
+  function schedule() {
+    clearTimeout(timer);
+    if (!playing || !inView) return;
+    const k = NOTES.findIndex((n) => want === n.from + 1);
+    let wait = STEP;
+    if (k >= 0 && heldAt !== want) { heldAt = want; wait = HOLD; }
+    else if (want === N - 1) wait = END;
+    timer = setTimeout(() => {
+      want = want === N - 1 ? 0 : want + 1;
+      if (want === 0) heldAt = -1;
+      draw(); schedule();
+    }, wait);
+  }
+  playBtn.addEventListener('click', () => setPlaying(!playing));
+  slider.addEventListener('input', () => { if (playing) setPlaying(false); want = +slider.value; draw(); });
+  if (still) setPlaying(false);
+
   load(0);
   if ('IntersectionObserver' in window) {
     const near = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { warm(); near.disconnect(); } }, { rootMargin: '150% 0px' });
-    near.observe(track);
-  } else warm();
-  window.addEventListener('scroll', onScroll, { passive: true });
+    near.observe(stage);
+    const seen = new IntersectionObserver((es) => { inView = es.some((e) => e.isIntersecting); schedule(); }, { threshold: 0.4 });
+    seen.observe(stage);
+  } else { warm(); inView = true; schedule(); }
   window.addEventListener('resize', size);
   size();
 })();
