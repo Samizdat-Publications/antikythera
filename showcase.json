@@ -1,12 +1,12 @@
 {
   "name": "Antikythera Cosmos",
   "repo": "antikythera",
-  "pitch": "A museum-style exhibit of the Antikythera mechanism: the 69 gears of the 2021 Freeth et al. reconstruction, 30 of them surviving in the bronze, turning by one crank in your browser.",
+  "pitch": "The Antikythera mechanism rebuilt: 69 gears after Freeth et al. 2021, turned by one crank in your browser and checked against the sky.",
   "status": "v1",
   "version": "1.1.0",
   "kind": "reconstruction",
   "started": "2026-09-12",
-  "updated": "2026-10-18",
+  "updated": "2026-10-23",
   "tech": [
     "TypeScript",
     "Three.js",
@@ -19,7 +19,7 @@
     "devlog": ""
   },
   "hero": {
-    "gif": "docs/landing/clips/view-inside.webp",
+    "gif": "docs/media/hero.gif",
     "poster": "site/media/hero.jpg",
     "clip": "site/media/hero.mp4"
   },

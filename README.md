@@ -12,7 +12,7 @@ your browser.**
 
 <p align="center">
   <a href="https://antikythera.stewartgregerson.workers.dev/?inside=1">
-    <img src="docs/landing/clips/view-inside.webp" width="800" alt="The reconstruction with its case and plates lifted away, the gearwork turning" />
+    <img src="docs/media/hero.gif" width="640" alt="The reconstruction with its case and plates lifted away, every gear turning through one year of the crank" />
   </a>
 </p>
 
