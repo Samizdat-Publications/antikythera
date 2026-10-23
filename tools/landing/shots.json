@@ -1,0 +1,68 @@
+{
+ "hero": {
+  "q": "?view=iso&quality=high",
+  "setup": "const x=document.querySelector('#xray'); x.checked=true; x.dispatchEvent(new Event('change'));",
+  "dolly": 0.52,
+  "orbit": -30,
+  "rise": 30,
+  "y0": 0,
+  "dy": 0.0041667,
+  "n": 240
+ },
+ "scrub": {
+  "q": "?view=front-close&quality=high",
+  "dolly": 1.17,
+  "y0": 0,
+  "dy": 0.0138889,
+  "n": 73
+ },
+ "fragment": {
+  "q": "?view=front-close&quality=high",
+  "setup": "const r=document.querySelector('#fragment'); r.value='100'; r.dispatchEvent(new Event('input')); window.__viewer.setMood('spot');",
+  "after": 6000,
+  "orbit": 50,
+  "n": 192
+ },
+ "xray": {
+  "q": "?view=front-close&quality=high",
+  "setup": "const r=document.querySelector('#fragment'); r.value='45'; r.dispatchEvent(new Event('input')); const x=document.querySelector('#xray'); x.checked=true; x.dispatchEvent(new Event('change')); window.__viewer.setMood('spot');",
+  "after": 6000,
+  "orbit": -35,
+  "y0": 0,
+  "dy": 0.003,
+  "n": 192
+ },
+ "apart": {
+  "q": "?view=iso&quality=high",
+  "setup": "const x=document.querySelector('#apart'); x.checked=true; x.dispatchEvent(new Event('change'));",
+  "after": 6000,
+  "dolly": 0.55,
+  "orbit": 35,
+  "y0": 0,
+  "dy": 0.004,
+  "n": 192
+ },
+ "back": {
+  "q": "?view=back&quality=high",
+  "dolly": 0.68,
+  "y0": 0,
+  "dy": 0.02,
+  "n": 192
+ },
+ "pinslot": {
+  "q": "?view=pinslot&quality=high",
+  "setup": "window.__viewer.isolate(['b2','c1','c2','d1','d2','e2','e5','k1','k2','e6','e1','b3','l1','l2','m1','m3','e3']); const x=document.querySelector('#xray'); x.checked=true; x.dispatchEvent(new Event('change'));",
+  "after": 5000,
+  "y0": 0,
+  "dy": 0.003,
+  "n": 150
+ },
+ "sky": {
+  "q": "?sky=1&expose=1&quality=high",
+  "setup": "window.__cosmos.setExposure(true);",
+  "sky": true,
+  "y0": 0,
+  "dy": 0.0333333,
+  "n": 240
+ }
+}

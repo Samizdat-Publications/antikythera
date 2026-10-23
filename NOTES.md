@@ -676,3 +676,23 @@ See README "Attributions" for licences.
   (it was carrying the camera round to the case's blank side mid-sentence). Both Gemini runs said 2008 dropped
   the Callippic dial; it did not (Freeth et al. 2008 SI, "Metonic, Olympiad & Callippic Dials"). Treat a
   confident repeat from the same model as one claim, not two.
+- 2026-10-23, later: **a new landing page** (`site/`, https://antikythera-5fq.pages.dev), rebuilt from
+  scratch. The one bold idea: the scroll is the crank. A sticky stage draws 73 frames of the front dial
+  (one every 1/72 turn of b1, from 12 May 205 BC) on a canvas by scroll position, with the date (from
+  `python/mech/jd.py`, matching the exhibit's own readout), the Saros cell, and notes for the three glyph
+  months that year read off the exhibit's eclipse panel as it was filmed (cell 2 a hit plus the unglyphed
+  total solar eclipse of 25 Jun 205 BC as a miss; cell 8 two hits; cell 13 a hit). Forum and Newsreader on
+  lamp-black and bronze. **Filming** is `tools/landing/`: `shots.json` holds each shot (URL, setup, dolly,
+  orbit, date step, frames), `mkshot.py` writes a Playwright script into `.playwright-mcp/shots/` from
+  `film_tpl.js`, run it with the Playwright MCP's `browser_run_code_unsafe(filename=...)` against the dev
+  server; it hides everything but the stage canvas, steps the date, waits two frames and screenshots, so
+  motion is exact. `encode.py` (run from `.playwright-mcp/`) makes the loops (last second crossfaded into
+  the first), posters, WebP scrub frames and `og.jpg`. A Gemini critic watched a scroll-through; taken:
+  the dial refilmed pulled back, a pointer key, notes that linger, "Hellenistic" dropped from the
+  manuscript edition (Ptolemy is Roman-era; the app's tooltip too). Rejected: b1 224 teeth (Table S8: 223),
+  an 18-year platform (e3: 8.88). **The hub** (samizdat-e0x.pages.dev) reel takes a project's
+  `showcase.json` clip unless `projects.json` gives a `clip`; Antikythera's now points at
+  `docs/media/hub-reel.mp4`, a 12-second cut (fragment, the scan with the wheels inside, taken apart, the
+  sky's long exposure). The hub was deployed from a build whose page text matched the live one line for
+  line; Hearthfall's newer local hub clip (committed, not pushed) was swapped back to the live copy so
+  this deploy published nothing of another project's.
