@@ -6,7 +6,7 @@
 your browser.**
 
 [**Open the exhibit**](https://antikythera.stewartgregerson.workers.dev) ·
-[Landing page](https://antikythera-5fq.pages.dev) ·
+[Landing page](https://antikytheraexhibit.com) ·
 [How it is built](#how-it-is-built) ·
 [How the numbers are checked](#how-the-numbers-are-checked)
 
@@ -147,7 +147,7 @@ Hero renders (Cycles): `blender -b build/antikythera.blend --python blender/hero
 
 Deploy: `cd web && npm run build && cd .. && npx wrangler deploy --assets web/dist`. If the GLB or a
 texture changed, bump `CACHE` in `web/public/sw.js` first so the service worker lets the new copy
-through. The landing page is `site/` (https://antikythera-5fq.pages.dev): copy it to `site-dist/`, run the
+through. The landing page is `site/` (https://antikytheraexhibit.com): copy it to `site-dist/`, run the
 showcase kit's `finish-site.mjs`, then `npx wrangler@4 pages deploy site-dist --project-name antikythera --branch main`.
 The older project page address on GitHub Pages (`docs/index.html`, served from `main` `/docs`) now redirects to the landing page.
 
