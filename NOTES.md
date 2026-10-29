@@ -723,7 +723,7 @@ See README "Attributions" for licences.
   now keeps the part's own material when it is mid-lift, `finishReveal` leaves a ghost a ghost, and a mesh
   nested in two lifted roles is cloned once. Starting the walkthrough by any route hides the invitation.
 - 2026-10-29: **Tony Freeth's corrections (his reply of 29 October to Stewart's mail of the 23rd).**
-  (1) Valerios Stais, not Spyridon, first saw the gear wheels in 1902; the 354-hole calendar count is no
+  (1) Spyridon Stais, cousin of the museum director Valerios, first noticed the gear wheels in 1902; the 354-hole calendar count is no
   longer stated as settled (commit dcc57a7). (2) The crank: the crown wheel a1 sat centred in b1's plane, so
   its teeth met the rim at two points moving opposite ways. It now stands in front of b1, its axis one pitch
   radius in front of b1's face, module 0.578 so 48 teeth span b1's rim, and turns the other way (`crank_spin`
