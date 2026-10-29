@@ -82,6 +82,7 @@ try {
       modelReady = true;
       $("#loading").hidden = true;
       g.setCalibration(calib.pointers);
+      g.setSpiralPhase(calib.spiralPhase);
       fitPhases();
       cosmos.attach(g);
       applyVisibility();
@@ -650,6 +651,7 @@ $<HTMLSelectElement>("#epoch").addEventListener("change", (e) => {
   epoch = EPOCHS.find((x) => x.id === (e.target as HTMLSelectElement).value) ?? EPOCHS[0];
   calib = calibrate(epoch.jdn);
   viewer.graph?.setCalibration(calib.pointers);
+  viewer.graph?.setSpiralPhase(calib.spiralPhase);
   fitPhases();
   setYears(0);
   refreshAnalytics();

@@ -722,3 +722,22 @@ See README "Attributions" for licences.
   (the circular plate, strap, pillars and calendar ring) wore a disposed lift copy at 0 % opacity. `isolate`
   now keeps the part's own material when it is mid-lift, `finishReveal` leaves a ghost a ghost, and a mesh
   nested in two lifted roles is cloned once. Starting the walkthrough by any route hides the invitation.
+- 2026-10-29: **Tony Freeth's corrections (his reply of 29 October to Stewart's mail of the 23rd).**
+  (1) Valerios Stais, not Spyridon, first saw the gear wheels in 1902; the 354-hole calendar count is no
+  longer stated as settled (commit dcc57a7). (2) The crank: the crown wheel a1 sat centred in b1's plane, so
+  its teeth met the rim at two points moving opposite ways. It now stands in front of b1, its axis one pitch
+  radius in front of b1's face, module 0.578 so 48 teeth span b1's rim, and turns the other way (`crank_spin`
+  in build_all.py); `verify_rig` passes and nothing on b1 sweeps through it. (3) The front display now
+  follows Fig. 7: seven rings of equal width (Mercury 11.5 mm out to the date ring at 61.3 to 64.3 mm,
+  0.8 mm gaps), the zodiac 66 to 73 mm and the calendar 73 to 81 mm (Bitsakis and Jones 2016). The true
+  Sun and the date are rings with radial pointers. (4) Scale marks: `python/mech/synodic.py` places each
+  planet's synodic events from its device's epicycle ratio and the solver's rates (Mars stations at about
+  136 deg from the Sun, Venus's greatest elongation 46 deg, Mercury's 23 deg). One alphabet, A to Omega,
+  covers the 24 events; the order is provisional (`INDEX_LETTERS_PROVISIONAL`) because Fig. 8 could not be
+  read here. Oppositions get a smaller stone at 180 deg. The Sun ring carries the Age of the Moon, days 1
+  to 29, and eclipse-limit triangles at 12 and 18 deg (our choice). (5) Back dials: both spirals start at
+  the top (Freeth; the 2008 SI put the Metonic start at the inside bottom, flagged to him); the follower
+  pins now run outward and start at the epoch's cell (`setSpiralPhase`); the Olympiad dial follows the 2008
+  SI (quadrants turned 8 deg, year 1 lower right, anticlockwise, games outside the rim); the Exeligmos
+  follows the CT (blank at 3 o'clock, 8 at 7, 16 at 11); back pointers are set in back-view angles
+  (`backPointerDeg`). Textures and the GLB need rebuilding on Stewart's PC (Palatino); none are committed.

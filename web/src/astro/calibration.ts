@@ -27,11 +27,28 @@ export interface CalibrationSet {
   gamesYear0: number;      // 1..4
   sarosMonth0: number;     // 1..224, fractional
   exeligmos0: number;      // 0..2
+  /** where each spiral follower stands at the epoch, in turns of its pointer from the spiral's start */
+  spiralPhase: { metonic: number; saros: number };
   egyptianDay0: number;    // 1..365
   sunLon0: number; moonLon0: number; apogee0: number; node0: number;
 }
 
 const mod = (a: number, n: number) => ((a % n) + n) % n;
+
+/**
+ * The back dials are read from behind, so a pointer that should stand at back-view angle
+ * `backDeg` (anticlockwise from the 3 o'clock of someone facing the back) is set to
+ * backDeg - 180 in the front-view terms setCalibration takes.
+ */
+export const backPointerDeg = (backDeg: number) => backDeg - 180;
+
+/** Back-view angles, anticlockwise from 3 o'clock seen from behind, as dials.py and gen_dial_textures.py draw them. */
+export const BACK_DIAL = {
+  spiralStart: 90,       // Metonic and Saros spirals begin at the top (Freeth); both pointers turn clockwise from behind
+  gamesStart: 278,       // year 1 opens at the divider 8 degrees past the bottom, then anticlockwise (Freeth et al. 2008 SI)
+  callippicStart: 270,   // first quarter opens at the bottom, then clockwise
+  exeligmosStart: 60,    // the blank sector opens at 60 degrees and is centred on 3 o'clock, then 8 and 16 clockwise
+} as const;
 
 function geoLon(body: Astronomy.Body, t: Astronomy.AstroTime): number {
   const v = Astronomy.GeoVector(body, t, true);
@@ -68,10 +85,13 @@ export function calibrate(epochJdn: number, sarosEpochJdn = 1646679): Calibratio
   const metonicYear0 = Math.floor(mod((epochJdn - metonStart) / 365.25, 19)) + 1;
   // Callippic: 76-year period from 28 June 330 BC
   const callStart = julianToJdn(-329, 6, 28);
-  const callippicQuarter0 = Math.floor(mod((epochJdn - callStart) / 365.25, 76) / 19);
+  const callippicPos = mod((epochJdn - callStart) / 365.25, 76) / 19;
+  const callippicQuarter0 = Math.floor(callippicPos);
   // Olympiads: year 1 of Olympiad 1 began mid-summer 776 BC
   const olStart = julianToJdn(-775, 7, 1);
-  const gamesYear0 = Math.floor(mod((epochJdn - olStart) / 365.25, 4)) + 1;
+  const gamesPos = mod((epochJdn - olStart) / 365.25, 4);
+  const gamesYear0 = Math.floor(gamesPos) + 1;
+  const exeligmosPos = mod(sarosPos / 223, 3);
   // Egyptian civil calendar: 1 Thoth of the Nabonassar era = 26 Feb 747 BC, 365-day years
   const nab = julianToJdn(-746, 2, 26);
   const egyptianDay0 = mod(epochJdn - nab, 365) + 1;
@@ -79,9 +99,14 @@ export function calibrate(epochJdn: number, sarosEpochJdn = 1646679): Calibratio
     pointers: {
       date: sun, true_sun: sun, moon, nodes: node,
       ...planets,
-      metonic: (metonicIdx / 47) * 360, saros: (sarosIdx / 55.75) * 360,
-      exeligmos: exeligmos0 * 120, games: (gamesYear0 - 1) * 90, callippic: callippicQuarter0 * 90,
+      // back dials: each pointer's back-view angle, turned into the front-view angle setCalibration takes
+      metonic: backPointerDeg(BACK_DIAL.spiralStart - (metonicIdx / 47) * 360),
+      saros: backPointerDeg(BACK_DIAL.spiralStart - (sarosIdx / 55.75) * 360),
+      exeligmos: backPointerDeg(BACK_DIAL.exeligmosStart - exeligmosPos * 120),
+      games: backPointerDeg(BACK_DIAL.gamesStart + gamesPos * 90),
+      callippic: backPointerDeg(BACK_DIAL.callippicStart - callippicPos * 90),
     },
+    spiralPhase: { metonic: metonicIdx / 47, saros: sarosIdx / 55.75 },
     metonicMonth0: metonicIdx + 1, metonicYear0, callippicQuarter0, gamesYear0,
     sarosMonth0: sarosIdx + 1, exeligmos0, egyptianDay0,
     sunLon0: sun, moonLon0: moon, apogee0: apogee, node0: node,

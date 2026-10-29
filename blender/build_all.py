@@ -120,6 +120,14 @@ def box(name, x0, x1, hw, hz, parent=None, coll=None, z=0.0, material=None):
 
 
 # ----------------------------------------------------------------------------- build
+def crank_spin(rel):
+    """The ratio solver counts a1 against b1 like an external spur mesh (-223/48). A crown
+    gear turns about X, and which way depends on which side of b1 it sits. a1 sits in front
+    of b1 and drives the rim with its lowest teeth, so while b1 turns clockwise seen from the
+    front, a1 turns clockwise seen from the right (+X): rotation_euler.x decreases."""
+    return -rel
+
+
 def build():
     sc = fresh_scene()
     spec = ratios.load(os.path.join(REPO, "data", "gears.json"))
@@ -240,14 +248,20 @@ def build():
             ob.location = (a.lx, a.ly, g["z"] - gc["z"])
         else:
             ob.location = (a.x, a.y, g["z"])
-        if gid == "a1":                                       # crown on the crank, face toward b1's rim
-            ob.location = (65.0 + 0.6 + g["thick"] / 2, 0.0, 0.0)
+        if gid == "a1":
+            # crown on the crank, teeth facing b1's rim. Its centre sits one pitch radius in
+            # front of b1 so that only its lowest teeth reach down into b1's plane and engage
+            # the rim there; centred on b1's plane it would touch the rim at two points moving
+            # in opposite directions, which cannot drive anything.
+            ob.location = (65.0 + 0.15 + g["thick"] / 2, 0.0, g["z"] + pitch_r)   # teeth reach to b1's roots
         if gid == "q1":                                       # crown on the lunar disc, teeth toward b0
             r_b0_tip = gears["b0"]["module"] * gears["b0"]["teeth"] / 2 + 0.9 * gears["b0"]["module"]
             ob.location = (r_b0_tip + 0.6 + g["thick"] / 2, 0.0, g["z"] - gears["b3"]["z"])
         ob.rotation_mode = "XYZ"
         rate = R[gid]
         rel = rate - (R[car] if car else 0)
+        if gid == "a1":
+            rel = crank_spin(rel)
         ob["am_id"] = gid
         ob["am_rate"] = float(rate)
         ob["am_rate_rel"] = float(rel)
@@ -265,6 +279,8 @@ def build():
         car = carrier_of(gid)
         rate = R[gid]
         rel = float(rate - (R[car] if car else 0))
+        if gid == "a1":
+            rel = float(crank_spin(rel))
         if gid in chain_ids:
             x, how, y = next(c for c in CHAIN if c[0] == gid)
             src = objs[y]
@@ -456,6 +472,8 @@ def verify_rig(spec, gears, objs, R, master, pin_slots, chain_ids=()):
                 continue
             car = gears[gid].get("carrier")
             rel = float(R[gid] - (R[car] if car else 0))
+            if gid == "a1":
+                rel = float(crank_spin(rel))
             want = -TAU * rel * y
             idx = 0 if gears[gid].get("kind") == "contrate" else 2
             got = ob.evaluated_get(dg).rotation_euler[idx]

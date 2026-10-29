@@ -10,7 +10,8 @@
  *       pin_follower  {epicycle, cx, cy, d} theta = atan2(cy + d sin t, cx + d cos t)
  *       chain         {from, ratio, carrierFrom, carrierTo}  theta = ratio*t (+ carrier terms)
  *       differential  {a, b, axis}          theta_x = theta_a - theta_b
- *       spiral        {rate, turns, r0, pitch} follower pin slides: x = r0 + pitch*((rate*years) mod turns)
+ *       spiral        {rate, turns, r0, pitch} follower pin slides: x = r0 + pitch*((-rate*years + phase) mod turns);
+ *                     the pointers turn clockwise from behind (a negative rate), so -rate*years runs outward
  *   am_order      evaluation order (0 linear, 10 devices, 20+ chains, 30 differential, 40 spiral)
  *   am_role       'pointer' | 'dial' | 'plate' | 'case' | 'tube' | 'frame_b1' ... (visibility groups)
  *   am_pointer    which display a pointer/ring belongs to (date, moon, mars, metonic, ...)
@@ -42,6 +43,7 @@ export class GearGraph {
   private ordered: GearNode[] = [];
   private offsets = new Map<string, number>();           // display -> radians (Blender sense)
   private phases = new Map<string, number>();            // node -> assembly phase, radians (pin gears of the devices)
+  private spiralPhases = new Map<string, number>();      // follower pin -> turns from the spiral start at the epoch
   private _years = 0;
   /** Turns of the main wheel the machine is set to. */
   get years(): number { return this._years; }
@@ -129,6 +131,12 @@ export class GearGraph {
   }
   getPhase(id: string): number { return this.phases.get(id) ?? 0; }
 
+  /** Where a spiral follower stands at the epoch, in turns from the spiral's start (calibration.spiralPhase). */
+  setSpiralPhase(phases: Record<string, number>): void {
+    for (const [pid, turns] of Object.entries(phases)) this.spiralPhases.set("pin_" + pid, turns);
+    this.setYears(this._years);
+  }
+
   /** Set every node's rotation for the given number of b1 turns. */
   setYears(years: number): void {
     this._years = years;
@@ -170,7 +178,8 @@ export class GearGraph {
         }
         case "spiral": {
           const turns = c.turns as number;
-          const t = (((c.rate as number) * years) % turns + turns) % turns;
+          const run = -(c.rate as number) * years + (this.spiralPhases.get(n.id) ?? 0);
+          const t = ((run % turns) + turns) % turns;
           n.object.position.x = (c.r0 as number) + (c.pitch as number) * t;
           break;
         }

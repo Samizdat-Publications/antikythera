@@ -28,8 +28,17 @@ from mech.layout import solve_layout  # noqa: E402
 
 OUT = os.path.join(ROOT, "assets", "textures")
 os.makedirs(OUT, exist_ok=True)
-FONT = "C:/Windows/Fonts/pala.ttf"
-FONT_B = "C:/Windows/Fonts/palab.ttf"
+# Palatino, as on Stewart's machine. AK_FONT / AK_FONT_BOLD stand in another face for a quick
+# check elsewhere; textures made that way are for looking at, not for committing.
+FONT = os.environ.get("AK_FONT", "C:/Windows/Fonts/pala.ttf")
+FONT_B = os.environ.get("AK_FONT_BOLD", "C:/Windows/Fonts/palab.ttf")
+
+# Back dials, in BACK-view degrees counter-clockwise from 3 o'clock. Keep in step with
+# blender/dials.py and web/src/astro/calibration.ts.
+SPIRAL_START_DEG = 90.0          # Metonic and Saros spirals begin at the top (Freeth)
+GAMES_DIVIDERS_DEG = 8.0         # the Olympiad quadrants are turned about 8 deg anticlockwise (Freeth 2008 SI 3.5)
+SPIRAL_R0 = 36.0
+METONIC_PITCH, SAROS_PITCH = 5.4, 6.6
 
 BRONZE = (163, 116, 58)
 BRONZE_DARK = (118, 82, 38)
@@ -273,22 +282,27 @@ class Dial:
 
 
 # ------------------------------------------------------------------ front dial
-def front_dial(zodiac_r=(55.0, 66.5), cal_r=(67.5, 79.5), calendar_holes=365, zero_deg=0.0):
+def front_dial(zodiac_r=(66.0, 73.0), cal_r=(73.0, 81.0), calendar_holes=365, zero_deg=0.0):
     """Zodiac ring + Egyptian calendar ring. Angles: the Sun pointer turns CLOCKWISE
     seen from the front (the machine's positive sense), so the signs run clockwise
-    from the zero (Aries 0 at +x by default)."""
+    from the zero (Aries 0 at +x by default).
+
+    Sizes as measured on Fragment C (Bitsakis and Jones 2016): the zodiac about 7 mm wide from
+    the plate's opening (132 mm across) to the calendar's channel (146 mm), the calendar ring
+    about 8 mm wide (to 162 mm); sign names about 1.8 mm high, the index letters about 1.2 mm.
+    Keep in step with ZODIAC_R and CALENDAR_R in blender/dials.py."""
     D = Dial("front_dial", 165.0)
     ri, ro = zodiac_r
     ci, co = cal_r
     # ring edges
     for r in (ri, ro, ci, co):
         D.circle(r, 0.25)
-    D.circle((ri + ro) / 2 - 2.5, 0.08)                        # inner degree band edge
+    D.circle(ri + 1.9, 0.08)                                   # inner degree band edge
     # zodiac: 12 signs clockwise; degree ticks
     for k in range(360):
         a = zero_deg - k                                       # clockwise
-        L = 1.2 if k % 30 == 0 else 0.9 if k % 10 == 0 else 0.5
-        rr = ri + 0.3
+        L = 1.6 if k % 30 == 0 else 1.2 if k % 10 == 0 else 0.8
+        rr = ri + 0.2
         D.line(rr * math.cos(math.radians(a)), rr * math.sin(math.radians(a)),
                (rr + L) * math.cos(math.radians(a)), (rr + L) * math.sin(math.radians(a)), 0.1)
     for i, name in enumerate(ZODIAC):
@@ -296,7 +310,7 @@ def front_dial(zodiac_r=(55.0, 66.5), cal_r=(67.5, 79.5), calendar_holes=365, ze
         # sign boundary
         D.line(ri * math.cos(math.radians(a0)), ri * math.sin(math.radians(a0)),
                ro * math.cos(math.radians(a0)), ro * math.sin(math.radians(a0)), 0.22)
-        D.curved_text(ri + 6.3, a0 - 15, name, 2.6, bold=True)
+        D.curved_text(ri + 3.1, a0 - 15, name, 1.8, bold=True)
     # parapegma index letters, each one immediately clockwise of its graduation mark: read on
     # the bronze in the full ink, resting on a numeral or on the editors' restoration in the
     # faint ink, and a letter whose place is lost not drawn at all.
@@ -304,8 +318,8 @@ def front_dial(zodiac_r=(55.0, 66.5), cal_r=(67.5, 79.5), calendar_holes=365, ze
         if grad is None:
             continue
         a = zero_deg - 30 * sign - (grad - 1) - 0.55
-        D.text((ri + 9.2) * math.cos(math.radians(a)), (ri + 9.2) * math.sin(math.radians(a)),
-               letter, 1.4, angle=a - 90, faint=status != "scale")
+        D.text((ri + 5.6) * math.cos(math.radians(a)), (ri + 5.6) * math.sin(math.radians(a)),
+               letter, 1.2, angle=a - 90, faint=status != "scale")
     # Egyptian calendar ring: 365 days, 12 x 30 + 5 epagomenal, clockwise
     deg_per_day = 360.0 / calendar_holes
     for k in range(calendar_holes):
@@ -317,18 +331,19 @@ def front_dial(zodiac_r=(55.0, 66.5), cal_r=(67.5, 79.5), calendar_holes=365, ze
         a0 = zero_deg - 30 * i * deg_per_day
         D.line(ci * math.cos(math.radians(a0)), ci * math.sin(math.radians(a0)),
                co * math.cos(math.radians(a0)), co * math.sin(math.radians(a0)), 0.2)
-        D.curved_text(ci + 6.8, a0 - 15 * deg_per_day, name, 2.4, bold=True)
+        D.curved_text(ci + 4.4, a0 - 15 * deg_per_day, name, 2.0, bold=True)
     a_ep = zero_deg - 360 * deg_per_day
     D.line(ci * math.cos(math.radians(a_ep)), ci * math.sin(math.radians(a_ep)),
            co * math.cos(math.radians(a_ep)), co * math.sin(math.radians(a_ep)), 0.2)
-    D.curved_text(ci + 6.8, a_ep - 2.5 * deg_per_day, "ΕΠΑΓ", 1.6, bold=True)
+    D.curved_text(ci + 4.4, a_ep - 2.5 * deg_per_day, "ΕΠΑΓ", 1.4, bold=True)
     return D.finish()
 
 
 # ------------------------------------------------------------------ spirals
-def spiral_dial(D, r0, pitch, turns, cells, label_fn=None, mm=1.15, glyph_fn=None):
+def spiral_dial(D, r0, pitch, turns, cells, label_fn=None, mm=1.15, glyph_fn=None, start_deg=SPIRAL_START_DEG):
     """Archimedean spiral r = r0 + pitch * t/(2pi), CLOCKWISE in back-view coordinates
-    (angle decreasing), cells numbered from 1 at the inner start."""
+    (angle decreasing) from start_deg, cells numbered from 1 at the inner start."""
+    s0 = math.radians(start_deg)
     # The spiral is a slot the pointer's follower pin rides in, so it is cut as one: a dark groove
     # 0.8 mm wide, deep in the bump, that reads as a spiral from across the room. A hairline
     # vanished once the texture was brought down to 2048 px. One turn more, drawn as a plain rule,
@@ -338,7 +353,7 @@ def spiral_dial(D, r0, pitch, turns, cells, label_fn=None, mm=1.15, glyph_fn=Non
     for i in range(steps + 1):
         t = 2 * math.pi * (turns + 1) * i / steps
         r = r0 + pitch * t / (2 * math.pi)
-        a = -t                                                 # clockwise
+        a = s0 - t                                             # clockwise
         pts.append((t, r * math.cos(a), r * math.sin(a)))
     for (t, x0, y0), (_, x1, y1) in zip(pts, pts[1:]):
         if t < 2 * math.pi * turns:
@@ -349,12 +364,12 @@ def spiral_dial(D, r0, pitch, turns, cells, label_fn=None, mm=1.15, glyph_fn=Non
     for k in range(cells + 1):
         t = 2 * math.pi * k / cells_per_turn
         r_in = r0 + pitch * t / (2 * math.pi)
-        a = -t
+        a = s0 - t
         D.line(r_in * math.cos(a), r_in * math.sin(a), (r_in + pitch) * math.cos(a), (r_in + pitch) * math.sin(a), 0.24)
         if k < cells:
             tm = 2 * math.pi * (k + 0.5) / cells_per_turn
             rm = r0 + pitch * tm / (2 * math.pi) + pitch / 2
-            am = -tm
+            am = s0 - tm
             x, y = rm * math.cos(am), rm * math.sin(am)
             rot = math.degrees(am) + 90                        # text reads outward along the arc
             if label_fn:
@@ -380,45 +395,80 @@ def sub_dial(D, cx, cy, r, sectors, labels, mm=1.5, start_deg=90.0, clockwise=Tr
             D.text(cx + rr * math.cos(math.radians(am)), cy + rr * math.sin(math.radians(am)), s, mm, angle=0, bold=True)
 
 
+def olympiad_dial(D, dx, dy, r):
+    """The Olympiad dial as Freeth et al. 2008 (SI 3.5) describe it: four quadrants whose
+    diameters are turned about 8 deg anticlockwise from the horizontal and vertical; inside the
+    rim the year numbers, L (etos) and alpha in the lower right running ANTICLOCKWISE to delta in
+    the lower left, the only display on the machine whose pointer turns that way; outside the rim
+    each quarter's games, tops of the letters toward the centre, in the order they were held,
+    outward. Drawn in back-view coordinates."""
+    box = [D.P(dx - r, dy + r), D.P(dx + r, dy - r)]
+    D.d.ellipse(box, outline=INK, width=max(1, int(0.22 * D.scale)))
+    D.db.ellipse(box, outline=40, width=max(1, int(0.22 * D.scale)))
+    t = GAMES_DIVIDERS_DEG
+    for a in (t, 90 + t, 180 + t, 270 + t):
+        D.line(dx, dy, dx + r * math.cos(math.radians(a)), dy + r * math.sin(math.radians(a)), 0.16)
+    for year in range(4):
+        am = 270 + t + 45 + 90 * year                              # year 1 lower right, then anticlockwise
+        ca, sa = math.cos(math.radians(am)), math.sin(math.radians(am))
+        D.text(dx + 0.55 * r * ca, dy + 0.55 * r * sa, "L" + GREEK_NUMERALS[year + 1], 1.5, angle=am + 90, bold=True)
+        for j, s in enumerate(GAMES[year]):
+            arc_text(D, dx, dy, r + 0.75 + 1.0 * j, am, s, 0.85, bold=True)
+
+
+def arc_text(D, cx, cy, r, a_center, s, mm, bold=False):
+    """Letters along a circle about (cx, cy), tops toward its centre, reading left to right as
+    seen from outside the circle looking in (so anticlockwise round it)."""
+    f = D.font(mm, bold)
+    widths = [f.getlength(ch) / D.scale for ch in s]
+    gap = 0.18 * mm
+    total = sum(widths) + gap * (len(s) - 1)
+    a = a_center - math.degrees(total / 2 / r)
+    for ch, w in zip(s, widths):
+        step = math.degrees(w / r)
+        am = a + step / 2
+        D.text(cx + r * math.cos(math.radians(am)), cy + r * math.sin(math.radians(am)), ch, mm, angle=am + 90, bold=bold)
+        a += step + math.degrees(gap / r)
+
+
+def callippic_dial(D, dx, dy, r):
+    """The Callippic dial, a hypothetical subsidiary dial placed symmetrically to the Olympiad dial
+    (Freeth et al. 2008 SI 3.7): four quarters of 19 years, counted clockwise from the bottom with
+    its pointer, which turns clockwise like the Metonic one. No divisions survive, so they are
+    drawn square to the dial."""
+    box = [D.P(dx - r, dy + r), D.P(dx + r, dy - r)]
+    D.d.ellipse(box, outline=INK, width=max(1, int(0.22 * D.scale)))
+    D.db.ellipse(box, outline=40, width=max(1, int(0.22 * D.scale)))
+    for a in (0, 90, 180, 270):
+        D.line(dx, dy, dx + r * math.cos(math.radians(a)), dy + r * math.sin(math.radians(a)), 0.16)
+    for q, s in enumerate("ΑΒΓΔ"):
+        am = 270 - 45 - 90 * q                                     # A lower left, then clockwise
+        rr = r * 0.62
+        D.text(dx + rr * math.cos(math.radians(am)), dy + rr * math.sin(math.radians(am)), s, 2.2, bold=True, faint=True)
+
+
 def back_upper(n_xy, o_xy, cal_xy):
     """Metonic 5-turn spiral centred on axis n, Games dial on o, Callippic on cal.
     Composed in BACK view: x_back = -x_front."""
     nx, ny = n_xy
     D = Dial("back_upper", 150.0, cx=nx, cy=ny, back=True)
-    R0, PITCH = 36.0, 5.4
+    R0, PITCH = SPIRAL_R0, METONIC_PITCH
     months = [CORINTH[k % 12] for k in range(235)]
     # intercalary months in a 19-year cycle: mark with the same name; years of 13 months are
     # years 3, 5, 8, 11, 13, 16, 19 (Freeth 2008): handled in the label as a doubled month
     spiral_dial(D, R0, PITCH, 5, 235, label_fn=lambda k: months[k], mm=1.05)
-    # Games dial (o) and Callippic (cal), positions relative to n, mirrored for back view
+    # Olympiad (Games) dial on o and Callippic on cal, positions relative to n, mirrored for back view
     ox, oy = -(o_xy[0] - nx), o_xy[1] - ny
     cxp, cyp = -(cal_xy[0] - nx), cal_xy[1] - ny
-    # draw sub-dials with local origin shifts
-    for (dx, dy, labels, sectors, start) in ((ox, oy, [list(g) for g in GAMES], 4, 90.0),
-                                             (cxp, cyp, [["Α"], ["Β"], ["Γ"], ["Δ"]], 4, 90.0)):
-        box = [D.P(dx - 9.5, dy + 9.5), D.P(dx + 9.5, dy - 9.5)]
-        D.d.ellipse(box, outline=INK, width=max(1, int(0.22 * D.scale)))
-        D.db.ellipse(box, outline=40, width=max(1, int(0.22 * D.scale)))
-        for i in range(sectors):
-            a = start - 360.0 * i / sectors * (1 if labels[0][0] != "Α" else -1)
-            D.line(dx, dy, dx + 9.5 * math.cos(math.radians(a)), dy + 9.5 * math.sin(math.radians(a)), 0.16)
-            am = a - 45.0 * (1 if labels[0][0] != "Α" else -1)
-            if len(labels[i]) == 1:                                   # Callippic: one large letter out along the bisector
-                rr = 9.5 * 0.62
-                D.text(dx + rr * math.cos(math.radians(am)), dy + rr * math.sin(math.radians(am)), labels[i][0], 2.2, bold=True)
-                continue
-            # Games: the two festivals of the year stacked level at the middle of the quarter, where a
-            # seven-letter name has room; set out along the bisector the inner one ran over the divider
-            cx_, cy_ = dx + 5.6 * math.cos(math.radians(am)), dy + 5.6 * math.sin(math.radians(am))
-            for j, s in enumerate(labels[i]):
-                D.text(cx_, cy_ + (0.95 if j == 0 else -0.95), s, 1.15, bold=True)
+    olympiad_dial(D, ox, oy, min(9.5, SPIRAL_R0 - math.hypot(ox, oy) - 2.6))
+    callippic_dial(D, cxp, cyp, 9.5)
     return D.finish()
 
 
 def back_lower(g_xy, i_xy):
     gx, gy = g_xy
     D = Dial("back_lower", 150.0, cx=gx, cy=gy, back=True)
-    R0, PITCH = 36.0, 6.6
+    R0, PITCH = SPIRAL_R0, SAROS_PITCH
     glyphs = {g.month: g for g in glyph_table()}
 
     def glyph(k):
@@ -451,12 +501,21 @@ def back_lower(g_xy, i_xy):
     box = [D.P(ix - 9.5, iy + 9.5), D.P(ix + 9.5, iy - 9.5)]
     D.d.ellipse(box, outline=INK, width=max(1, int(0.22 * D.scale)))
     D.db.ellipse(box, outline=40, width=max(1, int(0.22 * D.scale)))
+    # Exeligmos (Freeth et al. 2008 SI 4.8): three sectors, the blank one, then 8 (H) and 16 (I-stigma)
+    # read in the CT at 7 and 11 o'clock, so the blank sector is centred at 3 o'clock and the
+    # sectors follow clockwise with the pointer; the division between 8 and 16 is the faint
+    # horizontal line seen at 9 o'clock.
     for i, s in enumerate(["", "Η", "ΙϚ"]):
-        a = 90.0 - 120.0 * i
+        a = 60.0 - 120.0 * i
         D.line(ix, iy, ix + 9.5 * math.cos(math.radians(a)), iy + 9.5 * math.sin(math.radians(a)), 0.16)
         am = a - 60.0
         if s:
             D.text(ix + 5.5 * math.cos(math.radians(am)), iy + 5.5 * math.sin(math.radians(am)), s, 2.4, bold=True)
+    # a possible scale mark at 3 o'clock on the Saros dial's central plate (SI 4.7, Fig. 23)
+    # suggests divisions at the cardinal points for the start of each Full Moon Cycle
+    for a in (0, 90, 180, 270):
+        c, sn = math.cos(math.radians(a)), math.sin(math.radians(a))
+        D.line((R0 - 4.0) * c, (R0 - 4.0) * sn, (R0 - 1.2) * c, (R0 - 1.2) * sn, 0.2, ink=INK_FAINT)
     return D.finish()
 
 
@@ -509,8 +568,10 @@ def main():
             parapegma("parapegma_upper", PP1_COL_I, PP1_COL_II),
             parapegma("parapegma_lower", PP2_COL_III, PP2_COL_IV)]
     with open(os.path.join(OUT, "dials.json"), "w", encoding="utf-8") as fh:
-        json.dump({"dials": meta, "spirals": {"metonic": {"r0": 36.0, "pitch": 5.4, "turns": 5, "cells": 235},
-                                                "saros": {"r0": 36.0, "pitch": 6.6, "turns": 4, "cells": 223}}}, fh, indent=1)
+        json.dump({"dials": meta, "spirals": {"metonic": {"r0": SPIRAL_R0, "pitch": METONIC_PITCH, "turns": 5, "cells": 235,
+                                                            "start_deg": SPIRAL_START_DEG},
+                                                "saros": {"r0": SPIRAL_R0, "pitch": SAROS_PITCH, "turns": 4, "cells": 223,
+                                                          "start_deg": SPIRAL_START_DEG}}}, fh, indent=1)
     for m in meta:
         print(m)
 

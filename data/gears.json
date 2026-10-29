@@ -6,7 +6,7 @@
   "tooth_profile_default": "triangular",
   "spokes_deg": {"A": 60, "B": 330, "C": 240, "D": 150},
   "gears": [
-    {"id": "a1",  "teeth": 48,  "arbor": "a",  "kind": "contrate", "z": 0.0,  "thick": 1.5, "status": "surviving", "note": "input crown wheel on the right-hand side; only its keyway survives"},
+    {"id": "a1",  "teeth": 48,  "arbor": "a",  "kind": "contrate", "z": 0.0,  "thick": 1.5, "module": 0.578, "status": "surviving", "note": "input crown wheel on the right-hand side; only its keyway survives"},
 
     {"id": "b1",  "teeth": 223, "arbor": "b",  "z": 0.0,   "thick": 2.7, "module": 0.578, "pitch_r": 64.4, "status": "surviving", "note": "main drive wheel, 4 spokes; 223/224 disputed"},
     {"id": "b2",  "teeth": 64,  "arbor": "b",  "z": -6.0,  "thick": 2.3, "module": 0.479, "pitch_r": 15.3, "status": "surviving"},

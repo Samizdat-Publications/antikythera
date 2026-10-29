@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calibrate, CELL_FULL_MOON } from "./calibration";
+import { calibrate, CELL_FULL_MOON, backPointerDeg, BACK_DIAL } from "./calibration";
 import { EPOCHS, mechanismState } from "../mech/mechanism";
 import { skyState, type EclipseRow } from "./truth";
 import { auditSaros } from "../ui/analytics";
@@ -42,4 +42,20 @@ describe("setting the dials at the epoch", () => {
       expect(worst).toBeLessThan(4);
     });
   }
+
+  it("turns back-view angles into front-view pointer settings", () => {
+    // seen from behind, 3 o'clock is the front's 9 o'clock and the top stays the top
+    expect(wrap(backPointerDeg(0))).toBeCloseTo(-180, 9);
+    expect(wrap(backPointerDeg(90))).toBeCloseTo(-90, 9);
+    // the Carman & Evans / Freeth epoch: Saros cell 1 just after its full moon, pointer just clockwise of the top
+    const c = calibrate(1646679);
+    const sarosBack = wrap(c.pointers.saros + 180);
+    expect(sarosBack).toBeLessThan(BACK_DIAL.spiralStart);
+    expect(sarosBack).toBeGreaterThan(BACK_DIAL.spiralStart - 360 / 55.75);
+    expect(c.spiralPhase.saros).toBeCloseTo((c.sarosMonth0 - 1) / 55.75, 9);
+    // Exeligmos 0: the pointer is in the blank sector, which spans 60 to -60 from behind
+    const ex = wrap(c.pointers.exeligmos + 180);
+    expect(ex).toBeLessThanOrEqual(60);
+    expect(ex).toBeGreaterThan(-60);
+  });
 });
