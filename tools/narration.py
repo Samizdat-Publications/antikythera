@@ -27,7 +27,7 @@ TOUR = [
      "All sixty-nine turn here at the ratios their teeth give, so every pointer moves as that model says the bronze would have."),
     ("discovery", "front",
      "In 1901, sponge divers working a Roman-era wreck off the island of Antikythera brought up a corroded lump of bronze. "
-     "It lay unregarded until May 1902, when the archaeologist Valerios Stais saw a gearwheel in it. "
+     "It lay unregarded until May 1902, when Spyridon Stais, visiting the museum his cousin Valerios directed, noticed a gearwheel in it. "
      "Today it is eighty-two fragments, about a third of the machine, in the National Archaeological Museum in Athens. "
      "This is Fragment A, the largest, from a CT scan of the original. Two thousand years of seawater have turned the metal to a crust of corrosion, "
      "but the four spokes of the main wheel still show through it."),
@@ -51,11 +51,10 @@ TOUR = [
      "Because the machine only knows turns, dates here are written as years since the epoch, and its errors grow the further you crank from it."),
     ("zodiac", "front",
      "The front dial is the sky. The inner ring is the zodiac, twelve signs of thirty degrees. "
-     "The outer ring names the months of the Egyptian calendar, drawn here with its 365 days as the 2021 model has it, "
-     "so the owner could slip it round a day every four years. The holes beneath the ring, measured in 2020 and analysed statistically in 2024, "
-     "suggest 354, a lunar year, "
-     "so how it was kept in step is still argued over. "
-     "The date pointer reads this ring; the true-sun pointer, with its golden ball, reads the zodiac. "
+     "The outer ring names the months of the Egyptian calendar, with its 365 days as the 2021 model has it, "
+     "so the owner could slip it round a day every four years. A count of the holes beneath the ring has been read as "
+     "three hundred and fifty-four, a lunar year, but that reading is disputed, and this copy keeps the 365-day ring. "
+     "The date pointer, on its narrow ring, reads the calendar; the true-Sun pointer, rising from its golden sphere, reads the zodiac. "
      "The plates above and below carry the parapegma, a list of star risings and settings, keyed to letters on the dial."),
     ("moon", "front",
      "The moon pointer is driven through three pairs of gears: sixty-four on thirty-eight, forty-eight on twenty-four, "
@@ -84,9 +83,12 @@ TOUR = [
      "The panel compares the glyph in the current cell with NASA's catalogue of real eclipses. "
      "We have jumped to the next eclipse of the Moon."),
     ("cosmos", "front",
-     "The 2021 reconstruction adds a cosmos on the front: rings for Mercury, Venus, Mars, Jupiter and Saturn, "
-     "each with its own epicyclic module and a coloured stone. Two periods are read on the cover inscription, "
+     "The 2021 reconstruction adds a cosmos on the front: rings for Mercury, Venus, the true Sun, Mars, Jupiter and Saturn, "
+     "each planet with its own epicyclic module and a coloured stone. Two periods are read on the cover inscription, "
      "462 years for Venus and 442 for Saturn; the others, and all the planetary gearing, are the 2021 team's reconstruction. "
+     "The team also proposes that each ring was marked where the Sun stands on it at its planet's stations, conjunctions "
+     "and oppositions, with index letters keying those marks to the lines of the cover inscription. "
+     "Here they are cut where this machine puts them. "
      "Watch the red stone of Mars now. Its ring slows, stops, and runs backwards through its retrograde loop."),
     ("sky", "front",
      "This is the same machine, drawn as a sky. Earth sits in the middle, and each body is placed where its own pin and slot puts it, "
@@ -99,6 +101,10 @@ TOUR = [
      "The Moon, thanks to the pin and slot, stays within about three and a half degrees for some years either side of the epoch. "
      "What remains is the evection and the variation, which the machine does not model, and a slow drift of about a degree "
      "every eighteen years, because two hundred and fifty-four turns in nineteen years is not quite the Moon's true rate. "
+     "The planets keep their long cycles exactly, but one epicycle each cannot follow their loops. "
+     "Mars strays by up to fifty-four degrees, nearly two signs, within ten years of the epoch, and the machine brings its "
+     "loops round every two point one four years like clockwork, where the real ones come anywhere from two point oh nine "
+     "to two point two one years apart. "
      "Over three Saros cycles most of the lunar glyphs land on real eclipses, and every solar glyph falls in a month with an "
      "eclipse of the Sun somewhere on Earth, though many could not have been seen from Greece. "
      "One caution. These wheels are cut perfectly, and the originals were filed by hand. "

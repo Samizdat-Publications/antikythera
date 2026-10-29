@@ -722,3 +722,30 @@ See README "Attributions" for licences.
   (the circular plate, strap, pillars and calendar ring) wore a disposed lift copy at 0 % opacity. `isolate`
   now keeps the part's own material when it is mid-lift, `finishReveal` leaves a ghost a ghost, and a mesh
   nested in two lifted roles is cloned once. Starting the walkthrough by any route hides the invitation.
+- 2026-10-29: **Tony Freeth replied, and this pass fixes what he called out** (ledger:
+  `docs/ACCURACY-2026-10-29.md`). Before it: git tag `v1.2-pre-freeth-review`; live Worker version
+  31f4c6d1-33c2-42ad-828b-4637e0a04f96 (`npx wrangler rollback` to it if needed); the web GLB of that version is
+  also kept, untracked, at `build/antikythera.web-pre-freeth.glb`. What changed and why it is built this way:
+  * **a1** stands on b1's front face at the rim and turns the same way as b1's teeth carry it. The solver's spur
+    rule is negated for a pair flagged `crown_same_sense` in `gears.json`; `test_input_crown_gear` pins +223/48.
+  * **Front display = Fig. 7.** Ring radii live in one table, `FRONT_RINGS` in `tools/gen_dial_textures.py`,
+    written to `dials.json` for `dials.py`. One texture (`front_rings.png`, material `FrontRings`) serves every
+    ring: each ring mesh has planar UVs in its own frame, so it carries its own band round. Stone at local +x;
+    marks clockwise from it. The index-letter angles (`RING_EVENTS`) were measured on the machine (Sun's place
+    on each ring at each event, 40 years, averaged); the paper gives none. Z order: rings at their tube tops
+    (outer lowest), then the Sun's ray at 38.5 (lifted over Venus and Mercury so it reads them, carried by the
+    golden sphere), Dragon Hand 39.2, central disc 40.25 to 41.35 and Earth dome on the Moon arbor (round, so
+    turning with the Moon does not show), Moon pointer 41.45. A `ptr_*` object without `am_role` is deleted at
+    the end of `dials.py` as a build_all placeholder: give every new pointer part a role.
+  * **The phase ball was buried** at z 14 on q1, behind the front plate, since M3. It now rides the Moon pointer
+    (r 21) as node `phase_ball` with q1's rate about local x; `GearGraph.setCalibration` sets its phase from the
+    Moon and Sun pointers (black half forward at New Moon). Its black half is on local +y.
+  * **Back dials.** Spirals start at the top. A pointer set to `deg` faces front-view angle -deg; a back-view
+    angle a is front-view 180 - a. The old offsets ignored the mirror, so the pointers did not stand in the cells
+    the panel named. Pointers end at the last turn's outer edge, no tails. Games dial tilted 8° anticlockwise,
+    year 1 lower right, anticlockwise (its pointer turns +1/4, anticlockwise seen from the back); Callippic now
+    numbered clockwise, the way its pointer turns.
+  * **Text:** Spyridon Stais (not Valerios) first saw the gears; 354 holes presented as a disputed reading, never
+    as fact; planet accuracy measured and
+    stated (Mars up to 54° within ten years, loops every 2.135 years against the sky's 2.09 to 2.21). Four
+    narration clips re-recorded in David and transcript-checked by Gemini.

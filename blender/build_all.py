@@ -240,8 +240,9 @@ def build():
             ob.location = (a.lx, a.ly, g["z"] - gc["z"])
         else:
             ob.location = (a.x, a.y, g["z"])
-        if gid == "a1":                                       # crown on the crank, face toward b1's rim
-            ob.location = (65.0 + 0.6 + g["thick"] / 2, 0.0, 0.0)
+        if gid == "a1":                                       # crown on the crank, standing on b1's front face:
+            # its teeth point in at b1's rim and only its lowest tooth meets b1 (Freeth 2021 SI Figs S10, S11)
+            ob.location = (65.0 + 0.6 + g["thick"] / 2, 0.0, g["z"])
         if gid == "q1":                                       # crown on the lunar disc, teeth toward b0
             r_b0_tip = gears["b0"]["module"] * gears["b0"]["teeth"] / 2 + 0.9 * gears["b0"]["module"]
             ob.location = (r_b0_tip + 0.6 + g["thick"] / 2, 0.0, g["z"] - gears["b3"]["z"])

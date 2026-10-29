@@ -170,7 +170,7 @@ def dial_normalmap(mat_name: str, png: str, strength: float = 1.0) -> bool:
     return True
 
 
-dials_done = [n for n, png in (("FrontDial", "front_dial_normal.png"), ("Back_upper", "back_upper_normal.png"),
+dials_done = [n for n, png in (("FrontDial", "front_dial_normal.png"), ("FrontRings", "front_rings_normal.png"), ("Back_upper", "back_upper_normal.png"),
                                ("Back_lower", "back_lower_normal.png"), ("Parapegma_upper", "parapegma_upper_normal.png"),
                                ("Parapegma_lower", "parapegma_lower_normal.png")) if dial_normalmap(n, png)]
 log.append(f"dial normal maps: {dials_done}")

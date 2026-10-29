@@ -79,8 +79,14 @@ export function calibrate(epochJdn: number, sarosEpochJdn = 1646679): Calibratio
     pointers: {
       date: sun, true_sun: sun, moon, nodes: node,
       ...planets,
-      metonic: (metonicIdx / 47) * 360, saros: (sarosIdx / 55.75) * 360,
-      exeligmos: exeligmos0 * 120, games: (gamesYear0 - 1) * 90, callippic: callippicQuarter0 * 90,
+      // Back dials (tools/gen_dial_textures.py, drawn seen from the back): a pointer set to `deg` faces the
+      // front-view angle -deg, and a back-view angle a is the front-view angle 180 - a. Both spirals open
+      // at the top and run clockwise seen from the back, as do the Exeligmos and Callippic quarters; the
+      // Games dial's year 1 opens 8 degrees short of straight down and its years run anticlockwise.
+      metonic: -(90 + (metonicIdx / 47) * 360), saros: -(90 + (sarosIdx / 55.75) * 360),
+      exeligmos: -(90 + mod(sarosPos / 223, 3) * 120),
+      games: mod((epochJdn - olStart) / 365.25, 4) * 90 - 262,
+      callippic: -(90 + (mod((epochJdn - callStart) / 365.25, 76) / 19) * 90),
     },
     metonicMonth0: metonicIdx + 1, metonicYear0, callippicQuarter0, gamesYear0,
     sarosMonth0: sarosIdx + 1, exeligmos0, egyptianDay0,

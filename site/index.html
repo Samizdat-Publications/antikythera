@@ -55,7 +55,7 @@
   </figure>
   <div class="room-text">
     <h2 id="sea-title">What came out of the sea</h2>
-    <p>In 1901 sponge divers working a Roman-era wreck off the island of Antikythera brought up a lump of corroded bronze. It lay unregarded until May 1902, when the archaeologist Valerios Stais saw a gearwheel in it. The ship had gone down around 70 to 60 BC.</p>
+    <p>In 1901 sponge divers working a Roman-era wreck off the island of Antikythera brought up a lump of corroded bronze. It lay unregarded until May 1902, when Spyridon Stais, visiting the museum his cousin Valerios directed, noticed a gearwheel in it. The ship had gone down around 70 to 60 BC.</p>
     <p>What survives is 82 fragments, about a third of the machine, in the National Archaeological Museum in Athens. Thirty gears are still in them: 27 in Fragment A and one each in B, C and D.</p>
   </div>
 </section>
@@ -134,7 +134,7 @@
   <div class="year-intro">
     <h2 id="year-title">One crank, one year</h2>
     <p>A hand crank on the side turns a 48-tooth crown wheel against the 223-tooth main wheel. One turn of the main wheel is one year, and every other pointer is geared off it. Here the front dial runs through the year from 12 May 205 BC, the full moon of the eclipse dial's first month, and stops at each month whose Saros cell carries an eclipse glyph, so the glyph can be held against NASA's canon.</p>
-    <p class="key">The gold hand with the golden ball is the Sun; the silver hand is the Moon, with its half-dark phase ball riding on it; the small stones on the inner rings are the five planets. Drag the crank below to turn it yourself.</p>
+    <p class="key">The gold ray from the golden sphere is the Sun, on its own ring; the silver hand is the Moon, with its half-dark phase ball riding on it; the stones on the rings are the five planets, and the dark hand that crosses the whole dial is the Dragon, pointing to the Moon's nodes. Drag the crank below to turn it yourself.</p>
   </div>
   <figure class="year-stage">
     <canvas class="year-canvas" id="year-canvas" width="1120" height="630" role="img"
@@ -174,6 +174,7 @@
     <div><dt>28 of 28</dt><dd>solar glyphs in one Saros from the epoch fall in a month with a solar eclipse somewhere on Earth</dd></div>
     <div><dt>27 of 38</dt><dd>lunar glyphs land on a real lunar eclipse; 10 more on one that only grazes the Earth's outer shadow, and one on none</dd></div>
     <div><dt>3.5°</dt><dd>the Moon stays within about this of the sky near the epoch, then drifts about a degree every eighteen years</dd></div>
+    <div><dt>54°</dt><dd>how far Mars strays within ten years: the planets keep their long cycles, but one epicycle each cannot follow their loops, and the machine spaces them evenly where the sky does not</dd></div>
   </dl>
   <p class="proof-foot">Every comparison with the paper is written up: <a href="https://github.com/Samizdat-Publications/antikythera/blob/main/docs/ACCURACY-2026-10-18.md">the first accuracy pass</a> and <a href="https://github.com/Samizdat-Publications/antikythera/blob/main/docs/ACCURACY-2026-10-23.md">the second</a>, which found and fixed a Moon pointer running up to 20° off and a broken second epoch.</p>
 </section>
@@ -182,7 +183,8 @@
   <h2 id="dep-title">Where this copy departs from the 2021 paper</h2>
   <p>Every tooth count, gear train, pin-and-slot offset and pin distance follows Freeth et al. 2021 (Fig. 3 and Supplementary Tables S8 and S9). These parts are this copy's own choices:</p>
   <ul>
-    <li><b>A simpler front display.</b> In the paper the true Sun and the date are rings, the Sun's ring carries an Age of the Moon scale and eclipse-limit marks, and the planet rings carry opposition markers and proposed index letters. Here the Sun and the date are plain pointers, and none of those scales, marks or letters are drawn.</li>
+    <li><b>Where the ring marks fall.</b> The front display follows the paper's Fig. 7: rings for the planets, the true Sun and the date at the figure's proportions, the Age of the Moon scale and eclipse-limit triangles on the Sun's ring, opposition markers, and the proposed index letters of Fig. 8. The paper does not give the angles of the scale marks, so each is cut where this machine puts the Sun on that ring at the event, averaged over forty years.</li>
+    <li><b>The phase ball's axle.</b> The ball rides on the Moon pointer as in Fig. 7, turned at the rate of its crown gear, but in this copy that gear sits deeper in the machine, where the mean Sun wheel drives it, so the axle joining the two is not drawn.</li>
     <li><b>The size of the Sun's anomaly.</b> The paper gives the true Sun's gearing (56, 52, 56 and a follower) but not its dimensions. This copy sets the pin for an eccentricity of 1/24, the ancient value that Ptolemy gives from Hipparchus.</li>
     <li><b>How the pointers are set.</b> The paper says each anomaly device was set against observations on chosen dates. This copy sets each pin's starting phase, and each pointer's zero at the epoch, by fitting a modern ephemeris (astronomy-engine), which no ancient maker could have done. The 2021 paper does not choose an epoch; the two offered here come from Carman and Evans and Freeth (both 2014) and from Voulgaris and colleagues (2023).</li>
     <li><b>Geometry, not ratios.</b> The reconstructed wheels are cut at a module of 0.5 where the paper adjusts a few (about 0.53 and 0.54 for the 51 and 44 of the Venus train, 0.521 for its 34 and 26); arbor angles and layer depths are this copy's own; and two surviving lunar wheels, e6 and k2, are cut at a module of 0.534 rather than the measured 0.536 and 0.541 so the train closes on its axis. None of this changes a tooth count or a rate.</li>

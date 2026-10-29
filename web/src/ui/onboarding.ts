@@ -40,7 +40,7 @@ export const STEPS: Step[] = [
   },
   {
     id: "found", title: "What the divers found", clip: "discovery",
-    body: "In 1901 sponge divers working a Roman-era wreck off Antikythera brought up a corroded lump of bronze. It lay unregarded until May 1902, when the archaeologist Valerios Stais saw a gearwheel in it. Today it is 82 fragments, about a third of the machine, in the National Archaeological Museum in Athens. This is Fragment A, the largest, from a CT scan of the original: two thousand years of seawater have turned the metal to a crust of corrosion, but the four spokes of the main wheel still show through it.",
+    body: "In 1901 sponge divers working a Roman-era wreck off Antikythera brought up a corroded lump of bronze. It lay unregarded until May 1902, when Spyridon Stais, visiting the museum his cousin Valerios directed, noticed a gearwheel in it. Today it is 82 fragments, about a third of the machine, in the National Archaeological Museum in Athens. This is Fragment A, the largest, from a CT scan of the original: two thousand years of seawater have turned the metal to a crust of corrosion, but the four spokes of the main wheel still show through it.",
     run: (h) => { h.mood("spot"); h.sky(false); h.isolate([]); h.xray(false); h.play(false); h.setYears(0); h.fragment(1); h.view("front-close"); h.focus(null); },
   },
   {
@@ -60,7 +60,7 @@ export const STEPS: Step[] = [
   },
   {
     id: "zodiac", title: "The front dial is the sky", clip: "zodiac",
-    body: "The inner ring is the zodiac, twelve signs of 30°. The outer ring names the months of the Egyptian calendar, drawn here with its 365 days as the 2021 model has it; the owner could slip it round a day every four years. The holes beneath the ring, measured in 2020 and analysed statistically in 2024, suggest 354, a lunar year, so how it was kept in step is still argued over. The date pointer reads the calendar; the true-sun pointer with its golden ball reads the zodiac. The plates above and below carry the parapegma, a list of star risings and settings keyed to letters on the dial.",
+    body: "The inner ring is the zodiac, twelve signs of 30°. The outer ring names the months of the Egyptian calendar, with its 365 days as the 2021 model has it; the owner could slip it round a day every four years. A count of the holes beneath the ring has been read as 354, a lunar year, but that reading is disputed, and this copy keeps the 365-day ring. The date pointer, on its narrow ring, reads the calendar; the true-Sun pointer, rising from its golden sphere, reads the zodiac. The plates above and below carry the parapegma, a list of star risings and settings keyed to letters on the dial.",
     run: (h) => { h.isolate([]); h.xray(false); h.view("front-close"); h.play(false); h.focus("#front-dl"); },
   },
   {
@@ -85,7 +85,7 @@ export const STEPS: Step[] = [
   },
   {
     id: "cosmos", title: "The planets", clip: "cosmos",
-    body: "The 2021 reconstruction adds a cosmos on the front: rings for Mercury, Venus, Mars, Jupiter and Saturn, each with its own epicyclic module and a coloured stone. Two periods are read on the cover inscription, 462 years for Venus and 442 for Saturn; the others, and all the planetary gearing, are the 2021 team's reconstruction. Watch the red stone of Mars now, at a month a second: its pin-and-slot has the largest offset, and the ring slows, stops and runs backwards through its retrograde loop.",
+    body: "The 2021 reconstruction adds a cosmos on the front: rings for Mercury, Venus, the true Sun, Mars, Jupiter and Saturn, each planet with its own epicyclic module and a coloured stone. Two periods are read on the cover inscription, 462 years for Venus and 442 for Saturn; the others, and all the planetary gearing, are the 2021 team's reconstruction. The team also proposes that each ring was marked where the Sun stands on it at its planet's stations, conjunctions and oppositions, with index letters keying those marks to the lines of the cover inscription; here they are cut where this machine puts them. Watch the red stone of Mars now, at a month a second: its pin-and-slot has the largest offset, and the ring slows, stops and runs backwards through its retrograde loop.",
     run: (h) => { h.sky(false); h.isolate([]); h.xray(false); h.view("front-close"); h.play(true, 0.0821918); h.focus("#train-mars"); },
   },
   {
@@ -95,7 +95,7 @@ export const STEPS: Step[] = [
   },
   {
     id: "accuracy", title: "How good was it?", clip: "accuracy",
-    body: "Here a turn of the crank is a tropical year, so the mean Sun keeps time by construction, and its band on the chart is only the real Sun's yearly swing about its mean. The Moon, thanks to the pin and slot, stays within about three and a half degrees for some years either side of the epoch; what remains is the evection and variation, which the machine does not model, and a slow drift of about a degree every eighteen years, because 254 turns in 19 years is not quite the Moon's true rate. Over three Saros cycles most lunar glyphs land on real eclipses, and every solar glyph falls in a month with a solar eclipse somewhere on Earth, though many could not have been seen from Greece. One caution: these wheels are cut perfectly, and the originals were filed by hand. A 2025 simulation, using the tooth errors Edmunds estimated in 2011, argues that errors that large would have jammed it, so either the maker worked finer than the corroded remains now show, or it never ran this smoothly.",
+    body: "Here a turn of the crank is a tropical year, so the mean Sun keeps time by construction, and its band on the chart is only the real Sun's yearly swing about its mean. The Moon, thanks to the pin and slot, stays within about three and a half degrees for some years either side of the epoch; what remains is the evection and variation, which the machine does not model, and a slow drift of about a degree every eighteen years, because 254 turns in 19 years is not quite the Moon's true rate. The planets keep their long cycles exactly, but one epicycle each cannot follow their loops: Mars strays by up to 54°, nearly two signs, within ten years of the epoch, and the machine brings its loops round every 2.14 years like clockwork, where the real ones come anywhere from 2.09 to 2.21 years apart. Over three Saros cycles most lunar glyphs land on real eclipses, and every solar glyph falls in a month with a solar eclipse somewhere on Earth, though many could not have been seen from Greece. One caution: these wheels are cut perfectly, and the originals were filed by hand. A 2025 simulation, using the tooth errors Edmunds estimated in 2011, argues that errors that large would have jammed it, so either the maker worked finer than the corroded remains now show, or it never ran this smoothly.",
     run: (h) => { h.sky(false); h.isolate([]); h.xray(false); h.play(false); h.view("front"); h.focus("#chart-moon"); },
   },
   {

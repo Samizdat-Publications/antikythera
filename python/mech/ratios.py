@@ -82,7 +82,10 @@ def _propagate(src, dst, e, gears, rates, carrier_rate):
         if fr is None:
             return None
         rel = rates[src] - fr
-        return -rel * F(gears[src]["teeth"], gears[dst]["teeth"]) + fr
+        # a spur pair turns in opposite senses; a crown gear standing on a wheel's face, meeting its rim
+        # at the crown's lowest tooth, is carried round the same way (gears.json "crown_same_sense")
+        sense = 1 if (gears[src].get("crown_same_sense") or gears[dst].get("crown_same_sense")) else -1
+        return sense * rel * F(gears[src]["teeth"], gears[dst]["teeth"]) + fr
     if t == "pin_slot":
         frame_id = gears[dst].get("carrier") or gears[src].get("carrier")
         fr = F(0) if frame_id is None else rates.get(frame_id)

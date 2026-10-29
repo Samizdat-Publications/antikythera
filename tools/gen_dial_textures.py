@@ -273,7 +273,42 @@ class Dial:
 
 
 # ------------------------------------------------------------------ front dial
-def front_dial(zodiac_r=(55.0, 66.5), cal_r=(67.5, 79.5), calendar_holes=365, zero_deg=0.0):
+# The Cosmos display of Freeth et al. 2021, Fig. 7, measured off the figure with the calendar's
+# outer edge taken as 80 mm: from the centre, rings for Mercury, Venus, the true Sun, Mars, Jupiter,
+# Saturn and the date, then the Zodiac and the Egyptian calendar. Inner and outer radii in mm.
+# dials.py builds the rings from this table (it is written into dials.json).
+FRONT_RINGS = {
+    "mercury": (34.3, 38.4), "venus": (38.7, 43.3), "true_sun": (43.6, 49.8), "mars": (50.1, 54.6),
+    "jupiter": (54.9, 59.4), "saturn": (59.7, 63.9), "date": (64.2, 66.5),
+}
+ZODIAC_R = (66.7, 73.9)
+CALENDAR_R = (74.1, 80.0)
+
+# The Index Letter Scheme (Freeth et al. 2021, Fig. 8): one alphabet run through the synodic events
+# of the planets in the order of the Front Cover Inscription. Each scale mark sits where the Sun
+# pointer stands on that planet's ring at the event, so it was measured on this machine itself:
+# turned through 40 years, the Sun's place on each ring at every event, in degrees clockwise from
+# the planet's stone, averaged (a scatter of a degree or two; the gearing is exact, the events are
+# not quite evenly spaced). Letter, degrees, whether the letter is inferred (Mercury's first three
+# lines of the inscription are lost, so their letters are cut in the faint ink).
+RING_EVENTS = {
+    "mercury": [("Α", -0.44, True), ("Β", -24.55, True), ("Γ", -20.02, True),
+                ("Δ", 0.97, False), ("Ε", 21.37, False), ("Ζ", 16.83, False)],
+    "venus": [("Η", -0.13, False), ("Θ", -46.37, False), ("Ι", -28.57, False),
+              ("Κ", 0.82, False), ("Λ", 45.84, False), ("Μ", 28.04, False)],
+    "mars": [("Ν", -131.71, False), ("Ξ", 0.19, False), ("Ο", 139.98, False), ("Π", -179.33, False)],
+    "jupiter": [("Ρ", -118.69, False), ("Σ", 0.39, False), ("Τ", 112.57, False), ("Υ", -179.43, False)],
+    "saturn": [("Φ", -109.73, False), ("Χ", 0.41, False), ("Ψ", 108.12, False), ("Ω", -179.5, False)],
+}
+STONE_R = 1.8                   # the planet's stone on its ring (dials.py)
+OPP_R = 0.9                     # the smaller marker for opposition, opposite a superior planet's stone
+SYNODIC_DEG_PER_DAY = 360.0 / 29.530589
+# Eclipse limits as the Sun's distance from the node, from the eclipse-year model (python/mech/eym.py):
+# 20 and 7 of the 223 eclipse-year units, either side of the Sun pointer.
+ECLIPSE_LIMITS_DEG = (16.1, 5.65)
+
+
+def front_dial(zodiac_r=ZODIAC_R, cal_r=CALENDAR_R, calendar_holes=365, zero_deg=0.0):
     """Zodiac ring + Egyptian calendar ring. Angles: the Sun pointer turns CLOCKWISE
     seen from the front (the machine's positive sense), so the signs run clockwise
     from the zero (Aries 0 at +x by default)."""
@@ -283,12 +318,12 @@ def front_dial(zodiac_r=(55.0, 66.5), cal_r=(67.5, 79.5), calendar_holes=365, ze
     # ring edges
     for r in (ri, ro, ci, co):
         D.circle(r, 0.25)
-    D.circle((ri + ro) / 2 - 2.5, 0.08)                        # inner degree band edge
-    # zodiac: 12 signs clockwise; degree ticks
+    D.circle(ri + 1.35, 0.08)                                  # the degree band's outer edge
+    # zodiac: 12 signs clockwise; degree ticks along the inner edge, where the pointers end
     for k in range(360):
         a = zero_deg - k                                       # clockwise
-        L = 1.2 if k % 30 == 0 else 0.9 if k % 10 == 0 else 0.5
-        rr = ri + 0.3
+        L = 1.15 if k % 30 == 0 else 0.85 if k % 10 == 0 else 0.5
+        rr = ri + 0.2
         D.line(rr * math.cos(math.radians(a)), rr * math.sin(math.radians(a)),
                (rr + L) * math.cos(math.radians(a)), (rr + L) * math.sin(math.radians(a)), 0.1)
     for i, name in enumerate(ZODIAC):
@@ -296,7 +331,7 @@ def front_dial(zodiac_r=(55.0, 66.5), cal_r=(67.5, 79.5), calendar_holes=365, ze
         # sign boundary
         D.line(ri * math.cos(math.radians(a0)), ri * math.sin(math.radians(a0)),
                ro * math.cos(math.radians(a0)), ro * math.sin(math.radians(a0)), 0.22)
-        D.curved_text(ri + 6.3, a0 - 15, name, 2.6, bold=True)
+        D.curved_text(ri + 4.7, a0 - 15, name, 2.1, bold=True)
     # parapegma index letters, each one immediately clockwise of its graduation mark: read on
     # the bronze in the full ink, resting on a numeral or on the editors' restoration in the
     # faint ink, and a letter whose place is lost not drawn at all.
@@ -304,31 +339,87 @@ def front_dial(zodiac_r=(55.0, 66.5), cal_r=(67.5, 79.5), calendar_holes=365, ze
         if grad is None:
             continue
         a = zero_deg - 30 * sign - (grad - 1) - 0.55
-        D.text((ri + 9.2) * math.cos(math.radians(a)), (ri + 9.2) * math.sin(math.radians(a)),
-               letter, 1.4, angle=a - 90, faint=status != "scale")
+        D.text((ri + 2.15) * math.cos(math.radians(a)), (ri + 2.15) * math.sin(math.radians(a)),
+               letter, 1.2, angle=a - 90, faint=status != "scale")
     # Egyptian calendar ring: 365 days, 12 x 30 + 5 epagomenal, clockwise
     deg_per_day = 360.0 / calendar_holes
     for k in range(calendar_holes):
         a = zero_deg - k * deg_per_day
-        L = 1.3 if k % 30 == 0 else 0.9 if k % 10 == 0 else 0.45
-        D.line((ci + 0.3) * math.cos(math.radians(a)), (ci + 0.3) * math.sin(math.radians(a)),
-               (ci + 0.3 + L) * math.cos(math.radians(a)), (ci + 0.3 + L) * math.sin(math.radians(a)), 0.09)
+        L = 1.15 if k % 30 == 0 else 0.85 if k % 10 == 0 else 0.45
+        D.line((ci + 0.2) * math.cos(math.radians(a)), (ci + 0.2) * math.sin(math.radians(a)),
+               (ci + 0.2 + L) * math.cos(math.radians(a)), (ci + 0.2 + L) * math.sin(math.radians(a)), 0.09)
     for i, name in enumerate(EGYPT):
         a0 = zero_deg - 30 * i * deg_per_day
         D.line(ci * math.cos(math.radians(a0)), ci * math.sin(math.radians(a0)),
                co * math.cos(math.radians(a0)), co * math.sin(math.radians(a0)), 0.2)
-        D.curved_text(ci + 6.8, a0 - 15 * deg_per_day, name, 2.4, bold=True)
+        D.curved_text(ci + 3.5, a0 - 15 * deg_per_day, name, 1.9, bold=True)
     a_ep = zero_deg - 360 * deg_per_day
     D.line(ci * math.cos(math.radians(a_ep)), ci * math.sin(math.radians(a_ep)),
            co * math.cos(math.radians(a_ep)), co * math.sin(math.radians(a_ep)), 0.2)
-    D.curved_text(ci + 6.8, a_ep - 2.5 * deg_per_day, "ΕΠΑΓ", 1.6, bold=True)
+    D.curved_text(ci + 3.5, a_ep - 2.5 * deg_per_day, "ΕΠΑΓ", 1.4, bold=True)
+    return D.finish()
+
+
+def front_rings():
+    """The planet rings and the true Sun ring, one texture for all of them: each ring is a
+    separate mesh with planar UVs in its own frame, so it carries its own band of this picture
+    round with it. The stone (or the Sun's golden sphere) sits at local +x, angle 0; marks are
+    laid out clockwise from it, as the machine turns."""
+    D = Dial("front_rings", 134.0)
+
+    def at(r, deg_cw):
+        a = math.radians(-deg_cw)
+        return r * math.cos(a), r * math.sin(a)
+
+    def tick(r0, deg_cw, length, w=0.16):
+        x0, y0 = at(r0, deg_cw)
+        x1, y1 = at(r0 + length, deg_cw)
+        D.line(x0, y0, x1, y1, w)
+
+    for name, (ri, ro) in FRONT_RINGS.items():
+        if name == "date":
+            continue
+        D.circle(ri + 0.12, 0.2)
+        D.circle(ro - 0.12, 0.2)
+    # planets: a scale mark across the inner part of the ring at each synodic event and its index
+    # letter beside it, clockwise of the mark; for a conjunction the stone is in the way, so the
+    # letter stands beside the stone on the side the mark falls, and for an opposition beside the marker
+    for name, events in RING_EVENTS.items():
+        ri, ro = FRONT_RINGS[name]
+        rm = (ri + ro) / 2
+        for letter, deg, inferred in events:
+            tick(ri + 0.1, deg, 1.4, 0.18)
+            if abs(deg) < 5:
+                off = math.degrees((STONE_R + 1.0) / rm) * (1 if deg >= 0 else -1)
+            elif abs(abs(deg) - 180) < 5:
+                off = math.degrees((OPP_R + 1.0) / rm)
+            else:
+                off = math.degrees(1.0 / rm)
+            x, y = at(rm + 0.3, deg + off)
+            D.text(x, y, letter, 1.7, angle=-(deg + off) - 90, bold=True, faint=inferred)
+    # the true Sun ring: the Age of the Moon in days, counted clockwise from the Sun pointer and read
+    # by the Moon pointer, and the eclipse-limit triangles either side of the pointer
+    ri, ro = FRONT_RINGS["true_sun"]
+    for d in range(1, 30):
+        tick(ri + 0.6, d * SYNODIC_DEG_PER_DAY, 3.6, 0.14)
+        x, y = at(ri + 2.6, (d - 0.5) * SYNODIC_DEG_PER_DAY)
+        D.text(x, y, GREEK_NUMERALS[d] if d <= 25 else "Κ" + GREEK_NUMERALS[d - 20], 1.55,
+               angle=-(d - 0.5) * SYNODIC_DEG_PER_DAY - 90, bold=True)
+    for lim in ECLIPSE_LIMITS_DEG:
+        for side in (-1, 1):
+            deg = side * lim
+            half = math.degrees(0.7 / (ro - 1.0))
+            pts = [D.P(*at(ro - 0.35, deg - half)), D.P(*at(ro - 0.35, deg + half)), D.P(*at(ro - 1.65, deg))]
+            D.d.polygon(pts, fill=INK)                         # apex in, toward the Sun's sphere
+            D.db.polygon(pts, fill=40)
     return D.finish()
 
 
 # ------------------------------------------------------------------ spirals
 def spiral_dial(D, r0, pitch, turns, cells, label_fn=None, mm=1.15, glyph_fn=None):
     """Archimedean spiral r = r0 + pitch * t/(2pi), CLOCKWISE in back-view coordinates
-    (angle decreasing), cells numbered from 1 at the inner start."""
+    (angle decreasing), cells numbered from 1 at the inner start, which is at the top: both
+    scales begin there on the bronze (Freeth, review of 2026-10-29; Freeth et al. 2008 SI)."""
     # The spiral is a slot the pointer's follower pin rides in, so it is cut as one: a dark groove
     # 0.8 mm wide, deep in the bump, that reads as a spiral from across the room. A hairline
     # vanished once the texture was brought down to 2048 px. One turn more, drawn as a plain rule,
@@ -338,7 +429,7 @@ def spiral_dial(D, r0, pitch, turns, cells, label_fn=None, mm=1.15, glyph_fn=Non
     for i in range(steps + 1):
         t = 2 * math.pi * (turns + 1) * i / steps
         r = r0 + pitch * t / (2 * math.pi)
-        a = -t                                                 # clockwise
+        a = math.pi / 2 - t                                    # clockwise from the top
         pts.append((t, r * math.cos(a), r * math.sin(a)))
     for (t, x0, y0), (_, x1, y1) in zip(pts, pts[1:]):
         if t < 2 * math.pi * turns:
@@ -349,12 +440,12 @@ def spiral_dial(D, r0, pitch, turns, cells, label_fn=None, mm=1.15, glyph_fn=Non
     for k in range(cells + 1):
         t = 2 * math.pi * k / cells_per_turn
         r_in = r0 + pitch * t / (2 * math.pi)
-        a = -t
+        a = math.pi / 2 - t
         D.line(r_in * math.cos(a), r_in * math.sin(a), (r_in + pitch) * math.cos(a), (r_in + pitch) * math.sin(a), 0.24)
         if k < cells:
             tm = 2 * math.pi * (k + 0.5) / cells_per_turn
             rm = r0 + pitch * tm / (2 * math.pi) + pitch / 2
-            am = -tm
+            am = math.pi / 2 - tm
             x, y = rm * math.cos(am), rm * math.sin(am)
             rot = math.degrees(am) + 90                        # text reads outward along the arc
             if label_fn:
@@ -380,6 +471,28 @@ def sub_dial(D, cx, cy, r, sectors, labels, mm=1.5, start_deg=90.0, clockwise=Tr
             D.text(cx + rr * math.cos(math.radians(am)), cy + rr * math.sin(math.radians(am)), s, mm, angle=0, bold=True)
 
 
+GAMES_TILT = 8.0                # degrees anticlockwise, seen from the back
+
+
+def games_dial(D, dx, dy, r=9.5):
+    """The Olympiad (Games) dial, seen from the back: quarter k (year k + 1) spans the
+    90-degree sector anticlockwise from -90 + GAMES_TILT + 90k, so year 1 is the lower right."""
+    box = [D.P(dx - r, dy + r), D.P(dx + r, dy - r)]
+    D.d.ellipse(box, outline=INK, width=max(1, int(0.22 * D.scale)))
+    D.db.ellipse(box, outline=40, width=max(1, int(0.22 * D.scale)))
+    for k in range(4):
+        a = -90.0 + GAMES_TILT + 90.0 * k
+        D.line(dx, dy, dx + r * math.cos(math.radians(a)), dy + r * math.sin(math.radians(a)), 0.16)
+        am = math.radians(a + 45.0)
+        # the two festivals of the year stacked level at the middle of the quarter, where a
+        # seven-letter name has room, and the year's numeral out by the rim
+        cx_, cy_ = dx + 5.4 * math.cos(am), dy + 5.4 * math.sin(am)
+        for j, s in enumerate(GAMES[k]):
+            D.text(cx_, cy_ + (0.95 if j == 0 else -0.95), s, 1.1, bold=True)
+        D.text(dx + 7.9 * math.cos(am), dy + 7.9 * math.sin(am), GREEK_NUMERALS[k + 1], 1.0,
+               angle=math.degrees(am) - 90)
+
+
 def back_upper(n_xy, o_xy, cal_xy):
     """Metonic 5-turn spiral centred on axis n, Games dial on o, Callippic on cal.
     Composed in BACK view: x_back = -x_front."""
@@ -393,25 +506,20 @@ def back_upper(n_xy, o_xy, cal_xy):
     # Games dial (o) and Callippic (cal), positions relative to n, mirrored for back view
     ox, oy = -(o_xy[0] - nx), o_xy[1] - ny
     cxp, cyp = -(cal_xy[0] - nx), cal_xy[1] - ny
-    # draw sub-dials with local origin shifts
-    for (dx, dy, labels, sectors, start) in ((ox, oy, [list(g) for g in GAMES], 4, 90.0),
-                                             (cxp, cyp, [["Α"], ["Β"], ["Γ"], ["Δ"]], 4, 90.0)):
-        box = [D.P(dx - 9.5, dy + 9.5), D.P(dx + 9.5, dy - 9.5)]
-        D.d.ellipse(box, outline=INK, width=max(1, int(0.22 * D.scale)))
-        D.db.ellipse(box, outline=40, width=max(1, int(0.22 * D.scale)))
-        for i in range(sectors):
-            a = start - 360.0 * i / sectors * (1 if labels[0][0] != "Α" else -1)
-            D.line(dx, dy, dx + 9.5 * math.cos(math.radians(a)), dy + 9.5 * math.sin(math.radians(a)), 0.16)
-            am = a - 45.0 * (1 if labels[0][0] != "Α" else -1)
-            if len(labels[i]) == 1:                                   # Callippic: one large letter out along the bisector
-                rr = 9.5 * 0.62
-                D.text(dx + rr * math.cos(math.radians(am)), dy + rr * math.sin(math.radians(am)), labels[i][0], 2.2, bold=True)
-                continue
-            # Games: the two festivals of the year stacked level at the middle of the quarter, where a
-            # seven-letter name has room; set out along the bisector the inner one ran over the divider
-            cx_, cy_ = dx + 5.6 * math.cos(math.radians(am)), dy + 5.6 * math.sin(math.radians(am))
-            for j, s in enumerate(labels[i]):
-                D.text(cx_, cy_ + (0.95 if j == 0 else -0.95), s, 1.15, bold=True)
+    # The Games dial (Freeth et al. 2008 SI): its quarters are turned about 8 degrees anticlockwise
+    # from square, year 1 is the lower right and the years run anticlockwise, as its pointer turns.
+    games_dial(D, ox, oy)
+    # the Callippic dial (no physical evidence survives for it; kept as the 2021 model has it):
+    # four quarters numbered clockwise from the top, the way its pointer turns seen from the back,
+    # one large letter out along each bisector
+    box = [D.P(cxp - 9.5, cyp + 9.5), D.P(cxp + 9.5, cyp - 9.5)]
+    D.d.ellipse(box, outline=INK, width=max(1, int(0.22 * D.scale)))
+    D.db.ellipse(box, outline=40, width=max(1, int(0.22 * D.scale)))
+    for i, letter in enumerate("ΑΒΓΔ"):
+        a = 90.0 - 90.0 * i
+        D.line(cxp, cyp, cxp + 9.5 * math.cos(math.radians(a)), cyp + 9.5 * math.sin(math.radians(a)), 0.16)
+        am = math.radians(a - 45.0)
+        D.text(cxp + 5.9 * math.cos(am), cyp + 5.9 * math.sin(am), letter, 2.2, bold=True)
     return D.finish()
 
 
@@ -503,13 +611,14 @@ def parapegma(name, left, right, w=150.0, h=44.0):
 def main():
     spec = load()
     L = solve_layout(spec)
-    meta = [front_dial(),
+    meta = [front_dial(), front_rings(),
             back_upper((L["n"].x, L["n"].y), (L["o"].x, L["o"].y), (L["cal"].x, L["cal"].y)),
             back_lower((L["g"].x, L["g"].y), (L["i"].x, L["i"].y)),
             parapegma("parapegma_upper", PP1_COL_I, PP1_COL_II),
             parapegma("parapegma_lower", PP2_COL_III, PP2_COL_IV)]
     with open(os.path.join(OUT, "dials.json"), "w", encoding="utf-8") as fh:
-        json.dump({"dials": meta, "spirals": {"metonic": {"r0": 36.0, "pitch": 5.4, "turns": 5, "cells": 235},
+        json.dump({"dials": meta, "front_rings": FRONT_RINGS, "zodiac_r": ZODIAC_R, "calendar_r": CALENDAR_R,
+                   "spirals": {"metonic": {"r0": 36.0, "pitch": 5.4, "turns": 5, "cells": 235},
                                                 "saros": {"r0": 36.0, "pitch": 6.6, "turns": 4, "cells": 223}}}, fh, indent=1)
     for m in meta:
         print(m)

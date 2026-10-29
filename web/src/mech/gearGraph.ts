@@ -10,7 +10,9 @@
  *       pin_follower  {epicycle, cx, cy, d} theta = atan2(cy + d sin t, cx + d cos t)
  *       chain         {from, ratio, carrierFrom, carrierTo}  theta = ratio*t (+ carrier terms)
  *       differential  {a, b, axis}          theta_x = theta_a - theta_b
- *       spiral        {rate, turns, r0, pitch} follower pin slides: x = r0 + pitch*((rate*years) mod turns)
+ *       spiral        {rate, turns, r0, pitch} follower pin slides: x = r0 + pitch*((phase - rate*years) mod turns),
+ *                     the turns its pointer has made since cell 1 (rate is negative: these pointers turn
+ *                     anticlockwise seen from the front), phase the turns already made at the epoch
  *   am_order      evaluation order (0 linear, 10 devices, 20+ chains, 30 differential, 40 spiral)
  *   am_role       'pointer' | 'dial' | 'plate' | 'case' | 'tube' | 'frame_b1' ... (visibility groups)
  *   am_pointer    which display a pointer/ring belongs to (date, moon, mars, metonic, ...)
@@ -42,6 +44,7 @@ export class GearGraph {
   private ordered: GearNode[] = [];
   private offsets = new Map<string, number>();           // display -> radians (Blender sense)
   private phases = new Map<string, number>();            // node -> assembly phase, radians (pin gears of the devices)
+  private spiralPhase = new Map<string, number>();       // spiral follower pin -> turns its pointer had made at the epoch
   private _years = 0;
   /** Turns of the main wheel the machine is set to. */
   get years(): number { return this._years; }
@@ -96,6 +99,17 @@ export class GearGraph {
       const parent = objs[0].parent;
       const parent0 = parent ? this.worldZOf(parent) : 0;
       this.offsets.set(display, (-deg * Math.PI) / 180 - parent0);
+    }
+    // The Moon's phase ball turns with q1 about the Moon pointer's radial line, its black half on local +y
+    // (blender/dials.py): at elongation e that half must face the front at e = 0 and the back at e = 180,
+    // so its angle is 90 degrees less e, and q1's rate keeps it so as the crank turns.
+    if (this.nodes.has("phase_ball") && desiredDeg.moon !== undefined && desiredDeg.true_sun !== undefined) {
+      this.phases.set("phase_ball", Math.PI / 2 - ((desiredDeg.moon - desiredDeg.true_sun) * Math.PI) / 180);
+    }
+    // A spiral pointer set to read cell k (deg = -(90 + 360 k / cells-per-turn), calibration.ts) has made
+    // k / cells-per-turn turns since cell 1, and its follower pin rides in that turn of the groove.
+    for (const id of ["metonic", "saros"]) {
+      if (desiredDeg[id] !== undefined && this.nodes.has("pin_" + id)) this.spiralPhase.set("pin_" + id, (-desiredDeg[id] - 90) / 360);
     }
     this.applyOffsets();
     this.setYears(saved);
@@ -170,7 +184,7 @@ export class GearGraph {
         }
         case "spiral": {
           const turns = c.turns as number;
-          const t = (((c.rate as number) * years) % turns + turns) % turns;
+          const t = (((this.spiralPhase.get(n.id) ?? 0) - (c.rate as number) * years) % turns + turns) % turns;
           n.object.position.x = (c.r0 as number) + (c.pitch as number) * t;
           break;
         }

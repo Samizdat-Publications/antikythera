@@ -17,6 +17,7 @@ import os
 import sys
 
 import bmesh
+import mathutils
 import bpy
 
 REPO = globals().get("REPO", r"C:\Users\stewa\Documents\Claude\Blender Tests\antikythera")
@@ -223,11 +224,13 @@ def sphere_bm(r, u=32, v=16):
     return bm
 
 
-def pointer_bm(length, w0=2.2, w1=0.9, thick=0.8, hub_r=None, hub_z=0.0, z=0.0):
-    """Tapered pointer along +X with a round hub; plus an optional counterweight tail."""
+def pointer_bm(length, w0=2.2, w1=0.9, thick=0.8, hub_r=None, hub_z=0.0, z=0.0, tail=0.18, x0=0.0):
+    """Tapered pointer along +X from x0 with a round hub; `tail` is a counterweight behind it,
+    as a fraction of the length (0 for none)."""
     bm = bmesh.new()
-    pts = [(-0.18 * length, -w0 * 0.55, z), (0.6 * length, -w0 / 2, z), (length, -w1 / 2, z), (length + 1.2, 0, z),
-           (length, w1 / 2, z), (0.6 * length, w0 / 2, z), (-0.18 * length, w0 * 0.55, z)]
+    pts = [(-tail * length, -w0 * 0.55, z), (0.6 * length, -w0 / 2, z), (length, -w1 / 2, z), (length + 1.2, 0, z),
+           (length, w1 / 2, z), (0.6 * length, w0 / 2, z), (-tail * length, w0 * 0.55, z)]
+    pts = [(x + x0, y, zz) for x, y, zz in pts]
     vs = [bm.verts.new(p) for p in pts]
     f = bm.faces.new(vs)
     res = bmesh.ops.extrude_face_region(bm, geom=[f])
@@ -260,10 +263,11 @@ def clear_collection(name):
     c = bpy.data.collections.get(name)
     if c:
         for ob in list(c.objects):
-            if ob.name in KEEP or "am_id" in ob:
+            # kinematic nodes are build_all's, except the few dials.py makes itself (a saved blend keeps them)
+            if ob.name in KEEP or ("am_id" in ob and not ob.name.startswith(("calendar_ring", "pin_"))):
                 continue
             if ob.name.startswith(("ptr_", "ring_", "spoke_", "stone_", "tube_", "pillar_", "case_", "crank_",
-                                   "pin_", "dragon_", "sun_ball", "lunar_disc", "strap", "circular_plate", "sub_plate",
+                                   "pin_", "dragon_", "sun_ball", "lunar_disc", "opp_", "centre_disc", "earth_dome", "strap", "circular_plate", "sub_plate",
                                    "front_plate", "back_plate", "zodiac_ring", "calendar_ring", "parapegma", "back_upper",
                                    "back_lower")):
                 bpy.data.objects.remove(ob, do_unlink=True)
@@ -308,10 +312,10 @@ def build():
     ob["am_role"] = "plate"
     fd = dial_meta["front_dial"]
     fmat = image_material("FrontDial", os.path.join(TEX, "front_dial.png"), os.path.join(TEX, "front_dial_bump.png"))
-    zod = obj_from_bmesh("zodiac_ring", annulus_bm(54.5, 67.0, 360, 1.0, 0.0, fd["span_mm"]), c_dial, fmat)
+    zod = obj_from_bmesh("zodiac_ring", annulus_bm(*DIALS["zodiac_r"], 360, 1.0, 0.0, fd["span_mm"]), c_dial, fmat)
     zod.location.z = FRONT_PLATE_Z + 0.3
     zod["am_role"] = "dial"
-    cal = obj_from_bmesh("calendar_ring", annulus_bm(67.2, 80.0, 360, 1.0, 0.0, fd["span_mm"]), c_dial, fmat)
+    cal = obj_from_bmesh("calendar_ring", annulus_bm(*DIALS["calendar_r"], 360, 1.0, 0.0, fd["span_mm"]), c_dial, fmat)
     cal.location.z = FRONT_PLATE_Z + 0.35
     cal["am_role"] = "dial"
     cal["am_id"] = "calendar_ring"
@@ -368,7 +372,7 @@ def build():
     # ---- central hub: nested output tubes -----------------------------------------------
     tubes = [("b1", 10.5, 9.6, 26.0, 33.0), ("sa86b", 9.2, 8.4, 18.0, 33.8), ("ju65b", 8.0, 7.2, 20.8, 34.6),
              ("ma80b", 6.8, 6.0, 23.6, 35.4), ("true_sun_ptr", 5.6, 4.9, 30.0, 36.2), ("venus_ptr", 4.5, 3.9, 12.0, 37.0),
-             ("mercury_ptr", 3.5, 2.9, 10.5, 37.8), ("nod48", 2.6, 2.0, 4.5, 38.6), ("b3", 1.7, 0.0, -14.0, 40.0)]
+             ("mercury_ptr", 3.5, 2.9, 10.5, 37.8), ("nod48", 2.6, 2.0, 4.5, 39.2), ("b3", 1.7, 0.0, -14.0, 40.3)]
     for host, ro, ri, z0, z1 in tubes:
         h = OBJ[host]
         bm = cylinder_bm(ro, 0.0, z1 - z0, 32, r_in=ri)
@@ -376,56 +380,120 @@ def build():
         t.location.z = z0 - h.location.z if h.parent is None else z0 - HOST_Z.get(host, 0.0)
         t["am_role"] = "tube"
 
-    # ---- front pointers and rings ------------------------------------------------------
+    # ---- the Cosmos display (Freeth et al. 2021, Fig. 7) -----------------------------------
+    # From the centre: the dome of the Earth on a raised central disc, the Moon pointer with its phase
+    # ball, then rings for Mercury, Venus, the true Sun, Mars, Jupiter, Saturn and the date, each on
+    # its own tube, at the radii of the paper's figure (FRONT_RINGS in tools/gen_dial_textures.py,
+    # carried in dials.json). The rings stand at their tubes' tops, the outer ones lowest; above them
+    # the true Sun's ray, the Dragon Hand, the central disc and the Moon pointer.
     def front_z(host):
         return HOST_Z.get(host, 0.0)
 
-    # date pointer on the outermost tube (b1), reaching the calendar ring
-    o = obj_from_bmesh("ptr_date", pointer_bm(80.5, 2.4, 1.0, 0.8, hub_r=11.5), c_ptr, bronze, parent=OBJ["b1"])
+    RINGS = DIALS["front_rings"]
+    tube_r = {host: ro for host, ro, _ri, _z0, _z1 in tubes}
+    rmat = image_material("FrontRings", os.path.join(TEX, "front_rings.png"), os.path.join(TEX, "front_rings_bump.png"))
+    span_r = dial_meta["front_rings"]["span_mm"]
+    zod_in = DIALS["zodiac_r"][0]
+    cal_in, cal_out = DIALS["calendar_r"]
+
+    def spoke(name, host, r_to, parent):
+        r0 = tube_r[host] - 0.3
+        return obj_from_bmesh(name, box_bm(r_to - r0, 1.2, 0.5, (r0 + r_to) / 2, 0.0, 0.3), c_ptr, bronze, parent=parent)
+
+    # the narrow date ring on b1, with a short Date pointer out over the calendar
+    ri, ro = RINGS["date"]
+    bm = annulus_bm(ri, ro, 256, 0.6)
+    bm = merge(bm, pointer_bm((cal_in + cal_out) / 2 + 1.5 - ro - 1.2, 1.8, 0.8, 0.6, tail=0.0, x0=ro - 0.6))
+    o = obj_from_bmesh("ptr_date", bm, c_ptr, bronze, parent=OBJ["b1"])
     o.location.z = 33.0
     o["am_role"] = "pointer"; o["am_pointer"] = "date"
-    # planet rings with marker stones
-    for host, r, zt, name in (("sa86b", 42.0, 33.8, "saturn"), ("ju65b", 36.0, 34.6, "jupiter"), ("ma80b", 30.0, 35.4, "mars"),
-                              ("venus_ptr", 18.0, 37.0, "venus"), ("mercury_ptr", 12.5, 37.8, "mercury")):
+    spoke("spoke_date", "b1", ri + 0.3, o)
+    # planet rings, each with its stone at local +x and, for the superior planets, a smaller marker
+    # opposite for opposition; scale marks and index letters are in the ring texture
+    for host, zt, name in (("sa86b", 33.8, "saturn"), ("ju65b", 34.6, "jupiter"), ("ma80b", 35.4, "mars"),
+                           ("venus_ptr", 37.0, "venus"), ("mercury_ptr", 37.8, "mercury")):
         h = OBJ[host]
-        ring = obj_from_bmesh(f"ring_{name}", annulus_bm(r - 1.6, r + 1.6, 160, 0.6), c_ptr, bronze, parent=h)
+        ri, ro = RINGS[name]
+        r = (ri + ro) / 2
+        ring = obj_from_bmesh(f"ring_{name}", annulus_bm(ri, ro, 256, 0.6, 0.0, span_r), c_ptr, rmat, parent=h)
         ring.location.z = zt - front_z(host)
         ring["am_role"] = "pointer"; ring["am_pointer"] = name
-        # a thin spoke from the hub to the ring so the rotation reads
-        spoke = obj_from_bmesh(f"spoke_{name}", box_bm(r, 1.2, 0.5, r / 2, 0.0, 0.0), c_ptr, bronze, parent=ring)
-        # an inlaid stone, not a bead: the rings stand 0.8 mm apart, so a round stone 3.6 mm high
-        # was swept by every pointer above it. Flattened to span the ring and a hair either side.
+        spoke(f"spoke_{name}", host, ri + 0.3, ring)
+        # an inlaid stone, not a bead: flattened so the ring above clears it
         stone = obj_from_bmesh(f"stone_{name}", sphere_bm(1.8), c_ptr, stones[name], parent=ring)
         stone.location = (r, 0.0, 0.3)
         stone.scale = (1.0, 1.0, 0.22)
-    # true sun: pointer with a golden ball
+        if name in ("mars", "jupiter", "saturn"):
+            opp = obj_from_bmesh(f"opp_{name}", sphere_bm(0.9, 16, 8), c_ptr, stones[name], parent=ring)
+            opp.location = (-r, 0.0, 0.3)
+            opp.scale = (1.0, 1.0, 0.45)
+    # the true Sun ring: the Age of the Moon scale and the eclipse-limit triangles (in the texture),
+    # the "little golden sphere" on the ring and its pointer, a ray lifted over the Venus and Mercury
+    # rings so that it reads every ring's scale marks and runs out to the Zodiac
     ts = OBJ["true_sun_ptr"]
-    o = obj_from_bmesh("ptr_true_sun", pointer_bm(60.0, 2.0, 0.8, 0.7, hub_r=5.4), c_ptr, gold, parent=ts)
-    o.location.z = 36.2 - HOST_Z["true_sun_ptr"]
-    o["am_role"] = "pointer"; o["am_pointer"] = "true_sun"
-    # small enough to stay in the Sun pointer's own layer (36.0 to 37.1 mm, with the date pointer below at
-    # 34 and the dragon hand above at 38.4), so the Moon pointer and the dragon hand pass over it
-    ball = obj_from_bmesh("sun_ball", sphere_bm(1.9), c_ptr, gold, parent=o)
-    ball.location = (52.0, 0.0, 0.25)
-    # dragon hand on the nodes tube
+    ri, ro = RINGS["true_sun"]
+    ring = obj_from_bmesh("ring_true_sun", annulus_bm(ri, ro, 256, 0.6, 0.0, span_r), c_ptr, rmat, parent=ts)
+    ring.location.z = 36.2 - HOST_Z["true_sun_ptr"]
+    ring["am_role"] = "pointer"; ring["am_pointer"] = "true_sun"
+    spoke("spoke_true_sun", "true_sun_ptr", ri + 0.3, ring)
+    x0 = RINGS["mercury"][0] + 0.6
+    ray = obj_from_bmesh("ptr_true_sun", pointer_bm(zod_in + 2.8 - 1.2 - x0, 1.5, 0.6, 0.45, tail=0.0, x0=x0), c_ptr, gold, parent=ring)
+    ray.location.z = 38.5 - 36.2
+    ray["am_role"] = "pointer"
+    ball = obj_from_bmesh("sun_ball", sphere_bm(2.2), c_ptr, gold, parent=ring)
+    ball.location = ((ri + ro) / 2, 0.0, 37.9 - 36.2)
+    ball.scale = (1.0, 1.0, 0.5)
+    # the Dragon Hand on the nodes tube: head (the ascending node) at +x, tail opposite
     nd = OBJ["nod48"]
-    bm = pointer_bm(58.0, 1.8, 0.7, 0.7, hub_r=2.4)
-    bm = merge(bm, pointer_bm(58.0, 1.8, 0.7, 0.7))
-    # mirror the second pointer to make the tail
+    reach = zod_in + 2.8 - 1.2
+    bm = pointer_bm(reach, 1.8, 0.7, 0.7, hub_r=2.6, tail=0.0)
+    tail_bm = pointer_bm(reach, 1.8, 0.7, 0.7, tail=0.0)
+    bmesh.ops.rotate(tail_bm, verts=tail_bm.verts, cent=(0, 0, 0), matrix=mathutils.Matrix.Rotation(math.pi, 3, "Z"))
+    bm = merge(bm, tail_bm)
     o = obj_from_bmesh("ptr_dragon", bm, c_ptr, dark, parent=nd)
-    o.location.z = 38.6 - GEARS["nod48"]["z"]
+    o.location.z = 39.2 - GEARS["nod48"]["z"]
     o["am_role"] = "pointer"; o["am_pointer"] = "nodes"
     head = obj_from_bmesh("dragon_head", sphere_bm(2.0, 16, 8), c_ptr, dark, parent=o)
-    head.location = (56.0, 0.0, 0.5)
-    head.scale = (1.0, 1.0, 0.35)                                  # clear of the Moon pointer above
-    # moon pointer with lunar disc (drum) around the phase ball
+    head.location = (reach - 3.0, 0.0, 0.5)
+    head.scale = (1.0, 1.0, 0.3)
+    # the central disc and the dome of the Earth, on the central (Moon) arbor; both are round, so
+    # turning with the Moon does not show
     mp = OBJ["b3"]
-    o = obj_from_bmesh("ptr_moon", pointer_bm(60.0, 2.2, 0.9, 0.8, hub_r=1.6), c_ptr, silver, parent=mp)
-    o.location.z = 40.0 - GEARS["b3"]["z"]
+    disc = obj_from_bmesh("centre_disc", annulus_bm(0.0, RINGS["mercury"][0] - 0.5, 128, 1.1), c_ptr, plate_mat, parent=mp)
+    disc.location.z = 40.25 - GEARS["b3"]["z"]
+    disc["am_role"] = "pointer"
+    dome = obj_from_bmesh("earth_dome", sphere_bm(10.0, 48, 24), c_ptr, bronze, parent=mp)
+    dome.location.z = 41.35 - GEARS["b3"]["z"]
+    dome.scale = (1.0, 1.0, 0.55)
+    for poly in dome.data.polygons:
+        poly.use_smooth = True
+    dome["am_role"] = "pointer"
+    # the Moon pointer, over everything, with the phase ball set in a collar on it (as in Fig. 7)
+    o = obj_from_bmesh("ptr_moon", pointer_bm(zod_in + 2.8 - 1.2, 2.2, 0.9, 0.8, hub_r=1.6, tail=0.0), c_ptr, silver, parent=mp)
+    o.location.z = 41.45 - GEARS["b3"]["z"]
     o["am_role"] = "pointer"; o["am_pointer"] = "moon"
-    drum = obj_from_bmesh("lunar_disc", annulus_bm(3.6, 6.2, 48, 5.5), c_ptr, bronze, parent=o)
-    drum.location = (OBJ["q1"].location.x, 0.0, -3.0)
-    # crank knob outside the case
+    r_ball = 21.0
+    drum = obj_from_bmesh("lunar_disc", annulus_bm(3.2, 4.6, 48, 4.0), c_ptr, bronze, parent=o)
+    drum.location = (r_ball, 0.0, 0.8)
+    # The ball is turned by the crown gear q1 (Fragment C) once a synodic month about the pointer's
+    # radial line. In this model q1 sits deep in the machine where b0 drives it, so the ball is shown
+    # on the pointer, as in the paper's figure, as its own node with q1's rate (am_rate_rel relative
+    # to the Moon arbor, about local x). Its phase at the epoch is set at runtime from the Sun and
+    # Moon pointers (web/src/mech/gearGraph.ts).
+    ball = OBJ["moon_ball"]
+    ball.parent = o
+    ball.matrix_parent_inverse.identity()
+    ball.location = (r_ball, 0.0, 0.8 + 2.4)
+    ball.rotation_mode = "XYZ"
+    ball["am_id"] = "phase_ball"
+    ball["am_kind"] = "contrate"
+    ball["am_rate"] = float(R["q1"])
+    ball["am_rate_rel"] = float(R["q1"] - R["b3"])
+    ball["am_frame"] = "b3"
+    ball["am_role"] = "pointer"
+    for poly in ball.data.polygons:                    # black half on local +y: see gearGraph.ts phase_ball
+        poly.material_index = 1 if poly.center.y > 0 else 0
+    # crank knob outside the case, on a1's axle
     a1 = OBJ["a1"]
     knob = obj_from_bmesh("crank_axle", cylinder_bm(1.6, 0.0, 30.0, 20), c_case, bronze, parent=a1)
     knob.rotation_euler.y = math.radians(90)
@@ -437,16 +505,17 @@ def build():
     spirals = DIALS["spirals"]
     for pid, host, sp, rate in (("metonic", "n1", spirals["metonic"], R["n1"]), ("saros", "g1", spirals["saros"], R["g1"])):
         h = OBJ[host]
-        length = sp["r0"] + sp["pitch"] * sp["turns"] + 4.0
-        o = obj_from_bmesh("ptr_" + pid, pointer_bm(length, 2.6, 1.6, 0.9, hub_r=3.2), c_ptr, bronze, parent=h)
+        # out to the outer edge of the last turn of cells and no further, with no tail (Freeth, 2026-10-29)
+        length = sp["r0"] + sp["pitch"] * (sp["turns"] + 1) - 1.6
+        o = obj_from_bmesh("ptr_" + pid, pointer_bm(length, 2.6, 1.2, 0.9, hub_r=3.2, tail=0.0), c_ptr, bronze, parent=h)
         o.location.z = BACK_PLATE_Z - 3.2 - GEARS[host]["z"]
         o["am_role"] = "pointer"; o["am_pointer"] = pid
         pin = obj_from_bmesh("pin_" + pid, cylinder_bm(0.7, -1.6, 0.4, 16), c_ptr, dark, parent=o)
         # follower slides outward along the pointer as the spiral is traversed:
-        # x = r0 + pitch * (turns elapsed mod spiral turns); turns elapsed = -rate*y (Blender sense)
+        # x = r0 + pitch * (turns elapsed mod spiral turns); turns elapsed = -rate*y (the rate is negative),
+        # outward as the months pass. The web adds the turns made at the epoch (gearGraph.ts).
         turns = sp["turns"]
-        expr = f"{sp['r0']} + {sp['pitch']} * ((({-float(rate)})*y % {turns}) + {turns}) % {turns}"
-        expr = f"{sp['r0']} + {sp['pitch']} * (((({float(rate)})*y) % {turns} + {turns}) % {turns})"
+        expr = f"{sp['r0']} + {sp['pitch']} * (((({-float(rate)})*y) % {turns} + {turns}) % {turns})"
         add_driver_loc_x(pin, expr, master)
         pin["am_coupling"] = json.dumps({"type": "spiral", "rate": float(rate), "turns": turns, "r0": sp["r0"], "pitch": sp["pitch"]})
         pin["am_id"] = "pin_" + pid
@@ -454,7 +523,7 @@ def build():
         pin["am_frame"] = host
     for pid, host in (("games", "o1"), ("callippic", "cal1"), ("exeligmos", "i1")):
         h = OBJ[host]
-        o = obj_from_bmesh("ptr_" + pid, pointer_bm(8.6, 1.6, 0.8, 0.7, hub_r=1.8), c_ptr, bronze, parent=h)
+        o = obj_from_bmesh("ptr_" + pid, pointer_bm(7.6, 1.6, 0.8, 0.7, hub_r=1.8, tail=0.0), c_ptr, bronze, parent=h)
         o.location.z = BACK_PLATE_Z - 2.4 - GEARS[host]["z"]
         o["am_role"] = "pointer"; o["am_pointer"] = pid
 

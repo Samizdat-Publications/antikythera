@@ -11,6 +11,16 @@
    "back_view": false
   },
   {
+   "name": "front_rings",
+   "span_mm": 134.0,
+   "px": 4096,
+   "centre_mm": [
+    0.0,
+    0.0
+   ],
+   "back_view": false
+  },
+  {
    "name": "back_upper",
    "span_mm": 150.0,
    "px": 4096,
@@ -50,6 +60,44 @@
    ],
    "back_view": false
   }
+ ],
+ "front_rings": {
+  "mercury": [
+   34.3,
+   38.4
+  ],
+  "venus": [
+   38.7,
+   43.3
+  ],
+  "true_sun": [
+   43.6,
+   49.8
+  ],
+  "mars": [
+   50.1,
+   54.6
+  ],
+  "jupiter": [
+   54.9,
+   59.4
+  ],
+  "saturn": [
+   59.7,
+   63.9
+  ],
+  "date": [
+   64.2,
+   66.5
+  ]
+ },
+ "zodiac_r": [
+  66.7,
+  73.9
+ ],
+ "calendar_r": [
+  74.1,
+  80.0
  ],
  "spirals": {
   "metonic": {

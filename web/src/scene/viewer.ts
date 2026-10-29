@@ -62,8 +62,8 @@ const PRESETS: Record<string, Preset> = {
   "pinslot": [[75, -70, -150], [28, -32, -25]],
   // the Saros spiral and the Exeligmos dial held high enough to clear the walkthrough card
   "saros": [[20, -150, -400], [0, -115, -40]],
-  // the crown wheel against the main wheel's rim, the crank knob beyond: for the input train shown alone
-  "crank-input": [[200, -60, 220], [55, -15, 0]],
+  // the crown wheel standing on the main wheel's front face at its rim, the crank knob beyond: for the input train shown alone
+  "crank-input": [[190, -70, 230], [58, -10, 8]],
   // 1.18x further out than the composition alone wants: at fov 38 the case filled the frame exactly,
   // so the top corner and the plinth were shaved off at every stage wider than 6:5
   "iso": [[354, -260, 496], [0, 0, 0]],

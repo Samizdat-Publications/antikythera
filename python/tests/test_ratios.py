@@ -11,6 +11,12 @@ def rel(gear, frame):
     return R[gear] - R[frame]
 
 
+def test_input_crown_gear():
+    # a1 stands on b1's front face at the right-hand rim (Freeth 2021 SI Figs. S10, S11), meeting it at its
+    # lowest tooth, so b1 carries it round the same way: not the -223/48 a spur pair would give (Freeth, 2026-10-29)
+    assert R["a1"] == F(223, 48)
+
+
 def test_lunar_and_calendar_trains():
     assert R["b1"] == 1
     assert R["b3"] == F(254, 19)                  # sidereal moon
