@@ -40,7 +40,7 @@ export const STEPS: Step[] = [
   },
   {
     id: "found", title: "What the divers found", clip: "discovery",
-    body: "In 1901 sponge divers working a Roman-era wreck off Antikythera brought up a corroded lump of bronze. It lay unregarded until May 1902, when the archaeologist Valerios Stais saw a gearwheel in it. Today it is 82 fragments, about a third of the machine, in the National Archaeological Museum in Athens. This is Fragment A, the largest, from a CT scan of the original: two thousand years of seawater have turned the metal to a crust of corrosion, but the four spokes of the main wheel still show through it.",
+    body: "In 1901 sponge divers working a Roman-era wreck off Antikythera brought up a corroded lump of bronze. It lay unregarded until May 1902, when Spyridon Stais, cousin of the museum's director Valerios Stais, noticed a gearwheel in it. Today it is 82 fragments, about a third of the machine, in the National Archaeological Museum in Athens. This is Fragment A, the largest, from a CT scan of the original: two thousand years of seawater have turned the metal to a crust of corrosion, but the four spokes of the main wheel still show through it.",
     run: (h) => { h.mood("spot"); h.sky(false); h.isolate([]); h.xray(false); h.play(false); h.setYears(0); h.fragment(1); h.view("front-close"); h.focus(null); },
   },
   {
@@ -60,7 +60,7 @@ export const STEPS: Step[] = [
   },
   {
     id: "zodiac", title: "The front dial is the sky", clip: "zodiac",
-    body: "The inner ring is the zodiac, twelve signs of 30°. The outer ring names the months of the Egyptian calendar, drawn here with its 365 days as the 2021 model has it; the owner could slip it round a day every four years. The holes beneath the ring, measured in 2020 and analysed statistically in 2024, suggest 354, a lunar year, so how it was kept in step is still argued over. The date pointer reads the calendar; the true-sun pointer with its golden ball reads the zodiac. The plates above and below carry the parapegma, a list of star risings and settings keyed to letters on the dial.",
+    body: "The inner ring is the zodiac, twelve signs of 30°. The outer ring names the months of the Egyptian calendar, drawn here with its 365 days as the 2021 model has it; the owner could slip it round a day every four years. A count of 354, a lunar year, has been argued from the holes beneath the ring (measured in 2020, analysed statistically in 2024); that reading is disputed, and the 2021 model keeps 365. The date pointer reads the calendar; the true-sun pointer with its golden ball reads the zodiac. The plates above and below carry the parapegma, a list of star risings and settings keyed to letters on the dial.",
     run: (h) => { h.isolate([]); h.xray(false); h.view("front-close"); h.play(false); h.focus("#front-dl"); },
   },
   {

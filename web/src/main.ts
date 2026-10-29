@@ -463,7 +463,7 @@ const GLOSS: Record<string, string> = {
   "Callippic": "four Metonic cycles less one day, 76 years",
   "Games": "the four-year round of the games (Isthmia, Olympia, Nemea, Pythia, with the lesser Naa and Halieia)",
   "Dragon hand": "the pointer that tracks the Moon's nodes, where eclipses can happen (18.6-year cycle; reconstructed, nothing of it survives)",
-  "Egyptian date": "the Egyptian calendar on the front ring, drawn with 365 days: 12 months of 30 and 5 extra (the holes under the ring point to 354: Budiselic et al. 2020, Woan and Bayley 2024)",
+  "Egyptian date": "the Egyptian calendar on the front ring, drawn with 365 days: 12 months of 30 and 5 extra (a count of 354 has been argued from the holes under the ring, Budiselic et al. 2020 and Woan and Bayley 2024, and is disputed)",
   "Sun": "the true-Sun pointer with its golden ball, which reads the zodiac and the parapegma letters; its pin and follower add the yearly wobble",
   "mean (date)": "the Sun's average place, which the date pointer carries round the Egyptian calendar",
   "anomaly": "the pin-and-slot correction: the Moon runs fast near perigee and slow near apogee, up to about 6.5 degrees",

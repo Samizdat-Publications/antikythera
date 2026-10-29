@@ -27,7 +27,7 @@ TOUR = [
      "All sixty-nine turn here at the ratios their teeth give, so every pointer moves as that model says the bronze would have."),
     ("discovery", "front",
      "In 1901, sponge divers working a Roman-era wreck off the island of Antikythera brought up a corroded lump of bronze. "
-     "It lay unregarded until May 1902, when the archaeologist Valerios Stais saw a gearwheel in it. "
+     "It lay unregarded until May 1902, when Spyridon Stais, cousin of the museum's director Valerios Stais, noticed a gearwheel in it. "
      "Today it is eighty-two fragments, about a third of the machine, in the National Archaeological Museum in Athens. "
      "This is Fragment A, the largest, from a CT scan of the original. Two thousand years of seawater have turned the metal to a crust of corrosion, "
      "but the four spokes of the main wheel still show through it."),
@@ -52,9 +52,8 @@ TOUR = [
     ("zodiac", "front",
      "The front dial is the sky. The inner ring is the zodiac, twelve signs of thirty degrees. "
      "The outer ring names the months of the Egyptian calendar, drawn here with its 365 days as the 2021 model has it, "
-     "so the owner could slip it round a day every four years. The holes beneath the ring, measured in 2020 and analysed statistically in 2024, "
-     "suggest 354, a lunar year, "
-     "so how it was kept in step is still argued over. "
+     "so the owner could slip it round a day every four years. A count of 354, a lunar year, has been argued from the holes beneath the ring, "
+     "measured in 2020 and analysed statistically in 2024; that reading is disputed, and the 2021 model keeps 365. "
      "The date pointer reads this ring; the true-sun pointer, with its golden ball, reads the zodiac. "
      "The plates above and below carry the parapegma, a list of star risings and settings, keyed to letters on the dial."),
     ("moon", "front",
