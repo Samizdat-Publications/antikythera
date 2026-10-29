@@ -23,6 +23,11 @@
 import type { Object3D } from "three";
 
 const TAU = Math.PI * 2;
+/** Where 0 degrees of Aries stands on the Zodiac dial: at the top, 90 degrees anticlockwise from +X seen from the front
+ *  (ZODIAC_ZERO_DEG in tools/gen_dial_textures.py, which says why). Front pointers read from there. */
+export const ZODIAC_ZERO_DEG = 90;
+/** The displays read against the Zodiac (and the Date pointer, against the calendar drawn from the same zero). */
+const FRONT_DISPLAYS = new Set(["date", "true_sun", "moon", "nodes", "mercury", "venus", "mars", "jupiter", "saturn"]);
 
 export interface GearNode {
   id: string;
@@ -45,6 +50,7 @@ export class GearGraph {
   private offsets = new Map<string, number>();           // display -> radians (Blender sense)
   private phases = new Map<string, number>();            // node -> assembly phase, radians (pin gears of the devices)
   private spiralPhase = new Map<string, number>();       // spiral follower pin -> turns its pointer had made at the epoch
+  private calendar0: number | null = null;               // the calendar ring's turn at the epoch, radians (Blender sense)
   private _years = 0;
   /** Turns of the main wheel the machine is set to. */
   get years(): number { return this._years; }
@@ -98,13 +104,24 @@ export class GearGraph {
       if (!objs?.length) continue;
       const parent = objs[0].parent;
       const parent0 = parent ? this.worldZOf(parent) : 0;
-      this.offsets.set(display, (-deg * Math.PI) / 180 - parent0);
+      const zero = FRONT_DISPLAYS.has(display) ? ZODIAC_ZERO_DEG : 0;
+      this.offsets.set(display, ((zero - deg) * Math.PI) / 180 - parent0);
     }
-    // The Moon's phase ball turns with q1 about the Moon pointer's radial line, its black half on local +y
+    // The Moon's phase ball is on q1's axle and turns with it about the Moon's arm, its black half on local +y
     // (blender/dials.py): at elongation e that half must face the front at e = 0 and the back at e = 180,
-    // so its angle is 90 degrees less e, and q1's rate keeps it so as the crank turns.
-    if (this.nodes.has("phase_ball") && desiredDeg.moon !== undefined && desiredDeg.true_sun !== undefined) {
-      this.phases.set("phase_ball", Math.PI / 2 - ((desiredDeg.moon - desiredDeg.true_sun) * Math.PI) / 180);
+    // so q1 is set to 90 degrees less e, and its rate (235/19 a year against the lunar arbor) keeps it so.
+    // q1 is turned by the difference of the lunar arbor and the mean Sun, which at the epoch is not zero (the
+    // lunar arbor carries the anomaly), so that difference is taken off.
+    const q1 = this.nodes.get("q1");
+    if (q1 && desiredDeg.moon !== undefined && desiredDeg.true_sun !== undefined) {
+      const c = q1.coupling;
+      const base = c?.type === "differential" ? this.localZ(c.a as string) - this.localZ(c.b as string) : 0;
+      this.phases.set("q1", Math.PI / 2 - ((desiredDeg.moon - desiredDeg.true_sun) * Math.PI) / 180 - base);
+    }
+    // The Egyptian calendar ring is loose on the front plate: set it so the Date pointer stands on the middle of
+    // the epoch's day (calendar_day0, 1..365; the ring is drawn with 1 Thoth at the Zodiac's zero).
+    if (desiredDeg.calendar_day0 !== undefined && desiredDeg.date !== undefined && this.nodes.has("calendar_ring")) {
+      this.calendar0 = (((desiredDeg.calendar_day0 - 0.5) * 360) / 365 - desiredDeg.date) * Math.PI / 180;
     }
     // A spiral pointer set to read cell k (deg = -(90 + 360 k / cells-per-turn), calibration.ts) has made
     // k / cells-per-turn turns since cell 1, and its follower pin rides in that turn of the groove.
@@ -150,7 +167,10 @@ export class GearGraph {
       const c = n.coupling;
       if (!c) {
         const angle = -TAU * n.rateRel * years + (this.phases.get(n.id) ?? 0);
-        if (n.kind === "contrate") n.object.rotation.x = angle;
+        if (n.id === "calendar_ring" && this.calendar0 !== null) {
+          // 365 days to a ring, 365.2422 to a turn of the Date pointer: the owner slips the ring back a day every four years
+          n.object.rotation.z = this.calendar0 + Math.floor(years / 4) * TAU / 365;
+        } else if (n.kind === "contrate") n.object.rotation.x = angle;
         else n.object.rotation.z = angle;
         continue;
       }
@@ -177,7 +197,7 @@ export class GearGraph {
           break;
         }
         case "differential": {
-          const a = this.localZ(c.a as string) - this.localZ(c.b as string);
+          const a = this.localZ(c.a as string) - this.localZ(c.b as string) + (this.phases.get(n.id) ?? 0);
           if (c.axis === "x") n.object.rotation.x = a;
           else n.object.rotation.z = a;
           break;
@@ -215,7 +235,8 @@ export class GearGraph {
   reading(display: string, _driverId?: string): number {
     const objs = this.pointers.get(display);
     if (!objs?.length) return 0;
-    return clockwiseDeg(this.worldZOf(objs[0]));
+    const deg = clockwiseDeg(this.worldZOf(objs[0]));
+    return FRONT_DISPLAYS.has(display) ? (deg + ZODIAC_ZERO_DEG) % 360 : deg;
   }
 }
 

@@ -21,7 +21,7 @@ const NAMES: Record<string, string> = {
   c1: "c1", c2: "c2", d1: "d1", d2: "d2 (127 teeth)", e1: "e1", e2: "e2", e3: "lunar-apsides platform", e4: "Saros pickup",
   e5: "anomaly input", e6: "anomaly output", k1: "pin gear", k2: "slot gear", f1: "f1", f2: "f2", g1: "Saros pointer gear",
   g2: "g2", h1: "h1", h2: "h2", i1: "Exeligmos gear", l1: "l1", l2: "l2", m1: "m1", m2: "m2", m3: "m3", n1: "Metonic pointer gear",
-  n2: "games drive", n3: "Callippic drive", o1: "games dial gear", p1: "p1", p2: "p2", cal1: "Callippic gear", q1: "phase-ball crown gear",
+  n3: "games drive", n2: "Callippic drive", o1: "games dial gear", p1: "p1", p2: "p2", cal1: "Callippic gear", q1: "phase-ball crown gear",
   nod49: "fixed gear, nodes", nod62: "nodes epicycle", nod64: "nodes epicycle", nod48: "dragon-hand output",
   fix51: "fixed gear, Mercury and Venus", me72: "Mercury", me89: "Mercury", me40: "Mercury idler", me20: "Mercury epicycle",
   ve44: "Venus", ve34: "Venus", ve26: "Venus idler", r1: "Venus epicycle (Fragment D)", fix56: "fixed gear, Sun and superior planets",
@@ -460,7 +460,7 @@ const GLOSS: Record<string, string> = {
   "Saros": "the Saros: 223 lunar months (18 years 11 days), after which eclipses repeat; the lower back spiral counts them",
   "Exeligmos": "three Saros cycles (54 years); the small dial adds 0, 8 or 16 hours to the glyph's eclipse time",
   "Metonic": "the Metonic cycle: 235 lunar months equal 19 solar years; the upper back spiral counts them",
-  "Callippic": "four Metonic cycles less one day, 76 years",
+  "Callippic": "a conjectural dial (no trace of it survives) for the Callippic period: four Metonic cycles less one day, 76 years",
   "Games": "the four-year round of the games (Isthmia, Olympia, Nemea, Pythia, with the lesser Naa and Halieia)",
   "Dragon hand": "the pointer that tracks the Moon's nodes, where eclipses can happen (18.6-year cycle; reconstructed, nothing of it survives)",
   "Egyptian date": "the Egyptian calendar on the front ring, 365 days as the 2021 model has it: 12 months of 30 and 5 extra (a count of the holes under the ring has been read as 354, a lunar year; that reading is disputed)",
@@ -489,7 +489,7 @@ function mechCalibration(): Partial<Calibration> {
     apogee0: calib.apogee0,             // the e3 platform set to the Moon's apogee on the epoch day
     node0: calib.node0, egyptianDay0: calib.egyptianDay0,
     metonicMonth0: calib.metonicMonth0, metonicYearOffset: calib.metonicYear0 - 1,
-    callippicOffset: calib.callippicQuarter0 * 19, sarosMonth0: calib.sarosMonth0,
+    callippicOffset: calib.callippicYears0, sarosMonth0: calib.sarosMonth0,
     exeligmos0: calib.exeligmos0, gamesYear0: calib.gamesYear0,
   };
 }
@@ -512,7 +512,8 @@ function eclipsePanel(s: MechanismState): void {
   if (g) {
     const obs = OBSERVED_HOURS[s.sarosCell];
     const hrs: string[] = [];
-    const hour = (h?: number) => (h == null ? "hour not preserved" : `hour ${h}, plus ${s.exeligmosHours} from the Exeligmos dial`);
+    // the glyphs keep time on a 12-hour scale, the day's hours from dawn and the night's from dusk (stored here 1..24 from dawn)
+    const hour = (h?: number) => (h == null ? "hour not preserved" : `hour ${h > 12 ? h - 12 : h} of the ${h > 12 ? "night" : "day"}, plus ${s.exeligmosHours} from the Exeligmos dial`);
     if (g.lunar) hrs.push(`Σ ${hour(obs?.lunar)}`);
     if (g.solar) hrs.push(`Η ${hour(obs?.solar)}`);
     parts.push(`<div class="ecl-row"><span class="k">the glyph reads</span><span class="v">${hrs.join("<br/>")}</span></div>`);

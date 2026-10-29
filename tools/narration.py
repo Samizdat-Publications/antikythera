@@ -43,9 +43,9 @@ TOUR = [
      "Every other pointer is geared off that single rotation."),
     ("epoch", "front",
      "The machine has no clock inside it. It was set by hand once, on one particular day, and after that it only ever counts turns. "
-     "That day is the epoch. Nothing on the bronze states it, so scholars worked it out from the eclipse glyphs on the Saros dial: "
-     "the pattern of fifty-one glyphs fits only certain starting months. "
-     "Carman and Evans, and Tony Freeth, both in 2014, put the first month of the Saros dial at the full moon of the twelfth of May, two hundred and five BC; "
+     "That day is the epoch. Nothing on the bronze states it, so scholars have worked it out from the eclipse glyphs on the Saros dial, by different methods. "
+     "Carman and Evans, and Tony Freeth, both in 2014, arrived at the full moon of the twelfth of May, two hundred and five BC, for the start of the Saros dial, "
+     "Freeth from the glyphs' times, and with the caution that his model is not exact. "
      "Voulgaris and his colleagues argue for the eclipse of the twenty-second of December, one hundred and seventy-eight BC. "
      "Switch between them, and every dial re-sets. The epoch is a setting, not the day it was made: the wreck went down around seventy to sixty BC. "
      "Because the machine only knows turns, dates here are written as years since the epoch, and its errors grow the further you crank from it."),
@@ -68,17 +68,20 @@ TOUR = [
      "Hidden at the back is the machine's most astonishing device. Two fifty-tooth gears sit face to face on axes offset by "
      "just over a millimetre, a pin on one riding in a slot on the other. As they turn, the slotted gear speeds up and slows down "
      "by six and a half degrees: the Moon's own acceleration near perigee. And because the pair rides on a platform that creeps "
-     "round once in nine years, the swing follows the slowly turning orbit of the Moon. "
+     "round in just under nine years, the swing follows the slowly turning orbit of the Moon. "
      "Nothing this intricate survives from the next thousand years."),
     ("backdials", "back",
      "Turn the machine round. The upper spiral is the Metonic calendar: 235 months in five turns, nineteen years. "
      "Its month names belong to a Corinthian family of calendars, most likely that of Epirus, in north-west Greece. "
-     "Inside it, one small dial counts the seventy-six-year Callippic period, and another the four-year cycle of the games: "
+     "Inside it, a small dial counts the four-year cycle of the games: "
      "the Isthmia, Olympia, Nemea and Pythia, and two lesser games, the Naa at Dodona and the Halieia of Rhodes. "
-     "Both spiral pointers carry a pin that slides outward along the groove as the years pass."),
+     "A second, conjectural dial opposite it, of which no trace survives, is given to the seventy-six-year Callippic period. "
+     "Each spiral pointer is a bar that slides through a guide on its arbor. A follower under its tip runs in the groove, "
+     "so the tip always points to the current month."),
     ("saros", "back",
      "The lower spiral is the eclipse predictor. Its 223 cells are the months of a Saros, after which eclipses repeat. "
-     "Fifty-one cells carry glyphs: sigma for an eclipse of the Moon, eta for one of the Sun, with the hour. "
+     "In Freeth's 2014 reconstruction, fifty-one cells carry glyphs, eighteen of which survive: "
+     "sigma for an eclipse of the Moon, eta for one of the Sun, with the hour. "
      "A Saros is a third of a day longer than 6,585 days, so the small Exeligmos dial adds nought, eight or sixteen hours. "
      "The panel compares the glyph in the current cell with NASA's catalogue of real eclipses. "
      "We have jumped to the next eclipse of the Moon."),
@@ -93,15 +96,15 @@ TOUR = [
     ("sky", "front",
      "This is the same machine, drawn as a sky. Earth sits in the middle, and each body is placed where its own pin and slot puts it, "
      "trailing the path it has followed. The outer planets loop backwards each time the Earth overtakes them. "
-     "These are the loops a Greek epicycle predicts, the geometry of Apollonius and Hipparchus that Ptolemy later refined. "
+     "These are the loops a Greek epicycle predicts: the geometry Apollonius developed and Ptolemy later refined. "
      "The green ticks on the rim are the true sky, so you can see for yourself how close the bronze comes."),
     ("accuracy", "front",
-     "How good was it? Here a turn of the crank is a tropical year, so the mean Sun keeps time by construction, "
+     "How good was it? Here a turn of the main wheel is a tropical year, so the mean Sun keeps time by construction, "
      "and its band on the chart is only the real Sun's yearly swing about its mean. "
      "The Moon, thanks to the pin and slot, stays within about three and a half degrees for some years either side of the epoch. "
      "What remains is the evection and the variation, which the machine does not model, and a slow drift of about a degree "
      "every eighteen years, because two hundred and fifty-four turns in nineteen years is not quite the Moon's true rate. "
-     "The planets keep their long cycles exactly, but one epicycle each cannot follow their loops. "
+     "The planets keep the inscription's period relations exactly, but one epicycle each cannot follow their loops. "
      "Mars strays by up to fifty-four degrees, nearly two signs, within ten years of the epoch, and the machine brings its "
      "loops round every two point one four years like clockwork, where the real ones come anywhere from two point oh nine "
      "to two point two one years apart. "

@@ -44,7 +44,7 @@ export function dressMaterials(root: THREE.Object3D, theme: Theme): Dressed {
     MoonBlack: (s) => physical(s, { color: new THREE.Color(0x07070a), metalness: 0.2, roughness: 0.45, clearcoat: 0.6, clearcoatRoughness: 0.2 }),
     Turquoise: (s) => physical(s, { metalness: 0, roughness: 0.28, clearcoat: 1.0, clearcoatRoughness: 0.06, ior: 1.6 }),
     Lapis: (s) => physical(s, { metalness: 0, roughness: 0.25, clearcoat: 1.0, clearcoatRoughness: 0.06, ior: 1.6 }),
-    Carnelian: (s) => physical(s, { metalness: 0, roughness: 0.22, clearcoat: 1.0, clearcoatRoughness: 0.05, ior: 1.65 }),
+    RedOnyx: (s) => physical(s, { metalness: 0, roughness: 0.22, clearcoat: 1.0, clearcoatRoughness: 0.05, ior: 1.65 }),
     Crystal: (s) => physical(s, { color: new THREE.Color(0xf4f2ff), metalness: 0.05, roughness: 0.08, clearcoat: 1.0, clearcoatRoughness: 0.03, ior: 1.55, specularIntensity: 1.2 }),
     Obsidian: (s) => physical(s, { color: new THREE.Color(0x0b0b10), metalness: 0.15, roughness: 0.12, clearcoat: 1.0, clearcoatRoughness: 0.04 }),
     // the boards' baked occlusion is near zero where they meet the plates; the loader would multiply it

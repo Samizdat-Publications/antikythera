@@ -35,6 +35,19 @@ export const CORINTHIAN_MONTHS = [
   "Phoinikaios", "Kraneios", "Lanotropios", "Machaneus", "Dodekateus", "Eukleios",
   "Artemisios", "Psydreus", "Gameilios", "Agrianios", "Panamos", "Apellaios",
 ];
+/** The Metonic calendar of Freeth et al. 2008 SI 3.3: the 13-month years are 1, 3, 6, 9, 11, 14 and 17, repeating
+ *  month 6 (Eukleios, the SI's "simple hypothesis"). Keep in exact step with metonic_cells() in tools/gen_dial_textures.py. */
+export const METONIC_LONG_YEARS = [1, 3, 6, 9, 11, 14, 17];
+const METONIC_CELLS: { year: number; month: number }[] = [];
+for (let y = 1; y <= 19; y++) {
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  if (METONIC_LONG_YEARS.includes(y)) months.splice(6, 0, 6);
+  for (const m of months) METONIC_CELLS.push({ year: y, month: m });
+}
+/** Year (1..19) and month (1..12) of Metonic cell 1..235. */
+export function metonicCellInfo(cell: number): { year: number; month: number } {
+  return METONIC_CELLS[(((cell - 1) % 235) + 235) % 235];
+}
 export const EGYPTIAN_MONTHS = [
   "Thoth", "Phaophi", "Athyr", "Choiak", "Tybi", "Mechir", "Phamenoth", "Pharmuthi",
   "Pachon", "Payni", "Epiphi", "Mesore", "Epagomenal",
@@ -139,8 +152,8 @@ export function mechanismState(years: number, epochJdn: number, calib: Partial<C
     years, jd, sunMean, moonMean, moon, moonAnomaly: corr, meanAnomaly, apsides, nodes, elongation, illuminated,
     moonAgeDays, phaseName: phaseName(elongation),
     egyptianDay, egyptianMonth: EGYPTIAN_MONTHS[em], egyptianDayOfMonth: egyptianDay - em * 30,
-    metonicCell, metonicYear: Math.floor(mod(years + c.metonicYearOffset, 19)) + 1,
-    metonicMonthName: CORINTHIAN_MONTHS[(metonicCell - 1 + c.metonicMonthNameOffset) % 12],
+    metonicCell, metonicYear: metonicCellInfo(metonicCell).year,
+    metonicMonthName: CORINTHIAN_MONTHS[metonicCellInfo(metonicCell).month - 1],
     metonicTurn: Math.floor((metonicCell - 1) / 47),
     callippicQuarter: Math.floor(mod(years + c.callippicOffset, 76) / 19),
     gamesYear, gamesNames: GAMES[gamesYear - 1],

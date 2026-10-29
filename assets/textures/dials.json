@@ -101,8 +101,8 @@
  ],
  "spirals": {
   "metonic": {
-   "r0": 36.0,
-   "pitch": 5.4,
+   "r0": 39.0,
+   "pitch": 5.0,
    "turns": 5,
    "cells": 235
   },

@@ -267,7 +267,7 @@ def clear_collection(name):
             if ob.name in KEEP or ("am_id" in ob and not ob.name.startswith(("calendar_ring", "pin_"))):
                 continue
             if ob.name.startswith(("ptr_", "ring_", "spoke_", "stone_", "tube_", "pillar_", "case_", "crank_",
-                                   "pin_", "dragon_", "sun_ball", "lunar_disc", "opp_", "centre_disc", "earth_dome", "strap", "circular_plate", "sub_plate",
+                                   "pin_", "dragon_", "sun_ball", "sun_rays", "lunar_disc", "phase_axle", "opp_", "centre_disc", "earth_dome", "thumb_catch", "strap", "circular_plate", "sub_plate",
                                    "front_plate", "back_plate", "zodiac_ring", "calendar_ring", "parapegma", "back_upper",
                                    "back_lower")):
                 bpy.data.objects.remove(ob, do_unlink=True)
@@ -297,7 +297,7 @@ def build():
     stones = {
         "mercury": plain_material("Turquoise", (0.25, 0.75, 0.72), metallic=0.0, roughness=0.35),
         "venus": plain_material("Lapis", (0.10, 0.20, 0.65), metallic=0.0, roughness=0.3),
-        "mars": plain_material("Carnelian", (0.75, 0.15, 0.08), metallic=0.0, roughness=0.3),
+        "mars": plain_material("RedOnyx", (0.75, 0.15, 0.08), metallic=0.0, roughness=0.3),
         "jupiter": plain_material("Crystal", (0.92, 0.92, 0.95), metallic=0.1, roughness=0.15),
         "saturn": plain_material("Obsidian", (0.05, 0.05, 0.06), metallic=0.2, roughness=0.2),
     }
@@ -336,6 +336,14 @@ def build():
         o.location.z = FRONT_PLATE_Z + 0.75
         o["am_role"] = "dial"
 
+    # the four thumb catches at the corners of the dial (Fig. 7; the "little shields" of the Back Cover
+    # Inscription may refer to them, 2021 SI 2.3), fixed to the front plate
+    for k in range(4):
+        cx, cy = (67.7 if k in (0, 3) else -67.7), (67.7 if k < 2 else -67.7)
+        tc = obj_from_bmesh(f"thumb_catch_{k}", merge(cylinder_bm(5.2, 0.0, 1.0, 40), cylinder_bm(2.4, 1.0, 1.8, 24)), c_frame, plate_mat)
+        tc.location = (cx, cy, FRONT_PLATE_Z + 0.75)
+        tc["am_role"] = "plate"
+
     # ---- back plate + spiral dials ----------------------------------------------------
     bp = obj_from_bmesh("back_plate", box_bm(PLATE_W, PLATE_H, 1.5, 0.0, PLATE_CY, 0.0), c_frame, plate_mat)
     bp.location.z = BACK_PLATE_Z
@@ -370,9 +378,10 @@ def build():
     sub["am_role"] = "plate"
 
     # ---- central hub: nested output tubes -----------------------------------------------
-    tubes = [("b1", 10.5, 9.6, 26.0, 33.0), ("sa86b", 9.2, 8.4, 18.0, 33.8), ("ju65b", 8.0, 7.2, 20.8, 34.6),
-             ("ma80b", 6.8, 6.0, 23.6, 35.4), ("true_sun_ptr", 5.6, 4.9, 30.0, 36.2), ("venus_ptr", 4.5, 3.9, 12.0, 37.0),
-             ("mercury_ptr", 3.5, 2.9, 10.5, 37.8), ("nod48", 2.6, 2.0, 4.5, 39.2), ("b3", 1.7, 0.0, -14.0, 40.3)]
+    tubes = [("b1", 10.5, 9.6, 26.0, 33.0), ("sa86b", 9.2, 8.4, 23.6, 33.8), ("ju65b", 8.0, 7.3, 21.2, 34.6),
+             ("ma80b", 6.9, 6.2, 18.6, 35.4), ("true_sun_ptr", 5.8, 5.1, 16.1, 36.2), ("venus_ptr", 4.8, 4.2, 12.0, 37.0),
+             ("mercury_ptr", 3.9, 3.3, 10.5, 37.8), ("nod48", 3.1, 2.6, 4.5, 39.2), ("b0", 2.4, 1.9, 1.5, 41.4),
+             ("b3", 1.7, 0.0, -14.0, 43.0)]
     for host, ro, ri, z0, z1 in tubes:
         h = OBJ[host]
         bm = cylinder_bm(ro, 0.0, z1 - z0, 32, r_in=ri)
@@ -443,10 +452,19 @@ def build():
     ball = obj_from_bmesh("sun_ball", sphere_bm(2.2), c_ptr, gold, parent=ring)
     ball.location = ((ri + ro) / 2, 0.0, 37.9 - 36.2)
     ball.scale = (1.0, 1.0, 0.5)
+    # the Sun's "ray" (Back Cover Inscription; a sunburst round the sphere in Fig. 7): a flat gold star under the sphere
+    rays = bmesh.new()
+    pts = [((3.1 if i % 2 == 0 else 2.25) * math.cos(math.pi * i / 12), (3.1 if i % 2 == 0 else 2.25) * math.sin(math.pi * i / 12), 0.0) for i in range(24)]
+    f = rays.faces.new([rays.verts.new(p) for p in pts])
+    ext = bmesh.ops.extrude_face_region(rays, geom=[f])
+    bmesh.ops.translate(rays, verts=[g for g in ext["geom"] if isinstance(g, bmesh.types.BMVert)], vec=(0, 0, 0.25))
+    bmesh.ops.recalc_face_normals(rays, faces=rays.faces)
+    sr = obj_from_bmesh("sun_rays", rays, c_ptr, gold, parent=ring)
+    sr.location = ((ri + ro) / 2, 0.0, 0.62)
     # the Dragon Hand on the nodes tube: head (the ascending node) at +x, tail opposite
     nd = OBJ["nod48"]
     reach = zod_in + 2.8 - 1.2
-    bm = pointer_bm(reach, 1.8, 0.7, 0.7, hub_r=2.6, tail=0.0)
+    bm = pointer_bm(reach, 1.8, 0.7, 0.7, hub_r=3.4, tail=0.0)
     tail_bm = pointer_bm(reach, 1.8, 0.7, 0.7, tail=0.0)
     bmesh.ops.rotate(tail_bm, verts=tail_bm.verts, cent=(0, 0, 0), matrix=mathutils.Matrix.Rotation(math.pi, 3, "Z"))
     bm = merge(bm, tail_bm)
@@ -456,42 +474,46 @@ def build():
     head = obj_from_bmesh("dragon_head", sphere_bm(2.0, 16, 8), c_ptr, dark, parent=o)
     head.location = (reach - 3.0, 0.0, 0.5)
     head.scale = (1.0, 1.0, 0.3)
-    # the central disc and the dome of the Earth, on the central (Moon) arbor; both are round, so
-    # turning with the Moon does not show
-    mp = OBJ["b3"]
-    disc = obj_from_bmesh("centre_disc", annulus_bm(0.0, RINGS["mercury"][0] - 0.5, 128, 1.1), c_ptr, plate_mat, parent=mp)
-    disc.location.z = 40.25 - GEARS["b3"]["z"]
+    # The centre (2021 paper and SI 6.2.6, Fig. 7): the mean Sun comes up the tube next to the lunar arbor to
+    # b0, which turns the crown gear q1 of the lunar phase device; q1's axle runs out along the Moon's arm to
+    # the phase ball. The raised central disc rides on the mean-Sun tube and the Earth's dome on the lunar
+    # arbor, covering b0 and q1; both are round, so their turning does not show.
+    mp, ms = OBJ["b3"], OBJ["b0"]
+    disc = obj_from_bmesh("centre_disc", annulus_bm(2.5, RINGS["mercury"][0] - 0.5, 128, 1.1), c_ptr, plate_mat, parent=ms)
+    disc.location.z = 40.25 - GEARS["b0"]["z"]
     disc["am_role"] = "pointer"
-    dome = obj_from_bmesh("earth_dome", sphere_bm(10.0, 48, 24), c_ptr, bronze, parent=mp)
-    dome.location.z = 41.35 - GEARS["b3"]["z"]
-    dome.scale = (1.0, 1.0, 0.55)
+    dome = obj_from_bmesh("earth_dome", sphere_bm(13.5, 64, 32), c_ptr, bronze, parent=mp)
+    dome.location.z = 41.4 - GEARS["b3"]["z"]
     for poly in dome.data.polygons:
         poly.use_smooth = True
     dome["am_role"] = "pointer"
-    # the Moon pointer, over everything, with the phase ball set in a collar on it (as in Fig. 7)
-    o = obj_from_bmesh("ptr_moon", pointer_bm(zod_in + 2.8 - 1.2, 2.2, 0.9, 0.8, hub_r=1.6, tail=0.0), c_ptr, silver, parent=mp)
-    o.location.z = 41.45 - GEARS["b3"]["z"]
+    q1 = OBJ["q1"]
+    z_arm = GEARS["q1"]["z"]                               # q1's axle height: the arm and the Moon pointer
+    # the Moon pointer: silver, from the phase ball out to the Zodiac, on the lunar arbor
+    r_ball = 28.0                                          # near the edge of the central disc, as in Fig. 7
+    x0 = r_ball + 3.2
+    o = obj_from_bmesh("ptr_moon", pointer_bm(zod_in + 2.8 - 1.2 - x0, 2.2, 0.9, 0.8, tail=0.0, x0=x0), c_ptr, silver, parent=mp)
+    o.location.z = z_arm - 0.4 - GEARS["b3"]["z"]
     o["am_role"] = "pointer"; o["am_pointer"] = "moon"
-    r_ball = 21.0
-    drum = obj_from_bmesh("lunar_disc", annulus_bm(3.2, 4.6, 48, 4.0), c_ptr, bronze, parent=o)
-    drum.location = (r_ball, 0.0, 0.8)
-    # The ball is turned by the crown gear q1 (Fragment C) once a synodic month about the pointer's
-    # radial line. In this model q1 sits deep in the machine where b0 drives it, so the ball is shown
-    # on the pointer, as in the paper's figure, as its own node with q1's rate (am_rate_rel relative
-    # to the Moon arbor, about local x). Its phase at the epoch is set at runtime from the Sun and
-    # Moon pointers (web/src/mech/gearGraph.ts).
-    ball = OBJ["moon_ball"]
-    ball.parent = o
+    # q1 moves under the Moon pointer, so the pointer's setting carries it round with the ball; b0 is round,
+    # so q1 meets it wherever it stands. Its rate is still relative to the lunar arbor.
+    qx = q1.location.x
+    q1.parent = o
+    q1.matrix_parent_inverse.identity()
+    q1.location = (qx, 0.0, 0.4)
+    arm = obj_from_bmesh("phase_axle", cylinder_bm(0.75, 0.0, r_ball - qx, 20), c_ptr, gold, parent=q1)
+    arm.rotation_euler.y = math.radians(90)
+    arm["am_role"] = "pointer"
+    ball = OBJ["moon_ball"]                                # half silver, half black; turned by q1 (gearGraph.ts sets its phase)
+    ball.parent = q1
     ball.matrix_parent_inverse.identity()
-    ball.location = (r_ball, 0.0, 0.8 + 2.4)
-    ball.rotation_mode = "XYZ"
-    ball["am_id"] = "phase_ball"
-    ball["am_kind"] = "contrate"
-    ball["am_rate"] = float(R["q1"])
-    ball["am_rate_rel"] = float(R["q1"] - R["b3"])
-    ball["am_frame"] = "b3"
+    ball.location = (r_ball - qx, 0.0, 0.0)
+    ball.rotation_euler = (0.0, 0.0, 0.0)
+    for key in ("am_id", "am_kind", "am_rate", "am_rate_rel", "am_frame"):
+        if key in ball:
+            del ball[key]
     ball["am_role"] = "pointer"
-    for poly in ball.data.polygons:                    # black half on local +y: see gearGraph.ts phase_ball
+    for poly in ball.data.polygons:                        # black half on local +y
         poly.material_index = 1 if poly.center.y > 0 else 0
     # crank knob outside the case, on a1's axle
     a1 = OBJ["a1"]
@@ -505,12 +527,20 @@ def build():
     spirals = DIALS["spirals"]
     for pid, host, sp, rate in (("metonic", "n1", spirals["metonic"], R["n1"]), ("saros", "g1", spirals["saros"], R["g1"])):
         h = OBJ[host]
-        # out to the outer edge of the last turn of cells and no further, with no tail (Freeth, 2026-10-29)
-        length = sp["r0"] + sp["pitch"] * (sp["turns"] + 1) - 1.6
-        o = obj_from_bmesh("ptr_" + pid, pointer_bm(length, 2.6, 1.2, 0.9, hub_r=3.2, tail=0.0), c_ptr, bronze, parent=h)
+        # The pointer is a bar of fixed length that slides through a guide on its arbor (Freeth 2014, Fig. 4):
+        # the follower pin under its tip rides in the spiral groove, so the tip always stands in the turn being
+        # read and the other end projects past the hub. The guide turns with the arbor; the bar rides on the pin.
+        guide = merge(box_bm(7.0, 4.4, 1.8, 0.0, 0.0, 0.9), cylinder_bm(3.0, 0.0, 0.6, 32))
+        o = obj_from_bmesh("ptr_" + pid, guide, c_ptr, bronze, parent=h)
         o.location.z = BACK_PLATE_Z - 3.2 - GEARS[host]["z"]
         o["am_role"] = "pointer"; o["am_pointer"] = pid
-        pin = obj_from_bmesh("pin_" + pid, cylinder_bm(0.7, -1.6, 0.4, 16), c_ptr, dark, parent=o)
+        pin = obj_from_bmesh("pin_" + pid, cylinder_bm(0.7, -1.0, 2.2, 16), c_ptr, dark, parent=o)   # down into the groove
+        tip = 0.85 * sp["pitch"]                               # the tip reaches across the cell the follower is in
+        length = sp["r0"] + sp["pitch"] * sp["turns"] + tip + 3.5
+        bar = obj_from_bmesh("ptr_" + pid + "_bar", pointer_bm(length - 1.2, 1.7, 1.1, 0.8, tail=0.0, x0=tip - length),
+                             c_ptr, bronze, parent=pin)
+        bar.location.z = 0.5
+        bar["am_role"] = "pointer"
         # follower slides outward along the pointer as the spiral is traversed:
         # x = r0 + pitch * (turns elapsed mod spiral turns); turns elapsed = -rate*y (the rate is negative),
         # outward as the months pass. The web adds the turns made at the epoch (gearGraph.ts).
@@ -521,9 +551,10 @@ def build():
         pin["am_id"] = "pin_" + pid
         pin["am_order"] = 40
         pin["am_frame"] = host
-    for pid, host in (("games", "o1"), ("callippic", "cal1"), ("exeligmos", "i1")):
+    # each subsidiary pointer ends at its dial's rim (SUBDIAL_R = 11.0 in tools/gen_dial_textures.py)
+    for pid, host, reach in (("games", "o1", 10.6), ("callippic", "cal1", 10.6), ("exeligmos", "i1", 10.6)):
         h = OBJ[host]
-        o = obj_from_bmesh("ptr_" + pid, pointer_bm(7.6, 1.6, 0.8, 0.7, hub_r=1.8, tail=0.0), c_ptr, bronze, parent=h)
+        o = obj_from_bmesh("ptr_" + pid, pointer_bm(reach - 1.2, 1.4, 0.7, 0.7, hub_r=1.6, tail=0.0), c_ptr, bronze, parent=h)
         o.location.z = BACK_PLATE_Z - 2.4 - GEARS[host]["z"]
         o["am_role"] = "pointer"; o["am_pointer"] = pid
 

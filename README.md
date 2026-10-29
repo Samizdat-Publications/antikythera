@@ -26,12 +26,12 @@ that holds what the machine predicts against what really happened.
 |---|---|
 | **69** gears, every one cut from `data/gears.json` | **30** of them survive in the bronze fragments |
 | **223** teeth on the main wheel, one turn a year | **254/19**, the Moon's ratio, exact in the gearing |
-| **51** eclipse glyphs, held against NASA's canon | **14** leaves in the narrated walkthrough |
+| **51** eclipse glyphs (Freeth's 2014 reconstruction), held against NASA's canon | **14** leaves in the narrated walkthrough |
 
 Thirty of the wheels are the ones found in the fragments and thirty-nine follow the 2021 model; the
-pointers go where that model says the bronze would have put them. Nothing in the picture is
-decorative: every rate is an exact fraction, and every number on screen names the paper or the
-dataset it came from. When the machine is wrong, the exhibit says so.
+pointers go where that model says the bronze would have put them. Every rate is an exact fraction
+of the tooth counts, and the landing page lists where this copy departs from the 2021 model. When the
+machine is wrong, the exhibit says so.
 
 ## The walkthrough
 

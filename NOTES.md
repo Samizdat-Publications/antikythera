@@ -749,3 +749,21 @@ See README "Attributions" for licences.
     as fact; planet accuracy measured and
     stated (Mars up to 54° within ten years, loops every 2.135 years against the sky's 2.09 to 2.21). Four
     narration clips re-recorded in David and transcript-checked by Gemini.
+- 2026-10-29, later: **audit against the figures** (same ledger, section 2). Two reviewers reading the model as the
+  2021 team would, plus Gemini 4 Argon; every finding checked against the sources (Gemini's "Saros starts at the
+  bottom" and "27 solar glyphs" were wrong: Freeth 2014 revised the 2008 count to 28). Things to know:
+  * **Zodiac zero is at the top** (`ZODIAC_ZERO_DEG` = 90 in both `gen_dial_textures.py` and `gearGraph.ts`). Front
+    displays read and set from it; back dials do not. The calendar ring is turned at runtime (`calendar_day0`).
+  * **Phase drive is real now:** mean-Sun tube (b0's tube, next to b3) up to b0 at z 42 under the dome; q1 (z 47) is
+    re-parented to `ptr_moon` in `dials.py` so the Moon pointer's setting carries it; the ball and the gold arm are q1's
+    children. The runtime phase is set on q1.
+  * **Layer order** Strap to CP: true-Sun follower 16.1, Mars 17.3/18.6, Jupiter 19.9/21.2, Saturn 22.5/23.6. The
+    tubes' back ends in `dials.py` follow it.
+  * **Back pointers** are a guide (`ptr_metonic`, `ptr_saros`, the am_pointer) plus a bar (`ptr_*_bar`) parented to the
+    follower pin, so the bar slides with the pin. The pin's spiral coupling adds the turns made at the epoch.
+  * **Calendars:** a Metonic cycle starts at the first new Moon after the autumnal equinox of 221 BC (computed with
+    astronomy-engine); the Games pointer runs from straight down there; the Callippic from six cycles earlier.
+    Metonic cells come from one table in two places (`metonic_cells()` in Python, `metonicCellInfo` in TS).
+  * **Open, deliberately:** Fig. 7's index letters look mirrored against the paper's rule; Metonic start top vs
+    2008 bottom; b1's spokes, bearings and pillars; planet pins and pointer zeros fitted separately (stations a few
+    degrees off symmetric about opposition). Ask Freeth about the first two.
