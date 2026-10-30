@@ -1,10 +1,20 @@
 {
  "hero": {
-  "q": "?view=iso&quality=high",
-  "setup": "const x=document.querySelector('#xray'); x.checked=true; x.dispatchEvent(new Event('change'));",
-  "dolly": 0.52,
-  "orbit": -30,
-  "rise": 30,
+  "q": "?view=front&quality=high&trails=0",
+  "cam": [
+   [
+    150,
+    -75,
+    330
+   ],
+   [
+    -72,
+    -10,
+    30
+   ]
+  ],
+  "orbit": 22,
+  "rise": 10,
   "y0": 0,
   "dy": 0.0041667,
   "n": 240
@@ -64,5 +74,116 @@
   "y0": 0,
   "dy": 0.0333333,
   "n": 240
+ },
+ "cosmos": {
+  "q": "?view=front&quality=high&trails=0",
+  "cam": [
+   [
+    18,
+    -34,
+    205
+   ],
+   [
+    0,
+    0,
+    36
+   ]
+  ],
+  "y0": 0,
+  "dy": 0.0035,
+  "n": 192
+ },
+ "letters": {
+  "q": "?view=front&quality=high&trails=0",
+  "cam": [
+   [
+    62,
+    -30,
+    100
+   ],
+   [
+    50,
+    -18,
+    36
+   ]
+  ],
+  "y0": 0,
+  "dy": 0.004,
+  "n": 192
+ },
+ "phase": {
+  "q": "?view=front&quality=high&trails=0",
+  "cam": [
+   [
+    0,
+    -78,
+    128
+   ],
+   [
+    0,
+    -2,
+    40
+   ]
+  ],
+  "y0": 0,
+  "dy": 0.0008,
+  "n": 240
+ },
+ "crank": {
+  "q": "?view=crank-input&quality=high",
+  "setup": "const g=window.__viewer.graph; for (const r of g.roles.keys()) g.setVisible(r, false); window.__viewer.setMood('spot');",
+  "after": 4000,
+  "cam": [
+   [
+    12,
+    -72,
+    62
+   ],
+   [
+    62,
+    0,
+    8
+   ]
+  ],
+  "orbit": 12,
+  "y0": 0,
+  "dy": 0.004,
+  "n": 192
+ },
+ "metonic": {
+  "q": "?view=back&quality=high",
+  "cam": [
+   [
+    -22,
+    58,
+    -158
+   ],
+   [
+    -22,
+    58,
+    -40
+   ]
+  ],
+  "y0": 0,
+  "dy": 0.02,
+  "n": 192
+ },
+ "saros": {
+  "q": "?view=back&quality=high",
+  "cam": [
+   [
+    -14,
+    -80,
+    -150
+   ],
+   [
+    -14,
+    -80,
+    -40
+   ]
+  ],
+  "y0": 0,
+  "dy": 0.0104,
+  "n": 192
  }
 }

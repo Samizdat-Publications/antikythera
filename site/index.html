@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Antikythera Cosmos: the oldest geared computer, turning in your browser</title>
-<meta name="description" content="A working 3D reconstruction of the Antikythera mechanism: the 69 gears of the 2021 Freeth et al. model, 30 of them surviving in the bronze, turned by one crank and checked against the real sky.">
+<meta name="description" content="A working 3D reconstruction of the Antikythera mechanism: the 69 gears and cosmos display of the 2021 Freeth et al. model, 30 of the gears surviving in the bronze, turned by one crank and checked against the real sky.">
 <meta name="theme-color" content="#14100c">
 <meta property="og:title" content="Antikythera Cosmos">
 <meta property="og:description" content="The 69 gears of the 2021 Freeth et al. reconstruction, turned by one crank in your browser and checked against the real sky.">
@@ -30,13 +30,13 @@
 
 <section class="hero" aria-labelledby="title">
   <video class="hero-video" id="hero-video" autoplay muted loop playsinline preload="auto" poster="media/hero.jpg"
-    aria-label="The reconstruction with its case lifted away, every gear turning as the crank winds through one year">
+    aria-label="The reconstruction from the front, its cosmos display turning as the crank winds through one year">
     <source src="media/hero.mp4" type="video/mp4">
   </video>
   <div class="hero-text">
-    <p class="status"><span class="status-dot" aria-hidden="true"></span>Finished: version 1, on view now</p>
+    <p class="status"><span class="status-dot" aria-hidden="true"></span>Finished: version 1.3, corrected October 2026</p>
     <h1 id="title">Antikythera Cosmos</h1>
-    <p class="lede">The oldest geared computer we know of, rebuilt from its tooth counts. Sixty-nine bronze wheels, after the 2021 reconstruction by Tony Freeth's team at UCL, turned by one crank in your browser and held against the real sky.</p>
+    <p class="lede">The oldest geared computer we know of, rebuilt from its tooth counts and drawn to the 2021 reconstruction by Tony Freeth's team at UCL: sixty-nine bronze wheels and the whole Greek cosmos on its front, turned by one crank in your browser and held against the real sky.</p>
     <div class="actions">
       <a class="btn btn-solid" href="https://antikythera.stewartgregerson.workers.dev">Turn the crank</a>
       <a class="btn btn-line" href="https://github.com/Samizdat-Publications/antikythera">Source on GitHub</a>
@@ -75,7 +75,52 @@
   </div>
 </section>
 
-<section class="room" aria-labelledby="inside-title">
+<section class="room" aria-labelledby="cosmos-title">
+  <figure class="room-media">
+    <video data-inview muted loop playsinline preload="none" poster="media/cosmos.jpg"
+      aria-label="The front display close up: rings for the planets and the Sun around a central dome, the Moon pointer sweeping round with its phase ball">
+      <source src="media/cosmos.mp4" type="video/mp4">
+    </video>
+    <figcaption>About eight months of the crank: the Moon laps the dial, its phase ball turning, while the planets creep.</figcaption>
+  </figure>
+  <div class="room-text">
+    <h2 id="cosmos-title">The cosmos on the front</h2>
+    <p>The front is the 2021 model's great proposal: the whole Greek cosmos on one dial, drawn here to the proportions of the paper's Fig. 7. The dome of the Earth sits at the centre. Around it run rings for Mercury, Venus, the true Sun, Mars, Jupiter and Saturn, each planet marked by a coloured stone, then a narrow date ring, the zodiac and the Egyptian calendar.</p>
+    <p>The Sun is the "little golden sphere" with its "ray" that the inscription on the back cover describes. Its ring carries the Age of the Moon, read by the Moon pointer, and small triangles for the eclipse limits: an eclipse is possible when the Dragon Hand, pointing to the Moon's nodes, lies inside them at new or full moon. With Aries at the top, each quarter of the zodiac sits beside its column of the star calendar on the plates above and below.</p>
+  </div>
+</section>
+
+<section class="room room-flip" aria-labelledby="letters-title">
+  <figure class="room-media">
+    <video data-inview muted loop playsinline preload="none" poster="media/letters.jpg"
+      aria-label="The planet rings close up, their stones, scale marks and Greek index letters turning with each ring">
+      <source src="media/letters.mp4" type="video/mp4">
+    </video>
+    <figcaption>Close on the planet rings: each stone, with the scale marks and index letters that turn with it.</figcaption>
+  </figure>
+  <div class="room-text">
+    <h2 id="letters-title">Index letters on the rings</h2>
+    <p>The front cover carried an inscription listing, planet by planet, the events of each synodic cycle: conjunctions, greatest elongations, stations and oppositions. The 2021 team propose that each ring was marked where the Sun pointer stands at each event, with a letter beside the mark keying it to its line of the inscription, one alphabet running from Α on Mercury to Ω on Saturn.</p>
+    <p>The paper gives no angles for the marks, so, as it suggests, the machine is its own division engine: each mark here is cut where this copy puts the Sun on that ring at the event, found by turning it through forty years. Mercury's first three letters are cut faint, because those lines of the inscription are lost.</p>
+  </div>
+</section>
+
+<section class="room" aria-labelledby="phase-title">
+  <figure class="room-media">
+    <video data-inview muted loop playsinline preload="none" poster="media/phase.jpg"
+      aria-label="The Earth's dome at the centre of the front, the Moon's arm sweeping round it with a half-dark ball that turns from dark to bright">
+      <source src="media/phase.mp4" type="video/mp4">
+    </video>
+    <figcaption>Seventy days of the crank: the Moon's arm sweeps round the Earth's dome, the ball turning dark to bright and back.</figcaption>
+  </figure>
+  <div class="room-text">
+    <h2 id="phase-title">The Moon's phase</h2>
+    <p>Fragment C preserves part of the Moon's phase device, with its small crown gear; the ball it turned, half silver and half black, went round once a lunar month. In the 2021 model the mean Sun comes up its own tube beside the lunar arbor to a 20-tooth wheel, b0, which turns that crown gear as the Moon carries it round; the gear's axle runs out along the Moon's arm to the ball.</p>
+    <p>Because it is turned by the difference between the Moon and the mean Sun, the ball shows the phase: black facing out at new moon, silver at full.</p>
+  </div>
+</section>
+
+<section class="room room-flip" aria-labelledby="inside-title">
   <figure class="room-media">
     <video data-inview muted loop playsinline preload="none" poster="media/apart.jpg"
       aria-label="Every wheel of the reconstruction spread out along its arbor, the whole train still turning">
@@ -100,6 +145,21 @@
   </div>
 </section>
 
+<section class="room" aria-labelledby="crank-title">
+  <figure class="room-media">
+    <video data-inview muted loop playsinline preload="none" poster="media/crank.jpg"
+      aria-label="Inside the machine, plates lifted away: a small crown wheel on the crank axle, its teeth meeting the rim of the large four-spoked main wheel">
+      <source src="media/crank.mp4" type="video/mp4">
+    </video>
+    <figcaption>Inside, the plates and dials lifted away: the crown wheel turning the main wheel.</figcaption>
+  </figure>
+  <div class="room-text">
+    <h2 id="crank-title">The crown wheel</h2>
+    <p>The machine was driven from the side. A crown wheel, a1, of which the keyway for a removable crank survives, stands on the front face of the great four-spoked wheel b1 at its rim, its 48 teeth meeting b1's 223.</p>
+    <p>About four and two-thirds turns of the crank carry b1, and with it the mean Sun, once round: one year. Every other pointer on the machine is geared off that single rotation.</p>
+  </div>
+</section>
+
 <section class="room room-flip" aria-labelledby="pin-title">
   <figure class="room-media">
     <video data-inview muted loop playsinline preload="none" poster="media/pinslot.jpg"
@@ -111,22 +171,37 @@
   <div class="room-text">
     <h2 id="pin-title">The pin and slot</h2>
     <p>The Moon does not move at an even pace: it hurries near perigee and lags near apogee. At the back of the machine, two 50-tooth wheels sit face to face on axes 1.1 mm apart, a pin on one riding in a slot on the other. As they turn, the slotted wheel speeds up and slows down by about six and a half degrees.</p>
-    <p>The pair rides on a platform that turns once in about nine years, so the swing follows the slowly turning line of the Moon's orbit.</p>
+    <p>The pair rides on a platform that turns in just under nine years, so the swing follows the slowly turning line of the Moon's orbit.</p>
   </div>
 </section>
 
 <section class="room" aria-labelledby="back-title">
   <figure class="room-media">
-    <video data-inview muted loop playsinline preload="none" poster="media/back.jpg"
-      aria-label="The back of the case: two large spiral dials, their pointers winding round as the years pass">
-      <source src="media/back.mp4" type="video/mp4">
+    <video data-inview muted loop playsinline preload="none" poster="media/metonic.jpg"
+      aria-label="The upper back dial: a five-turn spiral of month names, a pointer bar sliding through a guide at the centre, and two small dials inside the spiral">
+      <source src="media/metonic.mp4" type="video/mp4">
     </video>
-    <figcaption>The back: the Metonic spiral above, the Saros eclipse spiral below, about four years of crank.</figcaption>
+    <figcaption>About four years on the upper back dial: the pointer's follower working outward along the spiral.</figcaption>
   </figure>
   <div class="room-text">
-    <h2 id="back-title">Calendars and eclipses</h2>
-    <p>The upper spiral counts the 235 months of the Metonic cycle, after which the Moon's phases fall on the same days of the year: nineteen years. A small dial inside it keeps the four-year round of the games; a second, conjectural one, of which no trace survives, is given to the 76-year Callippic cycle.</p>
-    <p>The lower spiral is the Saros, 223 months after which eclipses repeat. In Freeth's 2014 reconstruction fifty-one of its cells carry glyphs, eighteen of which survive: Σ for an eclipse of the Moon and Η for one of the Sun, with the hour, 38 lunar and 28 solar, some cells holding both. The little Exeligmos dial adds 0, 8 or 16 hours, because a Saros runs a third of a day past a whole number.</p>
+    <h2 id="back-title">Calendars on the back</h2>
+    <p>The upper spiral is the Metonic calendar: 235 months in five turns, nineteen years. As the 2008 study reconstructs it, seven of the years have a thirteenth month, each year opens with the sign for "year" and its number, and numerals for the days skipped to keep the months in step are cut inside the first turn. The month names belong to a Corinthian calendar, most likely that of Epirus.</p>
+    <p>Inside it the Games dial counts the four-year round of the games, its years inside the rim and the games outside: the Isthmia, Olympia, Nemea and Pythia, with the Naa at Dodona and the Halieia of Rhodes. A second, conjectural dial opposite it, of which no trace survives, is given to the 76-year Callippic period. Each spiral pointer is a bar sliding through a guide on its arbor, so that a follower under its tip rides the groove and the tip always points to the current month.</p>
+  </div>
+</section>
+
+<section class="room room-flip" aria-labelledby="saros-title">
+  <figure class="room-media">
+    <video data-inview muted loop playsinline preload="none" poster="media/saros.jpg"
+      aria-label="The lower back dial: a four-turn spiral of eclipse glyphs with its sliding pointer, and the small three-part Exeligmos dial inside it">
+      <source src="media/saros.mp4" type="video/mp4">
+    </video>
+    <figcaption>Two years on the Saros dial, the Exeligmos dial inside it.</figcaption>
+  </figure>
+  <div class="room-text">
+    <h2 id="saros-title">Predicting eclipses</h2>
+    <p>The lower spiral is the Saros, 223 months after which eclipses repeat. In Freeth's 2014 reconstruction 51 of its cells carry glyphs, 18 of them surviving: Σ for an eclipse of the Moon and Η for one of the Sun, 38 lunar and 28 solar, with the hour on a twelve-hour scale and an index letter, the letters running in alphabetical order through the glyphs to key them to the eclipse inscriptions.</p>
+    <p>A Saros runs about a third of a day past a whole number of days, so the small Exeligmos dial adds 0, 8 or 16 hours to the times. The exhibit holds each glyph against NASA's Five Millennium Canon of eclipses.</p>
   </div>
 </section>
 
@@ -176,7 +251,7 @@
     <div><dt>3.5°</dt><dd>the Moon stays within about this of the sky near the epoch, then drifts about a degree every eighteen years</dd></div>
     <div><dt>54°</dt><dd>how far Mars strays within ten years: the planets keep the inscription's period relations, but one epicycle each cannot follow their loops, and the machine spaces them evenly where the sky does not</dd></div>
   </dl>
-  <p class="proof-foot">Every comparison with the paper is written up: <a href="https://github.com/Samizdat-Publications/antikythera/blob/main/docs/ACCURACY-2026-10-18.md">the first accuracy pass</a> and <a href="https://github.com/Samizdat-Publications/antikythera/blob/main/docs/ACCURACY-2026-10-23.md">the second</a>, which found and fixed a Moon pointer running up to 20° off and a broken second epoch.</p>
+  <p class="proof-foot">Every comparison with the papers is written up: <a href="https://github.com/Samizdat-Publications/antikythera/blob/main/docs/ACCURACY-2026-10-18.md">the first accuracy pass</a>, <a href="https://github.com/Samizdat-Publications/antikythera/blob/main/docs/ACCURACY-2026-10-23.md">the second</a>, which fixed a Moon pointer running up to 20° off and a broken second epoch, and <a href="https://github.com/Samizdat-Publications/antikythera/blob/main/docs/ACCURACY-2026-10-29.md">the third</a>, which held the model against the papers' own figures and rebuilt the front display, the phase drive and the back dials to match them.</p>
 </section>
 
 <section class="departs" id="departs" aria-labelledby="dep-title">
@@ -213,7 +288,7 @@
     <li><h3>Exact arithmetic</h3><p>A Python solver turns the table into rates as exact fractions and lays out the arbors; tests hold each planet's period relation to the paper.</p></li>
     <li><h3>Built in Blender</h3><p>Blender 5.1 cuts every wheel, plate and pointer from the table by script, with dial faces drawn to the millimetre, and exports the machine as glTF.</p></li>
     <li><h3>Driven in the browser</h3><p>three.js re-derives every rate from rules carried in the model, so the browser turns the machine with the same arithmetic. Time runs as Julian Day on the proleptic Julian calendar, never a JavaScript date.</p></li>
-    <li><h3>Checked, and corrected</h3><p>Accuracy passes against the paper, one refereed by a second AI model whose every finding was verified against the sources before anything changed, and a third after corrections from Tony Freeth, which compared the model with the paper's figures and the 2008 and 2014 reconstructions. The narrated walkthrough was then filmed and critiqued, and its staging fixed where the picture missed what the voice described.</p></li>
+    <li><h3>Checked, and corrected</h3><p>Two accuracy passes held the numbers to the paper, one refereed by a second AI model whose every finding was verified against the sources. After corrections from Tony Freeth, a third held the model against the papers' figures, the 2008 and 2014 reconstructions included, and rebuilt what did not match: the front display, the crown wheel, the Moon's phase drive, the order of the gear layers and the back dials. The narrated walkthrough was filmed and critiqued, and its staging fixed where the picture missed what the voice described.</p></li>
   </ol>
   <p class="made-credit">Designed and directed by Stewart Gregerson. Built with Claude Code. Narration in a synthetic ElevenLabs library voice.</p>
 </section>
