@@ -52,7 +52,7 @@ URL switches: `?theme=manuscript`, `?view=&years=&epoch=&inside=1&apart=1&sky=1&
 `?fps=1`, `?quality=low|medium|high`, `?trails=0`, `?hdri=0`, `?webgl=0` (the no-WebGL still).
 → https://antikythera.stewartgregerson.workers.dev (Cloudflare Workers static assets).
 Source: github.com/Samizdat-Publications/antikythera (public since 2026-09-18).
-Landing page: https://antikytheraexhibit.com (custom domain since 2026-10-28; www, antikytherexhibit.com and antikythera-5fq.pages.dev redirect there via functions/_middleware.js, which needs "/" and "/index.html" added to site-dist/_routes.json after finish-site.mjs; Cloudflare Pages project `antikythera`, from `site/`; built into the
+Landing page: https://antikytheraexhibit.com (custom domain since 2026-10-28; www, antikytherexhibit.com and antikythera-5fq.pages.dev redirect there via functions/_middleware.js, which needs "/", "/index.html" and "/about" added to site-dist/_routes.json after finish-site.mjs; since 2026-10-29 a typed visit to the domain root goes to the exhibit, while visits from the Samizdat hub, /about and ?landing get the landing page; Cloudflare Pages project `antikythera`, from `site/`; built into the
 gitignored `site-dist/`). The older project page address https://samizdat-publications.github.io/antikythera/ (GitHub Pages,
 `main` `/docs`) now only redirects to the landing page (2026-10-23).
 

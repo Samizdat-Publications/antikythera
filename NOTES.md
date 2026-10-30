@@ -767,3 +767,9 @@ See README "Attributions" for licences.
   * **Open, deliberately:** Fig. 7's index letters look mirrored against the paper's rule; Metonic start top vs
     2008 bottom; b1's spokes, bearings and pillars; planet pins and pointer zeros fitted separately (stations a few
     degrees off symmetric about opposition). Ask Freeth about the first two.
+- 2026-10-29, last: **the domain opens the exhibit.** `functions/_middleware.js` sends a request for
+  antikytheraexhibit.com `/` (or `/index.html`) to the Worker exhibit with a 302, unless the Referer is the
+  Samizdat hub (samizdatpublications.com, samizdat-e0x.pages.dev, the GitHub Pages hub) or the domain itself, or
+  the URL carries `?landing`. `/about` always serves the landing page. Typed visits and links from email therefore
+  reach the working machine. To undo: drop the `url.hostname === HOME` block. `_routes.json` needs "/", "/index.html"
+  and "/about" after finish-site.mjs.
