@@ -45,16 +45,22 @@ cd web && npx gltf-transform meshopt public/models/antikythera.glb public/models
 Cloudflare caps each static asset at 25 MiB, so the WebP step is not optional.
 Hero renders: `python tools/bl.py blender/hero_render.py 1800` -> docs/renders/*.jpg.
 
-Deploy: `cd web && npm run build && cd .. && npx wrangler deploy --assets web/dist`
+Deploy (exhibit and landing together, Cloudflare Pages project `antikythera`):
+`cd web && npm run build && cd .. && node tools/build-pages.mjs && npx wrangler@4 pages deploy site-dist --project-name antikythera --branch main`
 Before deploying a changed GLB or texture, bump `CACHE` in `web/public/sw.js` (the service worker keeps
 the model stale-while-revalidate; the bump clears the old copy on every visitor's next visit).
 URL switches: `?theme=manuscript`, `?view=&years=&epoch=&inside=1&apart=1&sky=1&expose=1&lib=1` (Share writes them),
 `?fps=1`, `?quality=low|medium|high`, `?trails=0`, `?hdri=0`, `?webgl=0` (the no-WebGL still).
-→ https://antikythera.stewartgregerson.workers.dev (Cloudflare Workers static assets).
+→ https://antikytheraexhibit.com (since 2026-10-30): the exhibit at `/`, the landing page at `/landing`, both from
+the Pages project `antikythera`, assembled into the gitignored `site-dist/` by `tools/build-pages.mjs` (web/dist at the
+root, site/index.html as landing.html). `functions/_middleware.js` forwards www, antikytherexhibit.com and
+antikythera-5fq.pages.dev to the domain and /about, /landing/ and ?landing to /landing; `functions/media` and
+`functions/audio` answer byte ranges (Safari). The old address antikythera.stewartgregerson.workers.dev is a Worker
+(`worker/redirect.js`, `npx wrangler deploy`) that forwards there, path and query kept. Landing clips carry `?v=`;
+bump it when a clip changes (browsers keep /media/ a week). The Samizdat hub links to /landing.
 Source: github.com/Samizdat-Publications/antikythera (public since 2026-09-18).
-Landing page: https://antikytheraexhibit.com (custom domain since 2026-10-28; www, antikytherexhibit.com and antikythera-5fq.pages.dev redirect there via functions/_middleware.js, which needs "/", "/index.html" and "/about" added to site-dist/_routes.json after finish-site.mjs; since 2026-10-29 a typed visit to the domain root goes to the exhibit, while visits from the Samizdat hub, /about and ?landing get the landing page; Cloudflare Pages project `antikythera`, from `site/`; built into the
-gitignored `site-dist/`). The older project page address https://samizdat-publications.github.io/antikythera/ (GitHub Pages,
-`main` `/docs`) now only redirects to the landing page (2026-10-23).
+The older project page address https://samizdat-publications.github.io/antikythera/ (GitHub Pages, `main` `/docs`)
+only redirects to the landing page.
 
 ## Conventions that must not drift
 

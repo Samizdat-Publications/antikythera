@@ -773,3 +773,12 @@ See README "Attributions" for licences.
   the URL carries `?landing`. `/about` always serves the landing page. Typed visits and links from email therefore
   reach the working machine. To undo: drop the `url.hostname === HOME` block. `_routes.json` needs "/", "/index.html"
   and "/about" after finish-site.mjs.
+- 2026-10-30: **one address for everything.** antikytheraexhibit.com serves the exhibit at `/` and the landing page
+  at `/landing`, both from the Pages project `antikythera`: `tools/build-pages.mjs` puts web/dist at the root of
+  `site-dist/` and site/index.html beside it as landing.html (no shared paths), runs the kit's finish-site, then
+  routes `/`, `/about`, `/landing`, `/landing/` and `/audio/*` through functions (the narration plays through
+  `<audio>`, which needs byte ranges on Pages, so `functions/audio/` re-exports the media function). The referrer
+  rule of 2026-10-29 is gone: the hub links to /landing directly. The workers.dev Worker is now `worker/redirect.js`,
+  a 301 to the domain keeping path and query (shared views still open). Landing media addresses carry `?v=13`
+  because `/media/*` is cached a week and visitors were still seeing the old hero clip. The sky section now
+  comes before the year scrub. To put the exhibit back on the Worker: restore `[assets]` in wrangler.toml.

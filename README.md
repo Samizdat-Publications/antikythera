@@ -5,13 +5,13 @@
 **The oldest geared computer in the world, rebuilt from its tooth counts and turned by one crank in
 your browser.**
 
-[**Open the exhibit**](https://antikythera.stewartgregerson.workers.dev) ·
-[Landing page](https://antikytheraexhibit.com) ·
+[**Open the exhibit**](https://antikytheraexhibit.com) ·
+[Landing page](https://antikytheraexhibit.com/landing) ·
 [How it is built](#how-it-is-built) ·
 [How the numbers are checked](#how-the-numbers-are-checked)
 
 <p align="center">
-  <a href="https://antikythera.stewartgregerson.workers.dev/?inside=1">
+  <a href="https://antikytheraexhibit.com/?inside=1">
     <img src="docs/media/hero.gif" width="640" alt="The reconstruction with its case and plates lifted away, every gear turning through one year of the crank" />
   </a>
 </p>
@@ -55,9 +55,9 @@ running page; each opens the exhibit in that view.
 
 | | |
 |---|---|
-| [![The front dial](docs/landing/clips/view-front.webp)](https://antikythera.stewartgregerson.workers.dev/?view=front) **The front dial.** The zodiac, the Egyptian calendar (365 days, as the 2021 model has it), and the 2021 model's cosmos: rings for the planets, the true Sun and the date, with their index letters, under the Moon pointer and the Dragon Hand. | [![The back dials](docs/landing/clips/view-back.webp)](https://antikythera.stewartgregerson.workers.dev/?view=back) **The back dials.** The Metonic and Saros spirals, cut as slots for the pointers' pins to ride in, with the games, Callippic and Exeligmos dials. |
-| [![Taken apart](docs/landing/clips/view-apart.webp)](https://antikythera.stewartgregerson.workers.dev/?apart=1) **Taken apart.** Every wheel slides out along its arbor and keeps turning, so the trains that share the great b1 wheel can be told apart. | [![Only what survives](docs/landing/clips/view-survives.webp)](https://antikythera.stewartgregerson.workers.dev/?survives=1) **Only what survives.** The thirty gears found in the fragments, solid; the thirty-nine reconstructed ones as ghosts. |
-| [![The sky it tracks](docs/landing/clips/view-sky.webp)](https://antikythera.stewartgregerson.workers.dev/?sky=1) **The sky it tracks.** The machine's cosmos drawn from its own gears; bronze is what the machine shows, verdigris the real sky. | [![The manuscript](docs/landing/clips/view-manuscript.webp)](https://antikythera.stewartgregerson.workers.dev/?theme=manuscript&view=front) **The manuscript.** The same exhibit as a scholar's copy of Ptolemy: parchment, iron-gall ink, red ochre, gold leaf for the Sun. |
+| [![The front dial](docs/landing/clips/view-front.webp)](https://antikytheraexhibit.com/?view=front) **The front dial.** The zodiac, the Egyptian calendar (365 days, as the 2021 model has it), and the 2021 model's cosmos: rings for the planets, the true Sun and the date, with their index letters, under the Moon pointer and the Dragon Hand. | [![The back dials](docs/landing/clips/view-back.webp)](https://antikytheraexhibit.com/?view=back) **The back dials.** The Metonic and Saros spirals, cut as slots for the pointers' pins to ride in, with the games, Callippic and Exeligmos dials. |
+| [![Taken apart](docs/landing/clips/view-apart.webp)](https://antikytheraexhibit.com/?apart=1) **Taken apart.** Every wheel slides out along its arbor and keeps turning, so the trains that share the great b1 wheel can be told apart. | [![Only what survives](docs/landing/clips/view-survives.webp)](https://antikytheraexhibit.com/?survives=1) **Only what survives.** The thirty gears found in the fragments, solid; the thirty-nine reconstructed ones as ghosts. |
+| [![The sky it tracks](docs/landing/clips/view-sky.webp)](https://antikytheraexhibit.com/?sky=1) **The sky it tracks.** The machine's cosmos drawn from its own gears; bronze is what the machine shows, verdigris the real sky. | [![The manuscript](docs/landing/clips/view-manuscript.webp)](https://antikytheraexhibit.com/?theme=manuscript&view=front) **The manuscript.** The same exhibit as a scholar's copy of Ptolemy: parchment, iron-gall ink, red ochre, gold leaf for the Sun. |
 
 ## What a visitor can do
 
@@ -145,10 +145,12 @@ cd web && npx gltf-transform meshopt public/models/antikythera.glb public/models
 Hero renders (Cycles): `blender -b build/antikythera.blend --python blender/hero_render.py` writes
 `docs/renders/*.jpg`; then `python tools/gen_icons.py` refreshes the share image.
 
-Deploy: `cd web && npm run build && cd .. && npx wrangler deploy --assets web/dist`. If the GLB or a
-texture changed, bump `CACHE` in `web/public/sw.js` first so the service worker lets the new copy
-through. The landing page is `site/` (https://antikytheraexhibit.com): copy it to `site-dist/`, run the
-showcase kit's `finish-site.mjs`, then `npx wrangler@4 pages deploy site-dist --project-name antikythera --branch main`.
+Deploy: the exhibit and the landing page go out together to the Cloudflare Pages project `antikythera`
+(https://antikytheraexhibit.com, the exhibit at `/`, the landing page from `site/` at `/landing`):
+`cd web && npm run build && cd .. && node tools/build-pages.mjs && npx wrangler@4 pages deploy site-dist --project-name antikythera --branch main`.
+If the GLB or a texture changed, bump `CACHE` in `web/public/sw.js` first so the service worker lets the new copy
+through; if a landing clip changed, bump the `?v=` on its address in `site/index.html`. The first address,
+antikythera.stewartgregerson.workers.dev, is now a Worker (`worker/redirect.js`) that forwards to the domain.
 The older project page address on GitHub Pages (`docs/index.html`, served from `main` `/docs`) now redirects to the landing page.
 
 `NEXT_STEPS.md` is the maintenance guide, `NOTES.md` the decisions in order, `CLAUDE.md` the rebuild

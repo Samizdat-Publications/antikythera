@@ -6,7 +6,7 @@ deploy command._
 
 ## Version 1.0, done and live
 
-The exhibit: https://antikythera.stewartgregerson.workers.dev
+The exhibit: https://antikytheraexhibit.com (landing page at /landing)
 The landing page (2026-10-18): https://antikythera-5fq.pages.dev, a museum exhibit in five rooms from `site/`,
 its clips filmed frame by frame off the live exhibit. It replaces the project page below as the public link.
 The older project page address, https://samizdat-publications.github.io/antikythera/, now only redirects to the

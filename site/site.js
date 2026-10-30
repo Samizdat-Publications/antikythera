@@ -55,7 +55,7 @@
     if (frames[i]) return frames[i];
     const im = new Image();
     im.decoding = 'async';
-    im.src = 'media/scrub/f' + String(i).padStart(2, '0') + '.webp';
+    im.src = 'media/scrub/f' + String(i).padStart(2, '0') + '.webp?v=13';
     im.onload = () => { if (i === want || shown < 0) draw(); };
     return (frames[i] = im);
   };

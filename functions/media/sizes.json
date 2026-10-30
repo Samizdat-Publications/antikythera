@@ -10,5 +10,22 @@
  "/media/pinslot.mp4": 2764611,
  "/media/saros.mp4": 1350032,
  "/media/sky.mp4": 2083004,
- "/media/xray.mp4": 3675632
+ "/media/xray.mp4": 3675632,
+ "/audio/sfx_crank_loop.mp3": 65245,
+ "/audio/sfx_eclipse_chime.mp3": 65245,
+ "/audio/sfx_gear_tick.mp3": 8821,
+ "/audio/tour_accuracy.mp3": 2018367,
+ "/audio/tour_backdials.mp3": 949646,
+ "/audio/tour_cosmos.mp3": 1137727,
+ "/audio/tour_crank.mp3": 387491,
+ "/audio/tour_discovery.mp3": 757385,
+ "/audio/tour_epoch.mp3": 1317032,
+ "/audio/tour_explore.mp3": 742338,
+ "/audio/tour_moon.mp3": 866472,
+ "/audio/tour_pinslot.mp3": 806286,
+ "/audio/tour_saros.mp3": 818825,
+ "/audio/tour_sky.mp3": 602740,
+ "/audio/tour_welcome.mp3": 629489,
+ "/audio/tour_xray.mp3": 476098,
+ "/audio/tour_zodiac.mp3": 972634
 }
