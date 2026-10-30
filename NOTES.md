@@ -795,3 +795,6 @@ See README "Attributions" for licences.
   on a slow line it arrived after the visitor had moved on and took the opacity of the step that started the
   download, and two overlapping requests loaded it twice and left an uncontrolled copy in the scene. Now the
   load is shared and takes the opacity asked for last. Reproduced by delaying fragment_a.glb 15 s in Playwright.
+  Done the same day: HTTP/3 (with QUIC) switched off for the antikytheraexhibit.com zone in the dashboard; the
+  site stopped sending `alt-svc: h3` at once. The other zones (samizdatpublications.com, antikytherexhibit.com)
+  were left as they were.
