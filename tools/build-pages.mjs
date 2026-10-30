@@ -10,7 +10,8 @@
  *
  * The showcase kit's finish-site.mjs writes the landing videos' routes and sizes; this script then
  * adds the exhibit's _headers rule for its hashed bundles, routes the page entries through
- * functions/_middleware.js, and the narration through functions/audio/ for byte ranges.
+ * functions/_middleware.js, the narration through functions/audio/ for byte ranges, and the model, skies
+ * and data through functions/models/ (and its two re-exports), which keeps them in the edge cache.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -34,12 +35,15 @@ for (const name of fs.readdirSync(site)) {
 
 execFileSync(process.execPath, [kit, out, '--root', root], { stdio: 'inherit' });
 
+// a fresh id per build, so functions/models/ never answers a new deployment from the old one's edge cache
+fs.writeFileSync(path.join(root, 'functions/build.json'), `${JSON.stringify({ id: Date.now().toString(36) })}\n`);
+
 const headers = path.join(out, '_headers');
 fs.writeFileSync(headers, `${fs.readFileSync(path.join(web, '_headers'), 'utf8').trimEnd()}\n${fs.readFileSync(headers, 'utf8')}`);
 
 const routesFile = path.join(out, '_routes.json');
 const routes = JSON.parse(fs.readFileSync(routesFile, 'utf8'));
-routes.include = ['/', '/about', '/landing', '/landing/', '/audio/*', ...routes.include];
+routes.include = ['/', '/about', '/landing', '/landing/', '/audio/*', '/models/*', '/hdri/*', '/data/*', ...routes.include];
 fs.writeFileSync(routesFile, JSON.stringify(routes, null, 1));
 
 const sizesFile = path.join(root, 'functions/media/sizes.json');

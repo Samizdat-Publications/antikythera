@@ -35,3 +35,5 @@ shot_*.png
 
 # landing page build output (copied from site/ and finished for Cloudflare Pages)
 site-dist/
+# written by tools/build-pages.mjs on every build
+functions/build.json

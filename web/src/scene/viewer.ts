@@ -102,6 +102,7 @@ export class Viewer {
   /** The CT scan of Fragment A (Ashkan Pakzad, CC BY 4.0), loaded on demand. */
   fragment: THREE.Group | null = null;
   private fragmentMats: THREE.MeshStandardMaterial[] = [];
+  private fragmentLoading: Promise<THREE.Group> | null = null;
   private fragmentOpacity = 0;
   /** Alignment of the scan to the reconstruction (mm, radians), tuned by eye. */
   static FRAGMENT_POSE = { position: [0, 0, 0] as [number, number, number], rotation: [0, Math.PI / 2, -Math.PI / 4] as [number, number, number], scale: 1.0 };   // turned by eye so the scan's four spokes lie on b1's cross at the epoch
@@ -592,7 +593,9 @@ export class Viewer {
   /** Load the Fragment A scan once; resolves when it is in the scene. */
   loadFragment(url: string): Promise<THREE.Group> {
     if (this.fragment) return Promise.resolve(this.fragment);
-    return new Promise((resolve, reject) => {
+    // a second call while the first is still downloading shares it; two loads would leave an
+    // orphan copy of the scan in the scene that the opacity no longer reaches
+    this.fragmentLoading ??= new Promise((resolve, reject) => {
       const loader = new GLTFLoader();
       loader.setMeshoptDecoder(MeshoptDecoder);
       loader.load(url, (gltf) => {
@@ -623,8 +626,9 @@ export class Viewer {
         this.fragment = g;
         this.scene.add(g);
         resolve(g);
-      }, undefined, reject);
+      }, undefined, (err) => { this.fragmentLoading = null; reject(err); });
     });
+    return this.fragmentLoading;
   }
 
   /** 0 = reconstruction only, 1 = the corroded original only. */

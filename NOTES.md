@@ -782,3 +782,16 @@ See README "Attributions" for licences.
   a 301 to the domain keeping path and query (shared views still open). Landing media addresses carry `?v=13`
   because `/media/*` is cached a week and visitors were still seeing the old hero clip. The sky section now
   comes before the year scrub. To put the exhibit back on the Worker: restore `[assets]` in wrangler.toml.
+- 2026-10-30, later: **slow loads were HTTP/3.** On Stewart's line (78 Mb/s by speed test) Chrome fetched the
+  13 MB model in about a second over HTTP/2 and in 9 to 42 s once it switched to HTTP/3 (QUIC), even from a warm
+  edge cache; curl, which speaks HTTP/1.1, was always fast. Measured by launching Chrome with and without
+  `--disable-quic`. The fix is the zone setting (Speed, Protocol Optimization, HTTP/3 off for
+  antikytheraexhibit.com), which needs the dashboard: wrangler's token is zone read only. Also added
+  `functions/models/` (re-exported for /hdri and /data): .glb, .json and .hdr are not on Cloudflare's cacheable
+  list, so they came from the Pages asset store every time; the function keeps them in the edge cache under a
+  per-build key (`functions/build.json`, gitignored, written by build-pages) and says `X-Edge-Cache: hit|miss`.
+  Some requests are routed to ATL instead of YYZ on both Pages and workers.dev; that is Cloudflare's, not ours.
+- 2026-10-30: **the CT scan could land on the front dial.** The walkthrough's steps 2 and 3 ask for Fragment A;
+  on a slow line it arrived after the visitor had moved on and took the opacity of the step that started the
+  download, and two overlapping requests loaded it twice and left an uncontrolled copy in the scene. Now the
+  load is shared and takes the opacity asked for last. Reproduced by delaying fragment_a.glb 15 s in Playwright.

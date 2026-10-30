@@ -672,10 +672,14 @@ function fitPhases(): void {
 $("#epoch-btn").addEventListener("click", () => setYears(0));
 $("#xray").addEventListener("change", applyVisibility);
 /** The CT scan of Fragment A over the reconstruction; the slider in the Exhibit menu follows. */
+let fragmentWanted = 0;
 function showFragment(a: number): void {
+  fragmentWanted = a;
   $<HTMLInputElement>("#fragment").value = String(Math.round(a * 100));
   if (a <= 0) { viewer.setFragmentOpacity(0); applyVisibility(); return; }
-  viewer.loadFragment("./models/fragment_a.glb").then(() => { viewer.setFragmentOpacity(a); applyVisibility(); });
+  // on a slow line the scan can arrive after the walkthrough has moved on, so it takes the opacity
+  // asked for last, not the one that started the download (which once laid it over the front dial)
+  viewer.loadFragment("./models/fragment_a.glb").then(() => { viewer.setFragmentOpacity(fragmentWanted); applyVisibility(); });
 }
 $<HTMLInputElement>("#fragment").addEventListener("input", (e) => showFragment(parseInt((e.target as HTMLInputElement).value, 10) / 100));
 $("#case").addEventListener("change", applyVisibility);
