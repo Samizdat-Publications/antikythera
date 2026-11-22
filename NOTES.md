@@ -814,3 +814,16 @@ See README "Attributions" for licences.
   black under the site's lighting. About 154k triangles, over the spec's "about 100,000": the simplifier cannot
   collapse the hard-edged teeth and the count is spread evenly over the 69 wheels (b1 is 7.5k), so it was kept.
   Starting view yaw 300, pitch 12 (the poster's angle), fit 0.75, checked in a copy of the site's stage lighting.
+- 2026-11-22: **the showcase film is now the story cut**, which replaces the turntable: the closed box, the case
+  parting and the plates lifting, every wheel out along its arbor, the crank easing up to speed and back down, the
+  wheels home, the case closed (12 s, 2560x1440, 60 fps). `tools/landing/showcase_story_tpl.js` replaces
+  `performance.now` in the page with a virtual clock stepped 1/60 s per frame and calls `setInside` and `setApart`
+  at set times (`showcase_story.json`), so the exhibit's own tweens are filmed frame-exact; each chunk replays the
+  clock from zero, and the chunk joins measure like any other frame step. The camera swings 45° each way on a
+  cosine (front three-quarter on the box, side-on when the spread is widest) and stands back to 720 mm while the
+  tall box is shut, 560 mm while the wheels are out. The last 0.5 s crossfades into renders of a box never opened
+  (`pristine`): closing the case left it a little different from the page's first state (setInside resets every
+  part's castShadow). The poster is the closed box, frame 0. Gemini 4 Argon: ship; it noted the case's top and
+  bottom boards reach the frame edge for a moment as they part and return (the exhibit's own 110 mm), left as is.
+  The turntable cut can still be encoded with `python tools/landing/encode_showcase.py showcase_shot` while its
+  frames are in `.playwright-mcp/film/showcase/`. The model (`showcase/model.glb`) is unchanged.
