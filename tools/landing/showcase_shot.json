@@ -1,0 +1,20 @@
+{
+ "name": "showcase",
+ "q": "?view=iso&quality=high&trails=0",
+ "w": 2560,
+ "h": 1440,
+ "c": [
+  7,
+  -20,
+  12
+ ],
+ "r": 520,
+ "hgt": 115,
+ "a0": 30,
+ "n": 720,
+ "fade": 60,
+ "dy": 0.0016667,
+ "setup": "",
+ "each": "for (const o of window.__viewer.set) o.visible = false;",
+ "start": 540
+}

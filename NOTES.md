@@ -798,3 +798,19 @@ See README "Attributions" for licences.
   Done the same day: HTTP/3 (with QUIC) switched off for the antikytheraexhibit.com zone in the dashboard; the
   site stopped sending `alt-svc: h3` at once. The other zones (samizdatpublications.com, antikytherexhibit.com)
   were left as they were.
+- 2026-11-21: **showcase media for samizdatpublications.com** (spec: `samizdat-site/docs/SHOWCASE-MEDIA.md`).
+  `showcase.json` gains `media` (film, poster, model) and `models: []`; the older `hero` fields stay.
+  **The film** (`showcase/film.mp4`, 2560x1440, 60 fps, 12 s, CRF 18) is the machine taken apart, still turning,
+  on one full turntable orbit with the gallery set hidden. `tools/landing/showcase_tpl.js` films it off the dev
+  server through the Playwright MCP (`showcase_shot.json` holds the shot; 780 frames in four chunks), and
+  `encode_showcase.py` cuts it: frames 720..779 repeat the camera angles of 0..59 with the gears further on, so
+  the gears alone crossfade there and the camera never jumps; the film starts at frame 540 (the side view, where
+  the spread reads best) so the loop's ends are two consecutive captures. The poster is frame 540 as a PNG.
+  Gemini 4 Argon said ship; its "pointer jumps at the seam" was measured and rejected (seam step 1.05 against
+  0.7 to 1.0 elsewhere). **The model** (`showcase/model.glb`, 2.6 MB) is exported from the running exhibit with
+  three's GLTFExporter in the apart state at years 0.9 (the poster's moment), then `showcase_model.mjs` drops
+  COLOR_0 and centres and optimises it. COLOR_0 is the AO bake, which the exhibit applies to indirect light
+  only (`withVertexAO`); a plain glTF viewer multiplies it into the base colour and its zeros turned whole wheels
+  black under the site's lighting. About 154k triangles, over the spec's "about 100,000": the simplifier cannot
+  collapse the hard-edged teeth and the count is spread evenly over the 69 wheels (b1 is 7.5k), so it was kept.
+  Starting view yaw 300, pitch 12 (the poster's angle), fit 0.75, checked in a copy of the site's stage lighting.
